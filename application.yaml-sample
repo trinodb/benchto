@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:presto://presto-master:8080/hive/default
+    username: hdfs
+    password: na
+    driver-class-name: com.facebook.presto.jdbc.PrestoDriver
