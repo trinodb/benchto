@@ -1,0 +1,26 @@
+/*
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ */
+(function () {
+    'use strict';
+
+    angular.module('benchmarkServiceUI', ['ngRoute', 'benchmarkServiceUI.controllers'])
+        .config(['$routeProvider', function ($routeProvider) {
+            $routeProvider
+                .when('/', {
+                    templateUrl: 'partials/mainPage.html',
+                    controller: 'MainPageCtrl'
+                })
+                .when('/benchmark/:benchmarkName/:benchmarkSequenceId', {
+                    templateUrl: 'partials/benchmarkPage.html',
+                    controller: 'BenchmarkCtrl'
+                })
+                .when('/benchmark/:benchmarkName', {
+                    templateUrl: 'partials/benchmarkRunsPage.html',
+                    controller: 'BenchmarkRunsCtrl'
+                })
+                .otherwise({
+                    templateUrl: 'partials/404.html'
+                });
+        }]);
+}());

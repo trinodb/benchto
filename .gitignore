@@ -1,5 +1,6 @@
 application.yaml
 benchmark-driver.iml
+service.iml
 
 .idea/
 target/

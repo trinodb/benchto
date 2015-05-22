@@ -1,0 +1,11 @@
+<div>
+    <h1>Benchmark service</h1>
+
+    <h2>Benchmarks</h2>
+    <ul>
+        <li ng-repeat="benchmark in latestBenchmarks">
+            <strong><a ng-href="#/benchmark/{{benchmark.name}}">{{benchmark.name}}</a></strong> -
+            latest execution: <a ng-href="#/benchmark/{{benchmark.name}}/{{benchmark.sequenceId}}">{{benchmark.sequenceId}}</a>
+        </li>
+    </ul>
+</div>
