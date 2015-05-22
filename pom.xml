@@ -30,21 +30,30 @@
         <air.check.fail-dependency>false</air.check.fail-dependency>
 
         <dep.spring.boot.version>1.2.3.RELEASE</dep.spring.boot.version>
-        <dep.junit.version>4.12</dep.junit.version>
         <dep.commons.cli>1.3</dep.commons.cli>
-        <dep.snake.yaml>1.15</dep.snake.yaml>
         <dep.presto.jdbc.version>0.101</dep.presto.jdbc.version>
         <dep.logback.version>1.1.3</dep.logback.version>
         <dep.slf4j.version>1.7.11</dep.slf4j.version>
         <dep.commons.math3>3.5</dep.commons.math3>
-        <dep.hsqldb.version>1.8.0.10</dep.hsqldb.version>
+        <dep.junit.version>4.12</dep.junit.version>
         <dev.assertj.version>3.0.0</dev.assertj.version>
+        <dep.jsonpath.version>2.0.0</dep.jsonpath.version>
+        <dep.hsqldb.version>1.8.0.10</dep.hsqldb.version>
+        <air.check.fail-duplicate-finder></air.check.fail-duplicate-finder>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- Utils -->
@@ -78,7 +87,7 @@
             <groupId>com.facebook.presto</groupId>
             <artifactId>presto-jdbc</artifactId>
             <version>${dep.presto.jdbc.version}</version>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <!-- Test -->
@@ -87,6 +96,18 @@
             <artifactId>junit</artifactId>
             <version>${dep.junit.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hamcrest-core</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${dev.assertj.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -94,15 +115,21 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>${dep.hsqldb.version}</version>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>${dep.jsonpath.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${dev.assertj.version}</version>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path-assert</artifactId>
+            <version>${dep.jsonpath.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>${dep.hsqldb.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -141,6 +168,39 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.ning.maven.plugins</groupId>
+                <artifactId>duplicate-finder-maven-plugin</artifactId>
+                <configuration>
+                    <exceptions>
+                        <exception>
+                            <conflictingDependencies>
+                                <dependency>
+                                    <groupId>asm</groupId>
+                                    <artifactId>asm</artifactId>
+                                    <version>3.3.1</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>net-minidev</groupId>
+                                    <artifactId>asm</artifactId>
+                                    <version>1.0.2</version>
+                                </dependency>
+                            </conflictingDependencies>
+                            <packages>
+                                <package>org.objectweb.asm</package>
+                            </packages>
+                        </exception>
+                    </exceptions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

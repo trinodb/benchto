@@ -3,16 +3,28 @@
  */
 package com.teradata.benchmark.driver;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.RequestMatcher;
+import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = App.class)
+@IntegrationTest({"executionSequenceId=BEN_SEQ_ID", "runs=2"})
 public class AppIntegrationTest
 {
 
@@ -20,25 +32,71 @@ public class AppIntegrationTest
     private BenchmarkDriver benchmarkDriver;
 
     @Autowired
-    private MockBenchmarkResultReporter mockResultReporter;
+    private RestTemplate restTemplate;
+
+    private MockRestServiceServer restServiceServer;
+
+    @Before
+    public void initializeRestServiceServer()
+    {
+        restServiceServer = MockRestServiceServer.createServer(restTemplate);
+    }
 
     @Test
     public void benchmarkTestQuery()
     {
+        // benchmark start
+        restServiceServer.expect(matchAll(
+                requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/start"),
+                method(HttpMethod.POST)
+
+        )).andRespond(withSuccess());
+
+        // first execution
+        restServiceServer.expect(matchAll(
+                requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/0/start"),
+                method(HttpMethod.POST)
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/0/finish"),
+                method(HttpMethod.POST),
+                jsonPath("$.[*].name", containsInAnyOrder("duration"))
+        )).andRespond(withSuccess());
+
+        // second execution
+        restServiceServer.expect(matchAll(
+                requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/1/start"),
+                method(HttpMethod.POST)
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/1/finish"),
+                method(HttpMethod.POST),
+                jsonPath("$.[*].name", containsInAnyOrder("duration"))
+        )).andRespond(withSuccess());
+
+        // benchmark finished
+        restServiceServer.expect(matchAll(
+                requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/finish"),
+                method(HttpMethod.POST),
+                jsonPath("$.[*].name", containsInAnyOrder("durationMean", "durationMin", "durationMax", "durationStdDev"))
+
+        )).andRespond(withSuccess());
+
         boolean successful = benchmarkDriver.run();
 
         assertThat(successful).isTrue();
-        assertThat(mockResultReporter.capturedBenchmarkResult().containsFailedQueries()).isFalse();
-        assertThat(mockResultReporter.capturedBenchmarkResult().queryResults()).hasSize(1);
-        assertThat(mockResultReporter.capturedQueryExecutions()).hasSize(3); // default 3 samples
-        assertThat(mockResultReporter.capturedBenchmarkQueryResults()).hasSize(1);
 
-        BenchmarkQueryResult benchmarkQueryResult = mockResultReporter.capturedBenchmarkQueryResults().get(0);
-        assertThat(benchmarkQueryResult.getQuery().getName()).isEqualTo("test_query");
-        assertThat(benchmarkQueryResult.getQuery().getSql()).isEqualTo("SELECT CURRENT_DATE AS today, CURRENT_TIME AS now FROM (VALUES (0))");
+        restServiceServer.verify();
+    }
 
-        assertThat(benchmarkQueryResult.getDurationStatistics().getValues().length).isEqualTo(3); // default 3 samples
-        assertThat(benchmarkQueryResult.getDurationStatistics()).isNotNull();
-        assertThat(benchmarkQueryResult.getDurationStatistics().getMean()).isGreaterThan(1.0);
+    public RequestMatcher matchAll(RequestMatcher... matchers)
+    {
+        return request -> {
+            for (RequestMatcher matcher : matchers) {
+                matcher.match(request);
+            }
+        };
     }
 }
