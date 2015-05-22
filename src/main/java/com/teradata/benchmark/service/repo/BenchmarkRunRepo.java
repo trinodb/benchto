@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.service.repo;
 
-import com.teradata.benchmark.service.model.Benchmark;
+import com.teradata.benchmark.service.model.BenchmarkRun;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BenchmarkRepo
-        extends JpaRepository<Benchmark, String>
+public interface BenchmarkRunRepo
+        extends JpaRepository<BenchmarkRun, String>
 {
-    Benchmark findByNameAndSequenceId(String benchmarkName, String sequenceId);
+    BenchmarkRun findByNameAndSequenceId(String benchmarkName, String sequenceId);
 
-    List<Benchmark> findByName(String benchmarkName, Pageable pageable);
+    List<BenchmarkRun> findByName(String benchmarkName, Pageable pageable);
 
     @Query(value = "" +
             "WITH summary AS ( " +
@@ -28,7 +28,7 @@ public interface BenchmarkRepo
             "    rank() " +
             "    OVER (PARTITION BY b.name " +
             "      ORDER BY b.sequence_id DESC) AS rk " +
-            "  FROM benchmarks b " +
+            "  FROM benchmark_runs b " +
             ") " +
             "SELECT s.* " +
             "FROM summary s " +
@@ -36,5 +36,5 @@ public interface BenchmarkRepo
             "ORDER BY s.name " +
             "LIMIT ?2 OFFSET ?1",
             nativeQuery = true)
-    List<Benchmark> findLatest(int page, int size);
+    List<BenchmarkRun> findLatest(int page, int size);
 }

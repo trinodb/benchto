@@ -5,6 +5,7 @@ package com.teradata.benchmark.service.rest;
 
 import com.teradata.benchmark.service.BenchmarkService;
 import com.teradata.benchmark.service.model.Benchmark;
+import com.teradata.benchmark.service.model.BenchmarkRun;
 import com.teradata.benchmark.service.model.Measurement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,7 @@ public class BenchmarkController
             @PathVariable("benchmarkName") String benchmarkName,
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId)
     {
-        benchmarkService.startBenchmark(benchmarkName, benchmarkSequenceId);
+        benchmarkService.startBenchmarkRun(benchmarkName, benchmarkSequenceId);
     }
 
     @RequestMapping(value = "/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", method = POST)
@@ -39,7 +40,7 @@ public class BenchmarkController
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId,
             @RequestBody List<Measurement> measurements)
     {
-        benchmarkService.finishBenchmark(benchmarkName, benchmarkSequenceId, measurements);
+        benchmarkService.finishBenchmarkRun(benchmarkName, benchmarkSequenceId, measurements);
     }
 
     @RequestMapping(value = "/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", method = POST)
@@ -62,23 +63,23 @@ public class BenchmarkController
     }
 
     @RequestMapping(value = "/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}", method = GET)
-    public Benchmark findBenchmark(
+    public BenchmarkRun findBenchmark(
             @PathVariable("benchmarkName") String benchmarkName,
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId)
     {
-        return benchmarkService.findBenchmark(benchmarkName, benchmarkSequenceId);
+        return benchmarkService.findBenchmarkRun(benchmarkName, benchmarkSequenceId);
     }
 
     @RequestMapping(value = "/v1/benchmark/{benchmarkName}", method = GET)
-    public List<Benchmark> findBenchmarks(
+    public Benchmark findBenchmarks(
             @PathVariable("benchmarkName") String benchmarkName,
             Pageable pageable)
     {
-        return benchmarkService.findBenchmarks(benchmarkName, pageable);
+        return benchmarkService.findBenchmark(benchmarkName, pageable);
     }
 
     @RequestMapping(value = "/v1/benchmark/latest", method = GET)
-    public List<Benchmark> findLatestBenchmarks(Pageable pageable)
+    public List<BenchmarkRun> findLatestBenchmarkRuns(Pageable pageable)
     {
         return benchmarkService.findLatest(pageable);
     }

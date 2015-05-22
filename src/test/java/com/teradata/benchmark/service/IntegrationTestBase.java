@@ -3,7 +3,10 @@
  */
 package com.teradata.benchmark.service;
 
+import com.teradata.benchmark.service.category.IntegrationTest;
 import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -15,6 +18,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+@Category(IntegrationTest.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = App.class)
 @WebAppConfiguration
@@ -34,6 +40,13 @@ public class IntegrationTestBase
             throws Exception
     {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+
+    @Test
+    public void testContextNotNull()
+    {
+        // this dummy test is needed to make surefire happy
+        assertThat(webApplicationContext).isNotNull();
     }
 
     protected void withinTransaction(Runnable runnable)

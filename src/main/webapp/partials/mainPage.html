@@ -3,9 +3,9 @@
 
     <h2>Benchmarks</h2>
     <ul>
-        <li ng-repeat="benchmark in latestBenchmarks">
-            <strong><a ng-href="#/benchmark/{{benchmark.name}}">{{benchmark.name}}</a></strong> -
-            latest execution: <a ng-href="#/benchmark/{{benchmark.name}}/{{benchmark.sequenceId}}">{{benchmark.sequenceId}}</a>
+        <li ng-repeat="benchmarkRun in latestBenchmarkRuns">
+            <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong> -
+            latest execution: <a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>
         </li>
     </ul>
 </div>

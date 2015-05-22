@@ -12,11 +12,11 @@
                     controller: 'MainPageCtrl'
                 })
                 .when('/benchmark/:benchmarkName/:benchmarkSequenceId', {
-                    templateUrl: 'partials/benchmarkPage.html',
+                    templateUrl: 'partials/benchmarkRunPage.html',
                     controller: 'BenchmarkCtrl'
                 })
                 .when('/benchmark/:benchmarkName', {
-                    templateUrl: 'partials/benchmarkRunsPage.html',
+                    templateUrl: 'partials/benchmarkPage.html',
                     controller: 'BenchmarkRunsCtrl'
                 })
                 .otherwise({

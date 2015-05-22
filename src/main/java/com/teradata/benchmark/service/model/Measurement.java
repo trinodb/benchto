@@ -107,6 +107,7 @@ public class Measurement
     public String toString()
     {
         return toStringHelper(this)
+                .add("id", id)
                 .add("name", name)
                 .add("unit", unit)
                 .add("value", value)

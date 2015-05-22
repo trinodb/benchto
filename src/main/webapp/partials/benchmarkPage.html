@@ -1,18 +1,12 @@
 <div>
     <h1>Benchmark: {{benchmark.name}}</h1>
 
-    <h2>Measurements:</h2>
+    <h2>Runs:</h2>
     <ul>
-        <li ng-repeat="measurement in benchmark.measurements">
-            <strong>{{measurement.name}}</strong> {{measurement.value}} {{measurement.unit}}
+        <li ng-repeat="benchmarkRun in benchmark.runs">
+            <a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>
         </li>
     </ul>
-
-    <h2>Executions:</h2>
-    <ul>
-        <li ng-repeat="execution in benchmark.executions">
-            <strong>{{execution.sequenceId}}</strong>
-            <span ng-repeat="executionMeasurement in execution.measurements">| {{executionMeasurement.name}} {{executionMeasurement.value}} {{executionMeasurement.unit}}</span>
-        </li>
-    </ul>
+    <a ng-if="page > 0" ng-href="#/benchmark/{{benchmark.name}}?page={{ (1 * page - 1) | number:0 }}&size={{pageSize}}"><< Newer</a>
+    <a ng-if="benchmarkRuns.length > 0" ng-href="#/benchmark/{{benchmark.name}}?page={{ (1 * page + 1) | number:0 }}&size={{pageSize}}">Older >></a>
 </div>

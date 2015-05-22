@@ -1,0 +1,18 @@
+<div>
+    <h1>Benchmark: {{benchmarkRun.name}}</h1>
+
+    <h2>Measurements:</h2>
+    <ul>
+        <li ng-repeat="measurement in benchmarkRun.measurements">
+            <strong>{{measurement.name}}</strong> {{measurement.value}} {{measurement.unit}}
+        </li>
+    </ul>
+
+    <h2>Executions:</h2>
+    <ul>
+        <li ng-repeat="execution in benchmarkRun.executions">
+            <strong>{{execution.sequenceId}}</strong>
+            <span ng-repeat="executionMeasurement in execution.measurements">| {{executionMeasurement.name}} {{executionMeasurement.value}} {{executionMeasurement.unit}}</span>
+        </li>
+    </ul>
+</div>

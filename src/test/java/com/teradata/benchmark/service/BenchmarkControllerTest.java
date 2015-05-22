@@ -3,10 +3,12 @@
  */
 package com.teradata.benchmark.service;
 
-import com.teradata.benchmark.service.model.Benchmark;
-import com.teradata.benchmark.service.model.Execution;
-import com.teradata.benchmark.service.repo.BenchmarkRepo;
+import com.teradata.benchmark.service.category.IntegrationTest;
+import com.teradata.benchmark.service.model.BenchmarkRun;
+import com.teradata.benchmark.service.model.BenchmarkRunExecution;
+import com.teradata.benchmark.service.repo.BenchmarkRunRepo;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.teradata.benchmark.service.model.MeasurementUnit.BYTES;
@@ -21,12 +23,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Category(IntegrationTest.class)
 public class BenchmarkControllerTest
         extends IntegrationTestBase
 {
 
     @Autowired
-    private BenchmarkRepo benchmarkRepo;
+    private BenchmarkRunRepo benchmarkRunRepo;
 
     @Test
     public void benchmarkStartEndHappyPath()
@@ -92,18 +95,18 @@ public class BenchmarkControllerTest
 
         // assert database state
         withinTransaction(() -> {
-            Benchmark benchmark = benchmarkRepo.findByNameAndSequenceId(benchmarkName, benchmarkSequenceId);
-            assertThat(benchmark).isNotNull();
-            assertThat(benchmark.getId()).isGreaterThan(0);
-            assertThat(benchmark.getName()).isEqualTo(benchmarkName);
-            assertThat(benchmark.getSequenceId()).isEqualTo(benchmarkSequenceId);
-            assertThat(benchmark.getMeasurements())
+            BenchmarkRun benchmarkRun = benchmarkRunRepo.findByNameAndSequenceId(benchmarkName, benchmarkSequenceId);
+            assertThat(benchmarkRun).isNotNull();
+            assertThat(benchmarkRun.getId()).isGreaterThan(0);
+            assertThat(benchmarkRun.getName()).isEqualTo(benchmarkName);
+            assertThat(benchmarkRun.getSequenceId()).isEqualTo(benchmarkSequenceId);
+            assertThat(benchmarkRun.getMeasurements())
                     .hasSize(2)
                     .extracting("unit").contains(BYTES, MILLISECONDS);
-            assertThat(benchmark.getExecutions())
+            assertThat(benchmarkRun.getExecutions())
                     .hasSize(1);
 
-            Execution execution = benchmark.getExecutions().iterator().next();
+            BenchmarkRunExecution execution = benchmarkRun.getExecutions().iterator().next();
             assertThat(execution.getId()).isGreaterThan(0);
             assertThat(execution.getSequenceId()).isEqualTo(executionSequenceId);
             assertThat(execution.getMeasurements())

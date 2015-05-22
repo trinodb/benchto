@@ -4,9 +4,10 @@
 package com.teradata.benchmark.service;
 
 import com.teradata.benchmark.service.model.Benchmark;
-import com.teradata.benchmark.service.model.Execution;
+import com.teradata.benchmark.service.model.BenchmarkRun;
+import com.teradata.benchmark.service.model.BenchmarkRunExecution;
 import com.teradata.benchmark.service.model.Measurement;
-import com.teradata.benchmark.service.repo.BenchmarkRepo;
+import com.teradata.benchmark.service.repo.BenchmarkRunRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,57 +23,57 @@ public class BenchmarkService
     private static final Logger LOG = LoggerFactory.getLogger(BenchmarkService.class);
 
     @Autowired
-    private BenchmarkRepo benchmarkRepo;
+    private BenchmarkRunRepo benchmarkRunRepo;
 
     @Transactional
-    public void startBenchmark(String benchmarkName, String sequenceId)
+    public void startBenchmarkRun(String benchmarkName, String sequenceId)
     {
-        Benchmark benchmark = benchmarkRepo.findByNameAndSequenceId(benchmarkName, sequenceId);
-        if (benchmark == null) {
-            benchmark = new Benchmark();
-            benchmark.setName(benchmarkName);
-            benchmark.setSequenceId(sequenceId);
-            benchmarkRepo.save(benchmark);
+        BenchmarkRun benchmarkRun = benchmarkRunRepo.findByNameAndSequenceId(benchmarkName, sequenceId);
+        if (benchmarkRun == null) {
+            benchmarkRun = new BenchmarkRun();
+            benchmarkRun.setName(benchmarkName);
+            benchmarkRun.setSequenceId(sequenceId);
+            benchmarkRunRepo.save(benchmarkRun);
         }
-        LOG.debug("Starting benchmark - {}", benchmark);
+        LOG.debug("Starting benchmark - {}", benchmarkRun);
     }
 
     @Transactional
-    public void finishBenchmark(String benchmarkName, String sequenceId, List<Measurement> measurements)
+    public void finishBenchmarkRun(String benchmarkName, String sequenceId, List<Measurement> measurements)
     {
-        Benchmark benchmark = findBenchmark(benchmarkName, sequenceId);
+        BenchmarkRun benchmarkRun = findBenchmarkRun(benchmarkName, sequenceId);
         for (Measurement measurement : measurements) {
-            benchmark.getMeasurements().add(measurement);
+            benchmarkRun.getMeasurements().add(measurement);
         }
-        LOG.debug("Finishing benchmark - {}", benchmark);
+        LOG.debug("Finishing benchmark - {}", benchmarkRun);
     }
 
     @Transactional
     public void startExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId)
     {
-        Benchmark benchmark = findBenchmark(benchmarkName, benchmarkSequenceId);
+        BenchmarkRun benchmarkRun = findBenchmarkRun(benchmarkName, benchmarkSequenceId);
 
-        boolean executionPresent = benchmark.getExecutions().stream()
+        boolean executionPresent = benchmarkRun.getExecutions().stream()
                 .filter(e -> executionSequenceId.equals(e.getSequenceId()))
                 .findAny()
                 .isPresent();
         if (executionPresent) {
-            LOG.debug("Execution ({}) already present for benchmark ({})", executionSequenceId, benchmark);
+            LOG.debug("Execution ({}) already present for benchmark ({})", executionSequenceId, benchmarkRun);
             return;
         }
 
-        LOG.debug("Starting new execution ({}) for benchmark ({})", executionSequenceId, benchmark);
-        Execution execution = new Execution();
+        LOG.debug("Starting new execution ({}) for benchmark ({})", executionSequenceId, benchmarkRun);
+        BenchmarkRunExecution execution = new BenchmarkRunExecution();
         execution.setSequenceId(executionSequenceId);
-        execution.setBenchmark(benchmark);
-        benchmark.getExecutions().add(execution);
+        execution.setBenchmarkRun(benchmarkRun);
+        benchmarkRun.getExecutions().add(execution);
     }
 
     @Transactional
     public void finishExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, List<Measurement> measurements)
     {
-        Benchmark benchmark = findBenchmark(benchmarkName, benchmarkSequenceId);
-        Execution execution = benchmark.getExecutions().stream()
+        BenchmarkRun benchmarkRun = findBenchmarkRun(benchmarkName, benchmarkSequenceId);
+        BenchmarkRunExecution execution = benchmarkRun.getExecutions().stream()
                 .filter(e -> executionSequenceId.equals(e.getSequenceId()))
                 .findAny().get();
 
@@ -80,24 +81,25 @@ public class BenchmarkService
     }
 
     @Transactional(readOnly = true)
-    public Benchmark findBenchmark(String benchmarkName, String sequenceId)
+    public BenchmarkRun findBenchmarkRun(String benchmarkName, String sequenceId)
     {
-        Benchmark benchmark = benchmarkRepo.findByNameAndSequenceId(benchmarkName, sequenceId);
-        if (benchmark == null) {
+        BenchmarkRun benchmarkRun = benchmarkRunRepo.findByNameAndSequenceId(benchmarkName, sequenceId);
+        if (benchmarkRun == null) {
             throw new IllegalArgumentException("Could not find benchmark " + benchmarkName + " - " + sequenceId);
         }
-        return benchmark;
+        return benchmarkRun;
     }
 
     @Transactional(readOnly = true)
-    public List<Benchmark> findBenchmarks(String benchmarkName, Pageable pageable)
+    public Benchmark findBenchmark(String benchmarkName, Pageable pageable)
     {
-        return benchmarkRepo.findByName(benchmarkName, pageable);
+        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByName(benchmarkName, pageable);
+        return new Benchmark(benchmarkName, benchmarkRuns);
     }
 
     @Transactional(readOnly = true)
-    public List<Benchmark> findLatest(Pageable pageable)
+    public List<BenchmarkRun> findLatest(Pageable pageable)
     {
-        return benchmarkRepo.findLatest(pageable.getPageNumber(), pageable.getPageSize());
+        return benchmarkRunRepo.findLatest(pageable.getPageNumber(), pageable.getPageSize());
     }
 }

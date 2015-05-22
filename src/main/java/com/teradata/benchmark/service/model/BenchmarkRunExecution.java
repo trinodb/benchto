@@ -21,9 +21,11 @@ import javax.persistence.Table;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 @Entity
 @Table(name = "executions")
-public class Execution
+public class BenchmarkRunExecution
 {
 
     @Id
@@ -41,7 +43,7 @@ public class Execution
 
     @JsonIgnore
     @ManyToOne
-    private Benchmark benchmark;
+    private BenchmarkRun benchmarkRun;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "execution_measurements",
@@ -79,14 +81,14 @@ public class Execution
         this.measurements = measurements;
     }
 
-    public Benchmark getBenchmark()
+    public BenchmarkRun getBenchmarkRun()
     {
-        return benchmark;
+        return benchmarkRun;
     }
 
-    public void setBenchmark(Benchmark benchmark)
+    public void setBenchmarkRun(BenchmarkRun benchmarkRun)
     {
-        this.benchmark = benchmark;
+        this.benchmarkRun = benchmarkRun;
     }
 
     @Override
@@ -98,7 +100,7 @@ public class Execution
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Execution execution = (Execution) o;
+        BenchmarkRunExecution execution = (BenchmarkRunExecution) o;
         return Objects.equals(sequenceId, execution.sequenceId);
     }
 
@@ -106,5 +108,15 @@ public class Execution
     public int hashCode()
     {
         return Objects.hash(sequenceId);
+    }
+
+    @Override
+    public String toString()
+    {
+        return toStringHelper(this)
+                .add("id", id)
+                .add("sequenceId", sequenceId)
+                .add("measurements", measurements)
+                .toString();
     }
 }
