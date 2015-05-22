@@ -10,7 +10,6 @@ import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.BenchmarkQuery;
 import com.teradata.benchmark.driver.BenchmarkQueryResult;
 import com.teradata.benchmark.driver.sql.QueryExecution;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,12 +55,7 @@ public class BenchmarkServiceBenchmarkExecutionListener
     @Override
     public void benchmarkFinished(BenchmarkQueryResult benchmarkQueryResult)
     {
-        DescriptiveStatistics durationStatistics = benchmarkQueryResult.getDurationStatistics();
-        List<Measurement> measurements = ImmutableList.of(
-                new Measurement("durationMean", "MILLISECONDS", durationStatistics.getMean()),
-                new Measurement("durationMin", "MILLISECONDS", durationStatistics.getMin()),
-                new Measurement("durationMax", "MILLISECONDS", durationStatistics.getMax()),
-                new Measurement("durationStdDev", "MILLISECONDS", durationStatistics.getStandardDeviation()));
+        List<Measurement> measurements = ImmutableList.of();
 
         restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", measurements, Object.class,
                 ImmutableMap.of(

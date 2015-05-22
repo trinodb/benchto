@@ -45,7 +45,7 @@ public class BenchmarkDriver
         LOG.info("Loaded {} benchmark queries", benchmarkQueries.size());
 
         List<BenchmarkQueryResult> benchmarkResults = executeSuite(benchmarkQueries);
-        suiteFinished(benchmarkResults);
+        reportBenchmarkFinished(benchmarkResults);
 
         return !benchmarkResults.stream()
                 .filter(result -> !result.isSuccessful())
@@ -63,7 +63,7 @@ public class BenchmarkDriver
                 executeQuery(benchmarkQuery, run, benchmarkQueryResult);
             }
 
-            suiteFinished(benchmarkQueryResult);
+            reportBenchmarkFinished(benchmarkQueryResult);
             benchmarkResults.add(benchmarkQueryResult);
         }
         return Collections.unmodifiableList(benchmarkResults);
@@ -86,7 +86,7 @@ public class BenchmarkDriver
         }
     }
 
-    private void suiteFinished(BenchmarkQueryResult result)
+    private void reportBenchmarkFinished(BenchmarkQueryResult result)
     {
         for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
             reporter.benchmarkFinished(result);
@@ -107,7 +107,7 @@ public class BenchmarkDriver
         }
     }
 
-    private void suiteFinished(List<BenchmarkQueryResult> benchmarkResults)
+    private void reportBenchmarkFinished(List<BenchmarkQueryResult> benchmarkResults)
     {
         for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
             reporter.suiteFinished(benchmarkResults);
