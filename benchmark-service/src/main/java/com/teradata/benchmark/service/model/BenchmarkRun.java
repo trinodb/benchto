@@ -6,6 +6,7 @@ package com.teradata.benchmark.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -20,7 +21,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.persistence.Version;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -51,6 +54,10 @@ public class BenchmarkRun
     @Column(name = "sequence_id")
     private String sequenceId;
 
+    @Column(name = "version")
+    @Version
+    private Long version;
+
     @OneToMany(mappedBy = "benchmarkRun", cascade = CascadeType.ALL)
     private Set<BenchmarkRunExecution> executions = newHashSet();
 
@@ -59,6 +66,14 @@ public class BenchmarkRun
             joinColumns = @JoinColumn(name = "benchmark_run_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "measurement_id", referencedColumnName = "id"))
     private Set<Measurement> measurements = newHashSet();
+
+    @Column(name = "started")
+    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
+    private ZonedDateTime started;
+
+    @Column(name = "ended")
+    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
+    private ZonedDateTime ended;
 
     @Transient
     private Map<String, AggregatedMeasurement> aggregatedMeasurements;
@@ -93,6 +108,16 @@ public class BenchmarkRun
         this.sequenceId = sequenceId;
     }
 
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    public void setVersion(Long version)
+    {
+        this.version = version;
+    }
+
     public Set<BenchmarkRunExecution> getExecutions()
     {
         return executions;
@@ -101,6 +126,26 @@ public class BenchmarkRun
     public Set<Measurement> getMeasurements()
     {
         return measurements;
+    }
+
+    public ZonedDateTime getStarted()
+    {
+        return started;
+    }
+
+    public void setStarted(ZonedDateTime started)
+    {
+        this.started = started;
+    }
+
+    public ZonedDateTime getEnded()
+    {
+        return ended;
+    }
+
+    public void setEnded(ZonedDateTime ended)
+    {
+        this.ended = ended;
     }
 
     public Map<String, AggregatedMeasurement> getAggregatedMeasurements()
@@ -144,9 +189,12 @@ public class BenchmarkRun
         return toStringHelper(this)
                 .add("id", id)
                 .add("name", name)
+                .add("version", version)
                 .add("sequenceId", sequenceId)
                 .add("executions", executions)
                 .add("measurements", measurements)
+                .add("started", started)
+                .add("ended", ended)
                 .toString();
     }
 }

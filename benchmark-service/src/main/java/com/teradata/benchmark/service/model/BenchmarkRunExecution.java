@@ -4,6 +4,7 @@
 package com.teradata.benchmark.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,7 +18,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Version;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Set;
 
@@ -41,6 +44,10 @@ public class BenchmarkRunExecution
     @Column(name = "sequence_id")
     private String sequenceId;
 
+    @Column(name = "version")
+    @Version
+    private Long version;
+
     @JsonIgnore
     @ManyToOne
     private BenchmarkRun benchmarkRun;
@@ -50,6 +57,14 @@ public class BenchmarkRunExecution
             joinColumns = @JoinColumn(name = "execution_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "measurement_id", referencedColumnName = "id"))
     private Set<Measurement> measurements;
+
+    @Column(name = "started")
+    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
+    private ZonedDateTime started;
+
+    @Column(name = "ended")
+    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
+    private ZonedDateTime ended;
 
     public long getId()
     {
@@ -71,6 +86,16 @@ public class BenchmarkRunExecution
         this.sequenceId = sequenceId;
     }
 
+    public Long getVersion()
+    {
+        return version;
+    }
+
+    public void setVersion(Long version)
+    {
+        this.version = version;
+    }
+
     public Set<Measurement> getMeasurements()
     {
         return measurements;
@@ -79,6 +104,26 @@ public class BenchmarkRunExecution
     public void setMeasurements(Set<Measurement> measurements)
     {
         this.measurements = measurements;
+    }
+
+    public ZonedDateTime getStarted()
+    {
+        return started;
+    }
+
+    public void setStarted(ZonedDateTime started)
+    {
+        this.started = started;
+    }
+
+    public ZonedDateTime getEnded()
+    {
+        return ended;
+    }
+
+    public void setEnded(ZonedDateTime ended)
+    {
+        this.ended = ended;
     }
 
     public BenchmarkRun getBenchmarkRun()
@@ -116,7 +161,10 @@ public class BenchmarkRunExecution
         return toStringHelper(this)
                 .add("id", id)
                 .add("sequenceId", sequenceId)
+                .add("version", version)
                 .add("measurements", measurements)
+                .add("started", started)
+                .add("ended", ended)
                 .toString();
     }
 }

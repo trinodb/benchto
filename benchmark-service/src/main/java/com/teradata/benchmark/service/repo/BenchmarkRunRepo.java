@@ -7,9 +7,13 @@ import com.teradata.benchmark.service.model.BenchmarkRun;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Temporal;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
+
+import static javax.persistence.TemporalType.TIMESTAMP;
 
 @Repository
 public interface BenchmarkRunRepo
@@ -20,11 +24,26 @@ public interface BenchmarkRunRepo
     List<BenchmarkRun> findByName(String benchmarkName, Pageable pageable);
 
     @Query(value = "" +
+            "SELECT * " +
+            "FROM benchmark_runs " +
+            "WHERE name = ?1 AND started BETWEEN ?2 AND ?3 " +
+            "ORDER BY started " +
+            "LIMIT ?5 OFFSET ?4",
+            nativeQuery = true)
+    List<BenchmarkRun> findByNameAndStartedInRange(String benchmarkName,
+            @Temporal(TIMESTAMP) Date from,
+            @Temporal(TIMESTAMP) Date to,
+            int page, int size);
+
+    @Query(value = "" +
             "WITH summary AS ( " +
             "  SELECT " +
             "    b.id, " +
             "    b.name, " +
             "    b.sequence_id, " +
+            "    b.version, " +
+            "    b.started, " +
+            "    b.ended, " +
             "    rank() " +
             "    OVER (PARTITION BY b.name " +
             "      ORDER BY b.sequence_id DESC) AS rk " +

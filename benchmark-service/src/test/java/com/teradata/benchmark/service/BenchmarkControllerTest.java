@@ -11,8 +11,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 import static com.teradata.benchmark.service.model.MeasurementUnit.BYTES;
 import static com.teradata.benchmark.service.model.MeasurementUnit.MILLISECONDS;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -38,6 +42,7 @@ public class BenchmarkControllerTest
         String benchmarkName = "benchmarkName";
         String benchmarkSequenceId = "benchmarkSequenceId";
         String executionSequenceId = "executionSequenceId";
+        ZonedDateTime testStart = nowInUtc();
 
         // start benchmark
         mvc.perform(post("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", benchmarkName, benchmarkSequenceId))
@@ -78,20 +83,30 @@ public class BenchmarkControllerTest
                 .content("[{\"name\": \"meanDuration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"sumBytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]"))
                 .andExpect(status().isOk());
 
-        // get benchmark - measurements, single execution with measurements
-        mvc.perform(get("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}", benchmarkName, benchmarkSequenceId))
+        ZonedDateTime testEnd = nowInUtc();
+
+        // get benchmark runs in given time range - measurements, single execution with measurements
+        mvc.perform(get("/v1/benchmark/{benchmarkName}?from={from}&to={to}",
+                benchmarkName, testStart.format(ISO_DATE_TIME), nowInUtc().format(ISO_DATE_TIME)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is(benchmarkName)))
-                .andExpect(jsonPath("$.sequenceId", is(benchmarkSequenceId)))
-                .andExpect(jsonPath("$.measurements", hasSize(2)))
-                .andExpect(jsonPath("$.measurements[*].name", containsInAnyOrder("meanDuration", "sumBytes")))
-                .andExpect(jsonPath("$.measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
-                .andExpect(jsonPath("$.measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")))
-                .andExpect(jsonPath("$.executions", hasSize(1)))
-                .andExpect(jsonPath("$.executions[0].sequenceId", is(executionSequenceId)))
-                .andExpect(jsonPath("$.executions[0].measurements[*].name", containsInAnyOrder("duration", "bytes")))
-                .andExpect(jsonPath("$.executions[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
-                .andExpect(jsonPath("$.executions[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")));
+                .andExpect(jsonPath("$.runs[0].sequenceId", is(benchmarkSequenceId)))
+                .andExpect(jsonPath("$.runs[0].measurements", hasSize(2)))
+                .andExpect(jsonPath("$.runs[0].measurements[*].name", containsInAnyOrder("meanDuration", "sumBytes")))
+                .andExpect(jsonPath("$.runs[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
+                .andExpect(jsonPath("$.runs[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")))
+                .andExpect(jsonPath("$.runs[0].executions", hasSize(1)))
+                .andExpect(jsonPath("$.runs[0].executions[0].sequenceId", is(executionSequenceId)))
+                .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].name", containsInAnyOrder("duration", "bytes")))
+                .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
+                .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")));
+
+        // check no benchmarks stored before starting test
+        mvc.perform(get("/v1/benchmark/{benchmarkName}?from={from}&to={to}",
+                benchmarkName, testStart.minusHours(1).format(ISO_DATE_TIME), testStart.format(ISO_DATE_TIME)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(benchmarkName)))
+                .andExpect(jsonPath("$.runs", hasSize(0)));
 
         // assert database state
         withinTransaction(() -> {
@@ -103,6 +118,12 @@ public class BenchmarkControllerTest
             assertThat(benchmarkRun.getMeasurements())
                     .hasSize(2)
                     .extracting("unit").contains(BYTES, MILLISECONDS);
+            assertThat(benchmarkRun.getStarted())
+                    .isAfter(testStart)
+                    .isBefore(testEnd);
+            assertThat(benchmarkRun.getEnded())
+                    .isAfter(testStart)
+                    .isBefore(testEnd);
             assertThat(benchmarkRun.getExecutions())
                     .hasSize(1);
 
@@ -112,6 +133,17 @@ public class BenchmarkControllerTest
             assertThat(execution.getMeasurements())
                     .hasSize(2)
                     .extracting("name").contains("duration", "bytes");
+            assertThat(execution.getStarted())
+                    .isAfter(testStart)
+                    .isBefore(testEnd);
+            assertThat(execution.getEnded())
+                    .isAfter(testStart)
+                    .isBefore(testEnd);
         });
+    }
+
+    private ZonedDateTime nowInUtc()
+    {
+        return ZonedDateTime.now(ZoneId.of("UTC"));
     }
 }

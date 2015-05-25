@@ -6,6 +6,7 @@
         <li ng-repeat="benchmarkRun in latestBenchmarkRuns">
             <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong> -
             latest execution: <a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>
+            - started: {{benchmarkRun.started}} ; ended: {{benchmarkRun.ended}}
         </li>
     </ul>
 </div>

@@ -1,6 +1,14 @@
 <div>
     <h1>Benchmark: {{benchmarkRun.name}}</h1>
 
+    <p>
+        Started: {{benchmarkRun.started}}
+    </p>
+
+    <p>
+        Ended: {{benchmarkRun.ended}}
+    </p>
+
     <h2>Measurements:</h2>
     <ul>
         <li ng-repeat="measurement in benchmarkRun.measurements">
