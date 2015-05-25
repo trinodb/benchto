@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>com.teradata.benchmark</groupId>
-        <artifactId>benchmark</artifactId>
+        <artifactId>benchmark-service</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
