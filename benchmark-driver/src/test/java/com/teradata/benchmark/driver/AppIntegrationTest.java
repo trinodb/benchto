@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -80,7 +81,7 @@ public class AppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/finish"),
                 method(HttpMethod.POST),
-                jsonPath("$.[*].name", containsInAnyOrder("durationMean", "durationMin", "durationMax", "durationStdDev"))
+                jsonPath("$", hasSize(0))
 
         )).andRespond(withSuccess());
 
