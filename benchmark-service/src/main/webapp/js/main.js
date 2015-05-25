@@ -4,7 +4,7 @@
 (function () {
     'use strict';
 
-    angular.module('benchmarkServiceUI', ['ngRoute', 'benchmarkServiceUI.controllers'])
+    angular.module('benchmarkServiceUI', ['ngRoute', 'benchmarkServiceUI.controllers', 'chart.js'])
         .config(['$routeProvider', function ($routeProvider) {
             $routeProvider
                 .when('/', {

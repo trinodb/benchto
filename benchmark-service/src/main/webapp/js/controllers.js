@@ -21,6 +21,26 @@
             BenchmarkService.loadBenchmark($routeParams.benchmarkName, $scope.page, $scope.pageSize)
                 .then(function (benchmark) {
                     $scope.benchmark = benchmark;
+
+                    var measurementKeys = _.uniq(_.flatten(_.map(benchmark.runs,
+                      function(benchmarkRun) {
+                        return _.allKeys(benchmarkRun.aggregatedMeasurements);
+                      }
+                    )));
+
+                    var dataFor = function(measurementKey) {
+                       return [_.map(benchmark.runs, function(benchmarkRun) {
+                          return benchmarkRun.aggregatedMeasurements[measurementKey].mean;
+                       })]
+                    }
+
+                    $scope.measurementGraphsData = _.map(measurementKeys, function(measurementKey) {
+                       return {
+                         data: dataFor(measurementKey),
+                         labels: _.pluck(benchmark.runs, 'sequenceId'),
+                         series: [measurementKey]
+                       }
+                    });
                 });
         }])
         .controller('BenchmarkCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {

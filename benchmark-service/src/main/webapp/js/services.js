@@ -38,6 +38,7 @@
                             benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
                             benchmarkRun.measurements = _.sortBy(benchmarkRun.measurements, 'name');
                         });
+                        benchmark.runs.reverse();
                         deferredBenchmark.resolve(benchmark);
                     }, function (reason) {
                         deferredBenchmark.reject(reason);

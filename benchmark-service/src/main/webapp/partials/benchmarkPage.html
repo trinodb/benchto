@@ -9,4 +9,14 @@
     </ul>
     <a ng-if="page > 0" ng-href="#/benchmark/{{benchmark.name}}?page={{ (1 * page - 1) | number:0 }}&size={{pageSize}}"><< Newer</a>
     <a ng-if="benchmarkRuns.length > 0" ng-href="#/benchmark/{{benchmark.name}}?page={{ (1 * page + 1) | number:0 }}&size={{pageSize}}">Older >></a>
+
+    <div ng-repeat="graphData in measurementGraphsData" class="measurementGraph">
+        <canvas id="line" class="chart chart-line" data="graphData.data"
+                labels="graphData.labels" legend="true" series="graphData.series"
+                click="onClick">
+        </canvas>
+    </div>
+
+
+
 </div>
