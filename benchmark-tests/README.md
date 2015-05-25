@@ -16,7 +16,7 @@ More information about configuration properties can be found in [https://github-
 ## Running benchmarks
 
 ```
-$ mvn test
+$ mvn test -Pbenchmark
 ...
 [INFO] --- exec-maven-plugin:1.4.0:java (exec-benchmark) @ benchmark-tests ---
 ...
