@@ -1,12 +1,36 @@
-<div>
-    <h1>Benchmark service</h1>
+<div class="row">
+    <div class="col-sm-12">
+        <h2 class="sub-header">Benchmarks</h2>
 
-    <h2>Benchmarks</h2>
-    <ul>
-        <li ng-repeat="benchmarkRun in latestBenchmarkRuns">
-            <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong> -
-            latest execution: <a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>
-            - started: {{benchmarkRun.started}} ; ended: {{benchmarkRun.ended}}
-        </li>
-    </ul>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>Latest execution</td>
+                    <td>Last started</td>
+                    <td>Last ended</td>
+                </tr>
+                </thead>
+                <tr ng-repeat="benchmarkRun in latestBenchmarkRuns">
+                    <td><strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong></td>
+                    <td><a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
+                    <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
+                    <td>{{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}</td>
+                </tr>
+            </table>
+            <div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a ng-if="page > 0" role="button" class="btn btn-primary"
+                       ng-href="#/?page={{ (1 * page - 1) | number:0 }}&size={{pageSize}}">
+                        << Previous
+                    </a>
+                    <a ng-if="latestBenchmarkRuns.length > 0" role="button" class="btn btn-primary"
+                       ng-href="#/?page={{ (1 * page + 1) | number:0 }}&size={{pageSize}}">
+                        Next >>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

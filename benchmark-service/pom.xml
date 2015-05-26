@@ -115,7 +115,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${dep.spring.boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -149,5 +148,14 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/webapp</directory>
+                <targetPath>static</targetPath>
+            </resource>
+        </resources>
     </build>
 </project>

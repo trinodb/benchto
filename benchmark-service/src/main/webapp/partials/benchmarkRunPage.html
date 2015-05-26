@@ -1,26 +1,95 @@
-<div>
-    <h1>Benchmark: {{benchmarkRun.name}}</h1>
+<div class="row">
+    <ol class="breadcrumb">
+        <li><a href="#/">Home</a></li>
+        <li><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></li>
+        <li class="active">{{benchmarkRun.sequenceId}}</li>
+    </ol>
 
-    <p>
-        Started: {{benchmarkRun.started}}
-    </p>
+    <div class="col-sm-12">
+        <h2 class="sub-header">Benchmark: {{benchmarkRun.name}}</h2>
 
-    <p>
-        Ended: {{benchmarkRun.ended}}
-    </p>
 
-    <h2>Measurements:</h2>
-    <ul>
-        <li ng-repeat="measurement in benchmarkRun.measurements">
-            <strong>{{measurement.name}}</strong> {{measurement.value}} {{measurement.unit}}
-        </li>
-    </ul>
+        <ul>
+            <li>
+                <strong>Started:</strong> {{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}
+            </li>
+            <li>
+                <strong>Ended:</strong> {{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}
+            </li>
+            <li>
+                <strong>Monitoring:</strong>
+                <a target="_blank"
+                   ng-href="http://10.25.17.45:7180/cmf/views/view?viewName=benchmark-tests-dashboard#currentMode=false&startTime={{benchmarkRun.started}}&endTime={{benchmarkRun.ended}}&markerTime={{benchmarkRun.started}}&firstTime={{benchmarkRun.started}}&lastTime={{benchmarkRun.ended}}">
+                    Dashboard URL
+                </a>
+            </li>
+        </ul>
 
-    <h2>Executions:</h2>
-    <ul>
-        <li ng-repeat="execution in benchmarkRun.executions">
-            <strong>{{execution.sequenceId}}</strong>
-            <span ng-repeat="executionMeasurement in execution.measurements">| {{executionMeasurement.name}} {{executionMeasurement.value}} {{executionMeasurement.unit}}</span>
-        </li>
-    </ul>
+        <div ng-if="benchmarkRun.measurements > 0">
+            <h3 class="sub-header">Measurements</h3>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Value</td>
+                        <td>Unit</td>
+                    </tr>
+                    </thead>
+                    <tr ng-repeat="measurement in benchmarkRun.measurements">
+                        <td>{{measurement.name}}</td>
+                        <td>{{measurement.value}}</td>
+                        <td>{{measurement.unit}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <h3 class="sub-header">Aggregated measurements</h3>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>Mean</td>
+                    <td>Min</td>
+                    <td>Max</td>
+                    <td>StdDev</td>
+                    <td>Unit</td>
+                </tr>
+                </thead>
+                <tr ng-repeat="(name, aggregatedMeasurement) in benchmarkRun.aggregatedMeasurements">
+                    <td>{{name}}</td>
+                    <td>{{aggregatedMeasurement.mean}}</td>
+                    <td>{{aggregatedMeasurement.min}}</td>
+                    <td>{{aggregatedMeasurement.max}}</td>
+                    <td>{{aggregatedMeasurement.stdDev}}</td>
+                    <td>{{measurementUnit(name)}}</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="sub-header">Executions</h3>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <td>SequenceId</td>
+                    <td>Value</td>
+                </tr>
+                </thead>
+                <tr ng-repeat="execution in benchmarkRun.executions">
+                    <td>{{execution.sequenceId}}</td>
+                    <td>
+                        <span ng-repeat="executionMeasurement in execution.measurements">
+                            <strong>{{executionMeasurement.name}}:</strong> {{executionMeasurement.value}} {{executionMeasurement.unit}} |
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </div>

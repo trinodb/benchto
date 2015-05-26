@@ -6,6 +6,15 @@
 
     angular.module('benchmarkServiceUI.service', [])
         .factory('BenchmarkService', ['$http', '$q', function ($http, $q) {
+            var postProcessBenchmarkRun = function (benchmarkRun) {
+                benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
+                benchmarkRun.measurements = _.sortBy(benchmarkRun.measurements, 'name');
+
+                // convert to angular date filter consumable format
+                benchmarkRun.started = benchmarkRun.started * 1000;
+                benchmarkRun.ended = benchmarkRun.ended * 1000;
+            };
+
             return {
                 loadBenchmarkRun: function (benchmarkName, benchmarkSequenceId) {
                     var deferredBenchmark = $q.defer();
@@ -14,8 +23,7 @@
                         url: '/v1/benchmark/' + benchmarkName + '/' + benchmarkSequenceId
                     }).then(function (response) {
                         var benchmarkRun = response.data;
-                        benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
-                        benchmarkRun.measurements = _.sortBy(benchmarkRun.measurements, 'name');
+                        postProcessBenchmarkRun(benchmarkRun);
                         deferredBenchmark.resolve(benchmarkRun);
                     }, function (reason) {
                         deferredBenchmark.reject(reason);
@@ -35,8 +43,7 @@
                     }).then(function (response) {
                         var benchmark = response.data;
                         benchmark.runs.forEach(function (benchmarkRun) {
-                            benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
-                            benchmarkRun.measurements = _.sortBy(benchmarkRun.measurements, 'name');
+                            postProcessBenchmarkRun(benchmarkRun);
                         });
                         benchmark.runs.reverse();
                         deferredBenchmark.resolve(benchmark);
@@ -57,10 +64,9 @@
                     }).then(function (response) {
                         var benchmarkRuns = response.data;
                         benchmarkRuns.forEach(function (benchmarkRun) {
-                            benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
-                            benchmarkRun.measurements = _.sortBy(benchmarkRun.measurements, 'name');
-                            deferredBenchmark.resolve(benchmarkRuns);
+                            postProcessBenchmarkRun(benchmarkRun);
                         });
+                        deferredBenchmark.resolve(benchmarkRuns);
                     }, function (reason) {
                         deferredBenchmark.reject(reason);
                     });

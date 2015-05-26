@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.service.model;
 
+import com.google.common.collect.Iterables;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.Collection;
@@ -12,7 +13,7 @@ public class AggregatedMeasurement
     private final MeasurementUnit unit;
     private final double min, max, mean, stdDev;
 
-    public AggregatedMeasurement(MeasurementUnit unit, double max, double min, double mean, double stdDev)
+    public AggregatedMeasurement(MeasurementUnit unit, double min, double max, double mean, double stdDev)
     {
         this.unit = unit;
         this.stdDev = stdDev;
@@ -23,6 +24,10 @@ public class AggregatedMeasurement
 
     public static AggregatedMeasurement aggregate(MeasurementUnit unit, Collection<Double> values)
     {
+        if (values.size() < 2) {
+            Double value = Iterables.getOnlyElement(values);
+            return new AggregatedMeasurement(unit, value, value, value, 0.0);
+        }
         DescriptiveStatistics statistics = new DescriptiveStatistics(values.stream()
                 .mapToDouble(Double::doubleValue)
                 .toArray());

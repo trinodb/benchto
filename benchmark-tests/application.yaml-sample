@@ -4,3 +4,6 @@ spring:
     username: hdfs
     password: na
     driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+
+benchmark-service:
+  url: http://localhost:8080

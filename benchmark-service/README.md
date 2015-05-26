@@ -24,7 +24,7 @@ $ mvn integration-test
 
 ```
 $ mvn clean package
-$ java -jar target/service-1.0.0-SNAPSHOT.jar 
+$ java -jar target/benchmark-service-*-SNAPSHOT.jar
 
 ------------------------------------------------------------------
 

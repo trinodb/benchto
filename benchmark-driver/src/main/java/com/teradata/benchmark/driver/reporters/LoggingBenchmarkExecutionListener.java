@@ -64,8 +64,9 @@ public class LoggingBenchmarkExecutionListener
         if (!failed.isEmpty()) {
             StringBuilder failedQueriesMessage = new StringBuilder("\nFailed queries:\n");
             failed.stream().forEach(query -> failedQueriesMessage.append(query.getQuery().getName())
-                    .append(" - ")
-                    .append(query.getQuery().getSql()));
+                    .append(" - \n")
+                    .append(query.getQuery().getSql())
+                    .append("\n-----------------------------\n"));
             failedQueriesMessage.append('\n');
             System.err.println(failedQueriesMessage.toString());
         }

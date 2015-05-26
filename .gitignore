@@ -4,3 +4,5 @@ service.iml
 
 .idea/
 target/
+
+deploy.sh
