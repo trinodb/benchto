@@ -58,7 +58,6 @@
         <dependency>
             <groupId>com.facebook.presto</groupId>
             <artifactId>presto-jdbc</artifactId>
-            <!--<scope>provided</scope>-->
         </dependency>
 
         <!-- Test -->
@@ -113,18 +112,11 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>com.facebook.presto</groupId>
-                            <artifactId>presto-jdbc</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.ning.maven.plugins</groupId>
                 <artifactId>duplicate-finder-maven-plugin</artifactId>
+                <version>1.0.8</version>
                 <configuration>
                     <exceptions>
                         <exception>

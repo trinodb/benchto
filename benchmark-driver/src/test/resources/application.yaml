@@ -7,3 +7,6 @@ spring:
 
 benchmark-service:
   url: http://localhost:8080
+
+environment:
+  name: TEST_ENV

@@ -1,3 +1,7 @@
+/*
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ */
+
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
     padding-top: 50px;
@@ -20,7 +24,28 @@ body {
     border: 0;
 }
 
+
+div.table-responsive > table > thead > tr > td {
+    font-weight: bold;
+}
+
 .measurementGraph {
     width: 100%;
     height: 400px;
+}
+
+.execution-status {
+    font-weight: bold;
+}
+
+.execution-status-FAILED {
+    color: #c12e2a;
+}
+
+.execution-status-ENDED {
+    color: #3c763d;
+}
+
+.execution-status-STARTED {
+    color: #269abc;
 }

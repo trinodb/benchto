@@ -6,15 +6,19 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    <td>#</td>
                     <td>Name</td>
                     <td>Latest execution</td>
+                    <td>Latest status</td>
                     <td>Last started</td>
                     <td>Last ended</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in latestBenchmarkRuns">
+                    <td>{{::$index + 1}}</td>
                     <td><strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong></td>
                     <td><a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
+                    <td><span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span></td>
                     <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
                     <td>{{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}</td>
                 </tr>

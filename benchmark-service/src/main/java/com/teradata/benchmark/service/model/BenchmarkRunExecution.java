@@ -7,24 +7,31 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.collect.Maps.newHashMap;
 
 @Entity
 @Table(name = "executions")
@@ -44,9 +51,14 @@ public class BenchmarkRunExecution
     @Column(name = "sequence_id")
     private String sequenceId;
 
+    @JsonIgnore
     @Column(name = "version")
     @Version
     private Long version;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Status status;
 
     @JsonIgnore
     @ManyToOne
@@ -66,6 +78,12 @@ public class BenchmarkRunExecution
     @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime ended;
 
+    @ElementCollection
+    @MapKeyColumn(name = "name")
+    @Column(name = "value")
+    @CollectionTable(name = "execution_attributes", joinColumns = @JoinColumn(name = "execution_id"))
+    private Map<String, String> attributes = newHashMap();
+
     public long getId()
     {
         return id;
@@ -84,6 +102,16 @@ public class BenchmarkRunExecution
     public void setSequenceId(String sequenceId)
     {
         this.sequenceId = sequenceId;
+    }
+
+    public Status getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(Status status)
+    {
+        this.status = status;
     }
 
     public Long getVersion()
@@ -136,6 +164,16 @@ public class BenchmarkRunExecution
         this.benchmarkRun = benchmarkRun;
     }
 
+    public Map<String, String> getAttributes()
+    {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes)
+    {
+        this.attributes = attributes;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -161,6 +199,7 @@ public class BenchmarkRunExecution
         return toStringHelper(this)
                 .add("id", id)
                 .add("sequenceId", sequenceId)
+                .add("status", status)
                 .add("version", version)
                 .add("measurements", measurements)
                 .add("started", started)

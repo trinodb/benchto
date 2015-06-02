@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver.sql;
 
+import com.facebook.presto.jdbc.PrestoResultSet;
 import com.teradata.benchmark.driver.BenchmarkQuery;
 import com.teradata.benchmark.driver.sql.QueryExecution.QueryExecutionBuilder;
 import org.slf4j.Logger;
@@ -39,6 +40,17 @@ public class SqlStatementExecutor
             int rowsCount = 0;
             if (resultSet.next()) {
                 rowsCount++;
+            }
+
+            try {
+                if (resultSet.isWrapperFor(PrestoResultSet.class)) {
+                    PrestoResultSet prestoResultSet = resultSet.unwrap(PrestoResultSet.class);
+                    queryExecutionBuilder.setPrestoQueryId(prestoResultSet.getQueryId());
+                }
+            }
+            catch (AbstractMethodError e) {
+                // this error is caught by the compiler, but some drivers (hsqldb?) sucks
+                LOG.warn("Driver ({}) does not support isWrapperFor/unwrap method", connection.toString());
             }
 
             queryExecutionBuilder.setRowsCount(rowsCount);

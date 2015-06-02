@@ -3,9 +3,9 @@
  */
 package com.teradata.benchmark.driver.reporters;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.BenchmarkQuery;
 import com.teradata.benchmark.driver.BenchmarkQueryResult;
@@ -17,9 +17,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.teradata.benchmark.driver.reporters.BenchmarkServiceBenchmarkExecutionListener.FinishRequest.Status.ENDED;
+import static com.teradata.benchmark.driver.reporters.BenchmarkServiceBenchmarkExecutionListener.FinishRequest.Status.FAILED;
+import static com.teradata.benchmark.driver.reporters.BenchmarkServiceBenchmarkExecutionListener.Measurement.measurement;
+import static com.teradata.benchmark.driver.utils.ExceptionUtils.stackTraceToString;
 
 @Component
 public class BenchmarkServiceBenchmarkExecutionListener
@@ -41,52 +48,64 @@ public class BenchmarkServiceBenchmarkExecutionListener
     public void benchmarkStarted(BenchmarkQuery benchmarkQuery)
     {
         String benchmarkName = benchmarkQuery.getName();
-        String benchmarkSequenceId = benchmarkSequenceId();
+        Map<String, String> requestParams = requestParams(benchmarkName);
 
-        LOG.info("Benchmark URL: {}/#/benchmark/{}/{}", serviceUrl, benchmarkName, benchmarkSequenceId);
+        BenchmarkStartRequest request = new BenchmarkStartRequest();
+        request.environmentName = benchmarkProperties.getEnvironmentName();
+        request.attributes = ImmutableMap.of("sqlStatement", benchmarkQuery.getSql());
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", null, Object.class,
-                ImmutableMap.of(
-                        "serviceUrl", serviceUrl,
-                        "benchmarkName", benchmarkName,
-                        "benchmarkSequenceId", benchmarkSequenceId));
+        LOG.info("Benchmark URL: {}/#/benchmark/{}/{}", serviceUrl, benchmarkName, benchmarkSequenceId());
+
+        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", request, Object.class, requestParams);
     }
 
     @Override
     public void benchmarkFinished(BenchmarkQueryResult benchmarkQueryResult)
     {
-        List<Measurement> measurements = ImmutableList.of();
+        Map<String, String> requestParams = requestParams(benchmarkQueryResult.getQuery().getName());
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", measurements, Object.class,
-                ImmutableMap.of(
-                        "serviceUrl", serviceUrl,
-                        "benchmarkName", benchmarkQueryResult.getQuery().getName(),
-                        "benchmarkSequenceId", benchmarkSequenceId()));
+        FinishRequest request = new FinishRequest();
+        request.status = benchmarkQueryResult.isSuccessful() ? ENDED : FAILED;
+
+        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", request, Object.class, requestParams);
     }
 
     @Override
     public void executionStarted(BenchmarkQuery benchmarkQuery, int run)
     {
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", null, Object.class,
-                ImmutableMap.of(
-                        "serviceUrl", serviceUrl,
-                        "benchmarkName", benchmarkQuery.getName(),
-                        "benchmarkSequenceId", benchmarkSequenceId(),
-                        "executionSequenceId", run));
+        Map<String, String> requestParams = requestParams(benchmarkQuery.getName());
+        requestParams.put("executionSequenceId", executionSequenceId(run));
+
+        ExecutionStartRequest request = new ExecutionStartRequest();
+
+        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, Object.class, requestParams);
     }
 
     @Override
     public void executionFinished(BenchmarkQuery benchmarkQuery, int run, QueryExecution queryExecution)
     {
-        List<Measurement> measurements = ImmutableList.of(
-                new Measurement("duration", "MILLISECONDS", queryExecution.getQueryDuration().toMillis()));
+        Map<String, String> requestParams = requestParams(benchmarkQuery.getName());
+        requestParams.put("executionSequenceId", executionSequenceId(run));
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", measurements, Object.class,
-                ImmutableMap.of(
-                        "serviceUrl", serviceUrl,
-                        "benchmarkName", benchmarkQuery.getName(),
-                        "benchmarkSequenceId", benchmarkSequenceId(),
-                        "executionSequenceId", run));
+        FinishRequest request = new FinishRequest();
+        request.status = queryExecution.isSuccessful() ? ENDED : FAILED;
+        request.measurements = ImmutableList.of(measurement("duration", "MILLISECONDS", queryExecution.getQueryDuration().toMillis()));
+        request.attributes = newHashMap();
+
+        if (queryExecution.getPrestoQueryId().isPresent()) {
+            request.attributes.put("prestoQueryId", queryExecution.getPrestoQueryId().get());
+        }
+
+        if (!queryExecution.isSuccessful()) {
+            request.attributes.put("failureMessage", queryExecution.getFailureCause().getMessage());
+            request.attributes.put("failureStackTrace", stackTraceToString(queryExecution));
+
+            if (queryExecution.getFailureCause() instanceof SQLException) {
+                request.attributes.put("failureSQLErrorCode", "" + ((SQLException) queryExecution.getFailureCause()).getErrorCode());
+            }
+        }
+
+        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, Object.class, requestParams);
     }
 
     @Override
@@ -95,24 +114,69 @@ public class BenchmarkServiceBenchmarkExecutionListener
         // DO NOTHING
     }
 
+    private Map<String, String> requestParams(String benchmarkName)
+    {
+        Map<String, String> params = newHashMap();
+        params.put("serviceUrl", serviceUrl);
+        params.put("benchmarkName", benchmarkName);
+        params.put("benchmarkSequenceId", benchmarkSequenceId());
+        return params;
+    }
+
     private String benchmarkSequenceId()
     {
         return benchmarkProperties.getExecutionSequenceId();
+    }
+
+    private String executionSequenceId(int run)
+    {
+        return "" + run;
+    }
+
+    @SuppressWarnings("unused")
+    @JsonAutoDetect(fieldVisibility = ANY)
+    public static class BenchmarkStartRequest
+    {
+        private String environmentName;
+        private Map<String, String> attributes;
+    }
+
+    @SuppressWarnings("unused")
+    @JsonAutoDetect(fieldVisibility = ANY)
+    public static class ExecutionStartRequest
+    {
+        private Map<String, String> attributes;
+    }
+
+    @SuppressWarnings("unused")
+    @JsonAutoDetect(fieldVisibility = ANY)
+    public static class FinishRequest
+    {
+        private Status status;
+        private List<Measurement> measurements;
+        private Map<String, String> attributes;
+
+        public enum Status
+        {
+            STARTED, ENDED, FAILED
+        }
     }
 
     @SuppressWarnings("unused")
     @JsonAutoDetect(fieldVisibility = ANY)
     public static class Measurement
     {
-        private final String name;
-        private final String unit;
-        private final double value;
+        private String name;
+        private String unit;
+        private double value;
 
-        public Measurement(String name, String unit, double value)
+        public static Measurement measurement(String name, String unit, double value)
         {
-            this.name = name;
-            this.unit = unit;
-            this.value = value;
+            Measurement measurement = new Measurement();
+            measurement.name = name;
+            measurement.unit = unit;
+            measurement.value = value;
+            return measurement;
         }
     }
 }

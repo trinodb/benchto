@@ -41,9 +41,11 @@ public interface BenchmarkRunRepo
             "    b.id, " +
             "    b.name, " +
             "    b.sequence_id, " +
+            "    b.status, " +
             "    b.version, " +
             "    b.started, " +
             "    b.ended, " +
+            "    b.environment_id, " +
             "    rank() " +
             "    OVER (PARTITION BY b.name " +
             "      ORDER BY b.sequence_id DESC) AS rk " +

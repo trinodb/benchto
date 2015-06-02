@@ -9,8 +9,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
@@ -29,12 +29,15 @@ public class BenchmarkProperties
     @Value("${executionSequenceId:}")
     private String executionSequenceId;
 
+    @Value("${environment.name}")
+    private String environmentName;
+
     @Override
     public void afterPropertiesSet()
             throws Exception
     {
         if (Strings.isNullOrEmpty(executionSequenceId)) {
-            executionSequenceId = LocalDateTime.now(ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+            executionSequenceId = ZonedDateTime.now(ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
         }
     }
 
@@ -51,6 +54,11 @@ public class BenchmarkProperties
     public String getExecutionSequenceId()
     {
         return executionSequenceId;
+    }
+
+    public String getEnvironmentName()
+    {
+        return environmentName;
     }
 
     @Override

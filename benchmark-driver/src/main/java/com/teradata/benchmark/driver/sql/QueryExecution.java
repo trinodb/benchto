@@ -6,15 +6,20 @@ package com.teradata.benchmark.driver.sql;
 import com.google.common.base.MoreObjects;
 
 import java.time.Duration;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.time.temporal.ChronoUnit.NANOS;
+import static java.util.Optional.empty;
 
 public class QueryExecution
 {
     private int rowsCount;
     private Exception failureCause;
     private long start, end;
+
+    // presto specific
+    private Optional<String> prestoQueryId = empty();
 
     private QueryExecution()
     {
@@ -40,6 +45,11 @@ public class QueryExecution
         return failureCause;
     }
 
+    public Optional<String> getPrestoQueryId()
+    {
+        return prestoQueryId;
+    }
+
     @Override
     public String toString()
     {
@@ -48,6 +58,7 @@ public class QueryExecution
                 .add("rowsCount", rowsCount)
                 .add("failureCause", failureCause)
                 .add("queryDuration", getQueryDuration().toMillis() + " ms")
+                .add("prestoQueryId", prestoQueryId)
                 .toString();
     }
 
@@ -78,6 +89,12 @@ public class QueryExecution
         public QueryExecutionBuilder setRowsCount(int rowsCount)
         {
             queryExecution.rowsCount = rowsCount;
+            return this;
+        }
+
+        public QueryExecutionBuilder setPrestoQueryId(String prestoQueryId)
+        {
+            queryExecution.prestoQueryId = Optional.of(prestoQueryId);
             return this;
         }
 

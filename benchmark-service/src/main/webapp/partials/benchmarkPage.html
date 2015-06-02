@@ -10,7 +10,7 @@
 </div>
 <div class="row">
     <div class="col-sm-6 text-center" ng-repeat="graphData in measurementGraphsData" class="measurementGraph">
-        <strong>{{graphData.name}}</strong>
+        <strong>{{graphData.name}} {{graphData.unit}}</strong>
         <canvas id="chart-{{graphData.name}}" class="chart chart-line" data="graphData.data" click="onBenchmarkClick"
                 labels="graphData.labels" legend="true" series="graphData.series"
                 options="{
@@ -60,13 +60,19 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    <td>#</td>
                     <td>SequenceId</td>
+                    <td>Status</td>
                     <td>Started</td>
                     <td>Ended</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in benchmark.runs">
+                    <td>{{::$index + 1}}</td>
                     <td><a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
+                    <td>
+                        <span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span>
+                    </td>
                     <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
                     <td>{{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}</td>
                 </tr>

@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -49,8 +49,9 @@ public class AppIntegrationTest
         // benchmark start
         restServiceServer.expect(matchAll(
                 requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/start"),
-                method(HttpMethod.POST)
-
+                method(HttpMethod.POST),
+                jsonPath("$.environmentName", is("TEST_ENV")),
+                jsonPath("$.attributes.sqlStatement", is("SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS"))
         )).andRespond(withSuccess());
 
         // first execution
@@ -62,7 +63,8 @@ public class AppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/0/finish"),
                 method(HttpMethod.POST),
-                jsonPath("$.[*].name", containsInAnyOrder("duration"))
+                jsonPath("$.status", is("ENDED")),
+                jsonPath("$.measurements.[*].name", containsInAnyOrder("duration"))
         )).andRespond(withSuccess());
 
         // second execution
@@ -74,15 +76,15 @@ public class AppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/1/finish"),
                 method(HttpMethod.POST),
-                jsonPath("$.[*].name", containsInAnyOrder("duration"))
+                jsonPath("$.status", is("ENDED")),
+                jsonPath("$.measurements.[*].name", containsInAnyOrder("duration"))
         )).andRespond(withSuccess());
 
         // benchmark finished
         restServiceServer.expect(matchAll(
                 requestTo("http://localhost:8080/v1/benchmark/test_query/BEN_SEQ_ID/finish"),
                 method(HttpMethod.POST),
-                jsonPath("$", hasSize(0))
-
+                jsonPath("$.status", is("ENDED"))
         )).andRespond(withSuccess());
 
         boolean successful = benchmarkDriver.run();

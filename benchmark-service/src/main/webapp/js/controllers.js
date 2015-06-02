@@ -4,7 +4,7 @@
 (function () {
     'use strict';
 
-    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.service'])
+    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services'])
         .controller('MainPageCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
             $scope.pageSize = $routeParams.size ? $routeParams.size : 20;
             $scope.page = $routeParams.page ? $routeParams.page : 0;
@@ -30,7 +30,7 @@
                     $scope.benchmark = benchmark;
                     // filter out benchmark runs which have not finished
                     var benchmarkRuns = _.filter(benchmark.runs, function (benchmarkRun) {
-                        return !angular.equals({}, benchmarkRun.aggregatedMeasurements);
+                        return benchmarkRun.status === 'ENDED';
                     });
 
                     var measurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
@@ -70,7 +70,7 @@
                     });
                 });
         }])
-        .controller('BenchmarkCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
+        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', function ($scope, $routeParams, $modal, BenchmarkService) {
             var loadBenchmark = function () {
                 BenchmarkService.loadBenchmarkRun($routeParams.benchmarkName, $routeParams.benchmarkSequenceId)
                     .then(function (benchmarkRun) {
@@ -80,8 +80,50 @@
 
             loadBenchmark();
 
+            $scope.benchmarkFromParam = function (benchmarkRun) {
+                return benchmarkRun.started - 60 * 1000; // one minute before start
+            };
+
+            $scope.benchmarkToParam = function (benchmarkRun) {
+                if (benchmarkRun.ended) {
+                    return benchmarkRun.ended + 60 * 1000; // one minute after end
+                }
+                return Date.now();
+            };
+
             $scope.measurementUnit = function (measurementKey) {
                 return $scope.benchmarkRun.aggregatedMeasurements[measurementKey].unit;
+            };
+
+            $scope.showFailure = function (execution) {
+                $modal.open({
+                    templateUrl: 'partials/benchmarkRunErrorModal.html',
+                    controller: 'BenchmarkRunErrorCtrl',
+                    size: 'lg',
+                    resolve: {
+                        failure: function () {
+                            return {
+                                executionName: execution.name,
+                                message: execution.attributes.failureMessage,
+                                stackTrace: execution.attributes.failureStackTrace,
+                                SQLErrorCode: execution.attributes.failureSQLErrorCode
+                            };
+                        }
+                    }
+                });
+            };
+        }])
+        .controller('EnvironmentCtrl', ['$scope', '$routeParams', 'EnvironmentService', function ($scope, $routeParams, EnvironmentService) {
+            EnvironmentService.loadEnvironment($routeParams.environmentName)
+                .then(function (environment) {
+                    $scope.environment = environment;
+                });
+        }])
+        .controller('BenchmarkRunErrorCtrl', ['$scope', '$modalInstance', 'failure', function ($scope, $modalInstance, failure) {
+            $scope.failure = failure;
+
+            $scope.close = function () {
+                $modalInstance.dismiss('cancel');
             }
         }]);
 }());

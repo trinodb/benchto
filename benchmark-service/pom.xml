@@ -115,6 +115,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${dep.spring.boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -127,6 +128,22 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <excludedGroups>com.teradata.benchmark.service.category.IntegrationTest</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.yaml</exclude>
+                        <exclude>**/js/lib/*.*</exclude>
+                        <exclude>**/css/**/*.*</exclude>
+                        <exclude>**/webapp/index.html</exclude>
+                        <exclude>**/webapp/fonts/*.*</exclude>
+                        <exclude>**/webapp/partials/*.*</exclude>
+                        <exclude>**/resources/banner.txt</exclude>
+                        <exclude>**/resources/db/migration/*.sql</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

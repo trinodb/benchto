@@ -1,26 +1,37 @@
 <div class="row">
     <ol class="breadcrumb">
         <li><a href="#/">Home</a></li>
-        <li><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></li>
-        <li class="active">{{benchmarkRun.sequenceId}}</li>
+        <li><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{::benchmarkRun.name}}</a></li>
+        <li class="active">{{::benchmarkRun.sequenceId}}</li>
     </ol>
 
     <div class="col-sm-12">
-        <h2 class="sub-header">Benchmark: {{benchmarkRun.name}}</h2>
+        <h2 class="sub-header">Benchmark: {{::benchmarkRun.name}}</h2>
 
+        <pre ng-if="::benchmarkRun.attributes.sqlStatement" class="prettyprint lang-sql">{{::benchmarkRun.attributes.sqlStatement}}</pre>
 
         <ul>
             <li>
-                <strong>Started:</strong> {{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}
+                <strong>Status:</strong>
+                <span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span>
+            </li>
+            <li>
+                <strong>Environment:</strong>
+                <a target="_blank" ng-href="#/environment/{{::benchmarkRun.environment.name}}">
+                    {{::benchmarkRun.environment.name}}
+                </a>
+            </li>
+            <li>
+                <strong>Started:</strong> {{::benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}
             </li>
             <li>
                 <strong>Ended:</strong> {{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}
             </li>
-            <li>
+            <li ng-if="::benchmarkRun.environment.attributes.dashboardURL">
                 <strong>Monitoring:</strong>
-                <a target="_blank"
-                   ng-href="http://10.25.17.45:7180/cmf/views/view?viewName=benchmark-tests-dashboard#currentMode=false&startTime={{benchmarkRun.started}}&endTime={{benchmarkRun.ended}}&markerTime={{benchmarkRun.started}}&firstTime={{benchmarkRun.started}}&lastTime={{benchmarkRun.ended}}">
-                    Dashboard URL
+                <a target="_blank" ng-if="::benchmarkRun.environment.attributes.dashboardType == 'grafana'"
+                   ng-href="{{::benchmarkRun.environment.attributes.dashboardURL}}?from={{benchmarkFromParam(benchmarkRun)}}&to={{benchmarkToParam(benchmarkRun)}}">
+                    {{::benchmarkRun.environment.attributes.dashboardType}} dashboard
                 </a>
             </li>
         </ul>
@@ -34,13 +45,11 @@
                     <tr>
                         <td>Name</td>
                         <td>Value</td>
-                        <td>Unit</td>
                     </tr>
                     </thead>
                     <tr ng-repeat="measurement in benchmarkRun.measurements">
                         <td>{{measurement.name}}</td>
-                        <td>{{measurement.value}}</td>
-                        <td>{{measurement.unit}}</td>
+                        <td>{{measurement.value | unit : measurement.unit}}</td>
                     </tr>
                 </table>
             </div>
@@ -57,16 +66,14 @@
                     <td>Min</td>
                     <td>Max</td>
                     <td>StdDev</td>
-                    <td>Unit</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="(name, aggregatedMeasurement) in benchmarkRun.aggregatedMeasurements">
-                    <td>{{name}}</td>
-                    <td>{{aggregatedMeasurement.mean}}</td>
-                    <td>{{aggregatedMeasurement.min}}</td>
-                    <td>{{aggregatedMeasurement.max}}</td>
-                    <td>{{aggregatedMeasurement.stdDev}}</td>
-                    <td>{{measurementUnit(name)}}</td>
+                    <td>{{::name}}</td>
+                    <td>{{aggregatedMeasurement.mean | unit : measurementUnit(name)}}</td>
+                    <td>{{aggregatedMeasurement.min | unit : measurementUnit(name)}}</td>
+                    <td>{{aggregatedMeasurement.max | unit : measurementUnit(name)}}</td>
+                    <td>{{aggregatedMeasurement.stdDev | unit : measurementUnit(name)}}</td>
                 </tr>
             </table>
         </div>
@@ -77,16 +84,30 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <td>SequenceId</td>
-                    <td>Value</td>
+                    <td>#</td>
+                    <td>Status</td>
+                    <td>Measurements</td>
+                    <td>Query monitoring</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="execution in benchmarkRun.executions">
-                    <td>{{execution.sequenceId}}</td>
+                    <td>
+                        {{execution.sequenceId}}
+                    </td>
+                    <td>
+                        <span class="execution-status execution-status-{{::execution.status}}">{{execution.status}}</span>
+                        <span ng-if="execution.status == 'FAILED'"><a href="" ng-click="showFailure(execution)"> - details</a></span>
+                    </td>
                     <td>
                         <span ng-repeat="executionMeasurement in execution.measurements">
-                            <strong>{{executionMeasurement.name}}:</strong> {{executionMeasurement.value}} {{executionMeasurement.unit}} |
+                            <ul>
+                                <li><strong>{{executionMeasurement.name}}:</strong> {{executionMeasurement.value | unit : executionMeasurement.unit}}</li>
+                            </ul>
                         </span>
+                    </td>
+                    <td>
+                        <a target="_blank" ng-if="execution.attributes.prestoQueryId"
+                           ng-href="{{::benchmarkRun.environment.attributes.prestoURL}}query.html?{{execution.attributes.prestoQueryId}}">{{execution.attributes.prestoQueryId}}</a>
                     </td>
                 </tr>
             </table>

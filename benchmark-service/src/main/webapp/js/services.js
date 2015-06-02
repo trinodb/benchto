@@ -4,7 +4,7 @@
 (function () {
     'use strict';
 
-    angular.module('benchmarkServiceUI.service', [])
+    angular.module('benchmarkServiceUI.services', [])
         .factory('BenchmarkService', ['$http', '$q', function ($http, $q) {
             var postProcessBenchmarkRun = function (benchmarkRun) {
                 benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
@@ -71,6 +71,22 @@
                         deferredBenchmark.reject(reason);
                     });
                     return deferredBenchmark.promise;
+                }
+            };
+        }])
+        .factory('EnvironmentService', ['$http', '$q', function ($http, $q) {
+            return {
+                loadEnvironment: function (environmentName) {
+                    var deferredEnvironment = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: '/v1/environment/' + environmentName
+                    }).then(function (response) {
+                        deferredEnvironment.resolve(response.data);
+                    }, function (reason) {
+                        deferredEnvironment.reject(reason);
+                    });
+                    return deferredEnvironment.promise;
                 }
             };
         }]);

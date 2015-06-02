@@ -7,3 +7,9 @@ spring:
 
 benchmark-service:
   url: http://localhost:8080
+
+environment:
+  name: DEFAULT
+
+graphite:
+  url: http://localhost/8088/

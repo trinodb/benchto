@@ -4,8 +4,8 @@ SELECT 100.00 * sum(CASE
                     ELSE 0
                     END) / sum(l_extendedprice * (1 - l_discount)) AS promo_revenue
 FROM
-  lineitem,
-  part
+  lineitem_100gb,
+  part_100gb
 WHERE
   l_partkey = p_partkey
   AND l_shipdate >= DATE '1995-09-01'

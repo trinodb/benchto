@@ -4,8 +4,8 @@ SELECT
   p_size,
   count(DISTINCT ps_suppkey) AS supplier_cnt
 FROM
-  partsupp,
-  part
+  partsupp_100gb,
+  part_100gb
 WHERE
   p_partkey = ps_partkey
   AND p_brand <> 'Brand#45'
@@ -14,7 +14,7 @@ WHERE
   AND ps_suppkey NOT IN (
     SELECT s_suppkey
     FROM
-      supplier
+      supplier_100gb
     WHERE
       s_comment LIKE '%Customer%Complaints%'
   )

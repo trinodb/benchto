@@ -9,13 +9,19 @@ import com.google.common.collect.ListMultimap;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -29,6 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.teradata.benchmark.service.model.AggregatedMeasurement.aggregate;
 import static java.util.stream.Collectors.toMap;
@@ -54,9 +61,14 @@ public class BenchmarkRun
     @Column(name = "sequence_id")
     private String sequenceId;
 
+    @JsonIgnore
     @Column(name = "version")
     @Version
     private Long version;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Status status;
 
     @OneToMany(mappedBy = "benchmarkRun", cascade = CascadeType.ALL)
     private Set<BenchmarkRunExecution> executions = newHashSet();
@@ -74,6 +86,16 @@ public class BenchmarkRun
     @Column(name = "ended")
     @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime ended;
+
+    @ManyToOne
+    @JoinColumn(name = "environment_id")
+    private Environment environment;
+
+    @ElementCollection
+    @MapKeyColumn(name = "name")
+    @Column(name = "value")
+    @CollectionTable(name = "benchmark_runs_attributes", joinColumns = @JoinColumn(name = "benchmark_run_id"))
+    private Map<String, String> attributes = newHashMap();
 
     @Transient
     private Map<String, AggregatedMeasurement> aggregatedMeasurements;
@@ -106,6 +128,16 @@ public class BenchmarkRun
     public void setSequenceId(String sequenceId)
     {
         this.sequenceId = sequenceId;
+    }
+
+    public Status getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(Status status)
+    {
+        this.status = status;
     }
 
     public Long getVersion()
@@ -146,6 +178,26 @@ public class BenchmarkRun
     public void setEnded(ZonedDateTime ended)
     {
         this.ended = ended;
+    }
+
+    public Environment getEnvironment()
+    {
+        return environment;
+    }
+
+    public void setEnvironment(Environment environment)
+    {
+        this.environment = environment;
+    }
+
+    public Map<String, String> getAttributes()
+    {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes)
+    {
+        this.attributes = attributes;
     }
 
     public Map<String, AggregatedMeasurement> getAggregatedMeasurements()
@@ -191,7 +243,9 @@ public class BenchmarkRun
                 .add("name", name)
                 .add("version", version)
                 .add("sequenceId", sequenceId)
+                .add("status", status)
                 .add("executions", executions)
+                .add("attributes", attributes)
                 .add("measurements", measurements)
                 .add("started", started)
                 .add("ended", ended)
