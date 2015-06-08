@@ -6,6 +6,8 @@ package com.teradata.benchmark.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
@@ -39,6 +41,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.teradata.benchmark.service.model.AggregatedMeasurement.aggregate;
 import static java.util.stream.Collectors.toMap;
+import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
 @Table(name = "benchmark_runs", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "sequence_id"}))
@@ -70,9 +73,11 @@ public class BenchmarkRun
     @Column(name = "status")
     private Status status;
 
+    @BatchSize(size = 10)
     @OneToMany(mappedBy = "benchmarkRun", cascade = CascadeType.ALL)
     private Set<BenchmarkRunExecution> executions = newHashSet();
 
+    @BatchSize(size = 10)
     @OneToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "benchmark_run_measurements",
             joinColumns = @JoinColumn(name = "benchmark_run_id", referencedColumnName = "id"),
@@ -91,6 +96,8 @@ public class BenchmarkRun
     @JoinColumn(name = "environment_id")
     private Environment environment;
 
+    @Cache(usage = TRANSACTIONAL)
+    @BatchSize(size = 10)
     @ElementCollection
     @MapKeyColumn(name = "name")
     @Column(name = "value")

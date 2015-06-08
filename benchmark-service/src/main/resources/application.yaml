@@ -6,3 +6,8 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate.ddl-auto: validate
+    properties:
+      hibernate.cache.region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+      hibernate.cache.use_second_level_cache: true
+      hibernate.cache.use_query_cache: true
+      javax.persistence.sharedCache.mode: ENABLE_SELECTIVE

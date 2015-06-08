@@ -4,8 +4,11 @@
 package com.teradata.benchmark.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -32,7 +35,9 @@ import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
+@Cacheable
 @Entity
 @Table(name = "executions")
 public class BenchmarkRunExecution
@@ -64,6 +69,7 @@ public class BenchmarkRunExecution
     @ManyToOne
     private BenchmarkRun benchmarkRun;
 
+    @BatchSize(size = 10)
     @OneToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "execution_measurements",
             joinColumns = @JoinColumn(name = "execution_id", referencedColumnName = "id"),
@@ -78,6 +84,8 @@ public class BenchmarkRunExecution
     @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime ended;
 
+    @Cache(usage = TRANSACTIONAL)
+    @BatchSize(size = 10)
     @ElementCollection
     @MapKeyColumn(name = "name")
     @Column(name = "value")

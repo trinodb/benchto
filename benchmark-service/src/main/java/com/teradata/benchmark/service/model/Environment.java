@@ -4,8 +4,11 @@
 package com.teradata.benchmark.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.Cacheable;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -26,8 +29,10 @@ import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
+@Cacheable
 @Table(name = "environments", uniqueConstraints = @UniqueConstraint(columnNames = {"name"}))
 public class Environment
 {
@@ -52,6 +57,8 @@ public class Environment
     @Version
     private Long version;
 
+    @Cache(usage = TRANSACTIONAL)
+    @BatchSize(size = 10)
     @ElementCollection
     @MapKeyColumn(name = "name")
     @Column(name = "value")
