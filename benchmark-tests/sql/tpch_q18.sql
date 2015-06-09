@@ -6,14 +6,14 @@ SELECT
   o_totalprice,
   sum(l_quantity)
 FROM
-  customer_100gb,
-  orders_100gb,
-  lineitem_100gb
+  customer,
+  orders,
+  lineitem
 WHERE
   o_orderkey IN (
     SELECT l_orderkey
     FROM
-      lineitem_100gb
+      lineitem
     GROUP BY
       l_orderkey
     HAVING

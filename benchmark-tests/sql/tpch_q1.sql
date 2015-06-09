@@ -4,9 +4,9 @@ SELECT
   o_orderdate,
   o_shippriority
 FROM
-  customer_100gb,
-  orders_100gb,
-  lineitem_100gb
+  customer,
+  orders,
+  lineitem
 WHERE
   c_mktsegment = 'BUILDING'
   AND c_custkey = o_custkey

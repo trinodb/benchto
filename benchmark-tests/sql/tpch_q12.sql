@@ -13,8 +13,8 @@ SELECT
       ELSE 0
       END) AS low_line_count
 FROM
-  orders_100gb,
-  lineitem_100gb
+  orders,
+  lineitem
 WHERE
   o_orderkey = l_orderkey
   AND l_shipmode IN ('MAIL', 'SHIP')

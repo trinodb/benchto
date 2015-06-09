@@ -8,10 +8,10 @@ SELECT
   c_phone,
   c_comment
 FROM
-  customer_100gb,
-  orders_100gb,
-  lineitem_100gb,
-  nation_100gb
+  customer,
+  orders,
+  lineitem,
+  nation
 WHERE
   c_custkey = o_custkey
   AND l_orderkey = o_orderkey

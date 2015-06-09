@@ -8,12 +8,12 @@ FROM (
          extract(YEAR FROM o_orderdate)                                  AS o_year,
          l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity AS amount
        FROM
-         part_100gb,
-         supplier_100gb,
-         lineitem_100gb,
-         partsupp_100gb,
-         orders_100gb,
-         nation_100gb
+         part,
+         supplier,
+         lineitem,
+         partsupp,
+         orders,
+         nation
        WHERE
          s_suppkey = l_suppkey
          AND ps_suppkey = l_suppkey
