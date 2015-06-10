@@ -4,8 +4,10 @@
 package com.teradata.benchmark.driver.sql;
 
 import com.google.common.base.MoreObjects;
+import com.teradata.benchmark.driver.utils.TimeUtils;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -17,6 +19,7 @@ public class QueryExecution
     private int rowsCount;
     private Exception failureCause;
     private long start, end;
+    private ZonedDateTime utcStart, utcEnd;
 
     // presto specific
     private Optional<String> prestoQueryId = empty();
@@ -50,6 +53,16 @@ public class QueryExecution
         return prestoQueryId;
     }
 
+    public ZonedDateTime getStart()
+    {
+        return utcStart;
+    }
+
+    public ZonedDateTime getEnd()
+    {
+        return utcEnd;
+    }
+
     @Override
     public String toString()
     {
@@ -70,6 +83,7 @@ public class QueryExecution
         public QueryExecutionBuilder startTimer()
         {
             queryExecution.start = System.nanoTime();
+            queryExecution.utcStart = TimeUtils.nowUtc();
             return this;
         }
 
@@ -77,6 +91,7 @@ public class QueryExecution
         {
             checkState(queryExecution.start > 0);
             queryExecution.end = System.nanoTime();
+            queryExecution.utcEnd = TimeUtils.nowUtc();
             return this;
         }
 

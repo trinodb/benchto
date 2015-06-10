@@ -7,5 +7,6 @@ public enum MeasurementUnit
 {
     MILLISECONDS,
     BYTES,
-    NONE;
+    PERCENT,
+    NONE
 }

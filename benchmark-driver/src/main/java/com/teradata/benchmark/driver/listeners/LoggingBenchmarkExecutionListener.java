@@ -1,10 +1,10 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.reporters;
+package com.teradata.benchmark.driver.listeners;
 
-import com.teradata.benchmark.driver.BenchmarkQuery;
-import com.teradata.benchmark.driver.BenchmarkQueryResult;
+import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.BenchmarkResult;
 import com.teradata.benchmark.driver.sql.QueryExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,25 +24,25 @@ public class LoggingBenchmarkExecutionListener
     private static final Logger LOG = LoggerFactory.getLogger(LoggingBenchmarkExecutionListener.class);
 
     @Override
-    public void benchmarkStarted(BenchmarkQuery benchmarkQuery)
+    public void benchmarkStarted(Query benchmarkQuery)
     {
         LOG.debug("Benchmarking query: {}", benchmarkQuery.getName());
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkQueryResult result)
+    public void benchmarkFinished(BenchmarkResult result)
     {
         // Report at the end in benchmark result reporting
     }
 
     @Override
-    public void executionStarted(BenchmarkQuery benchmarkQuery, int run)
+    public void executionStarted(Query benchmarkQuery, int run)
     {
         // Report at the end in benchmark result reporting
     }
 
     @Override
-    public void executionFinished(BenchmarkQuery benchmarkQuery, int run, QueryExecution queryExecution)
+    public void executionFinished(Query benchmarkQuery, int run, QueryExecution queryExecution)
     {
         if (queryExecution.isSuccessful()) {
             LOG.trace("Query: {}, rows count: {}, duration: {}", benchmarkQuery.getName(), queryExecution.getRowsCount(), queryExecution.getQueryDuration());
@@ -53,12 +53,12 @@ public class LoggingBenchmarkExecutionListener
     }
 
     @Override
-    public void suiteFinished(List<BenchmarkQueryResult> benchmarkResults)
+    public void suiteFinished(List<BenchmarkResult> benchmarkResults)
     {
-        List<BenchmarkQueryResult> successful = benchmarkResults.stream()
-                .filter(BenchmarkQueryResult::isSuccessful)
+        List<BenchmarkResult> successful = benchmarkResults.stream()
+                .filter(BenchmarkResult::isSuccessful)
                 .collect(toList());
-        List<BenchmarkQueryResult> failed = newArrayList(benchmarkResults);
+        List<BenchmarkResult> failed = newArrayList(benchmarkResults);
         failed.removeAll(successful);
 
         if (!failed.isEmpty()) {
@@ -73,7 +73,7 @@ public class LoggingBenchmarkExecutionListener
 
         System.out.println(format("\nTests run: %d, Failures: %d\n", benchmarkResults.size(), failed.size()));
 
-        for (BenchmarkQueryResult result : successful) {
+        for (BenchmarkResult result : successful) {
             System.out.println(format("Query %s - min: %f, max: %f, mean: %f, std-dev: %f",
                     result.getQuery().getName(),
                     result.getDurationStatistics().getMin(),

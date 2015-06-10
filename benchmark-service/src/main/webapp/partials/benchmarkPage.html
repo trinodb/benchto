@@ -9,7 +9,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-sm-6 text-center" ng-repeat="graphData in measurementGraphsData" class="measurementGraph">
+    <div class="col-sm-3 text-center" ng-repeat="graphData in measurementGraphsData" class="measurementGraph">
         <strong>{{graphData.name}} {{graphData.unit}}</strong>
         <canvas id="chart-{{graphData.name}}" class="chart chart-line" data="graphData.data" click="onBenchmarkClick"
                 labels="graphData.labels" legend="true" series="graphData.series"

@@ -7,12 +7,12 @@ import com.google.common.base.MoreObjects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class BenchmarkQuery
+public class Query
 {
     private final String name;
     private final String sql;
 
-    public BenchmarkQuery(String name, String sql)
+    public Query(String name, String sql)
     {
         this.name = checkNotNull(name);
         this.sql = checkNotNull(sql);

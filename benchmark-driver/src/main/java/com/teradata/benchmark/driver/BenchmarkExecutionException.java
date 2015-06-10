@@ -7,6 +7,11 @@ public class BenchmarkExecutionException
         extends RuntimeException
 {
 
+    public BenchmarkExecutionException(String message)
+    {
+        super(message);
+    }
+
     public BenchmarkExecutionException(String message, Throwable cause)
     {
         super(message, cause);

@@ -11,12 +11,12 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-public class BenchmarkQueryResult
+public class BenchmarkResult
 {
-    private final BenchmarkQuery query;
+    private final Query query;
     private List<QueryExecution> executions;
 
-    public BenchmarkQueryResult(BenchmarkQuery query)
+    public BenchmarkResult(Query query)
     {
         this.query = query;
         this.executions = newArrayList();
@@ -37,7 +37,7 @@ public class BenchmarkQueryResult
                         .toArray());
     }
 
-    public BenchmarkQuery getQuery()
+    public Query getQuery()
     {
         return query;
     }

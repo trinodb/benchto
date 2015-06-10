@@ -4,7 +4,7 @@
 package com.teradata.benchmark.driver.sql;
 
 import com.facebook.presto.jdbc.PrestoResultSet;
-import com.teradata.benchmark.driver.BenchmarkQuery;
+import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.sql.QueryExecution.QueryExecutionBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +26,16 @@ public class SqlStatementExecutor
     @Autowired
     private DataSource dataSource;
 
-    public QueryExecution executeQuery(BenchmarkQuery benchmarkQuery)
+    public QueryExecution executeQuery(Query query)
     {
-        LOG.debug("Executing query {}: {}", benchmarkQuery.getName(), benchmarkQuery.getSql());
+        LOG.debug("Executing query {}: {}", query.getName(), query.getSql());
 
         QueryExecutionBuilder queryExecutionBuilder = new QueryExecutionBuilder()
                 .startTimer();
         try (
                 Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(benchmarkQuery.getSql())
+                ResultSet resultSet = statement.executeQuery(query.getSql())
         ) {
             int rowsCount = 0;
             if (resultSet.next()) {

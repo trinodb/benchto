@@ -60,6 +60,7 @@
         <dep.jadira.usertype>3.2.0.GA</dep.jadira.usertype>
         <dep.jackson.jsr310>2.4.0</dep.jackson.jsr310>
         <dep.spring.boot.version>1.2.3.RELEASE</dep.spring.boot.version>
+        <dep.reactor.bus.version>2.0.2.RELEASE</dep.reactor.bus.version>
     </properties>
 
     <dependencyManagement>
@@ -98,6 +99,11 @@
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${dep.jackson.jsr310}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-bus</artifactId>
+                <version>${dep.reactor.bus.version}</version>
             </dependency>
 
             <!-- Drivers -->

@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,18 +24,18 @@ import static java.nio.file.Files.readAllBytes;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class BenchmarkQueryLoader
+public class BenchmarkLoader
 {
 
     @Autowired
     private BenchmarkProperties properties;
 
-    public List<BenchmarkQuery> loadBenchmarkQueries()
+    public List<Benchmark> loadBenchmarks()
     {
-
         try (DirectoryStream<Path> sqlFiles = newDirectoryStream(sqlFilesPath(), "*.sql")) {
             return StreamSupport.stream(sqlFiles.spliterator(), false)
                     .map(this::loadBenchmarkQuery)
+                    .map(query -> new Benchmark(ImmutableList.of(query), properties.getRuns()))
                     .collect(toList());
         }
         catch (IOException | URISyntaxException e) {
@@ -52,7 +53,7 @@ public class BenchmarkQueryLoader
         return FileSystems.getDefault().getPath(properties.getSqlDir());
     }
 
-    private BenchmarkQuery loadBenchmarkQuery(Path path)
+    private Query loadBenchmarkQuery(Path path)
     {
         try {
             String name = getNameWithoutExtension(path.getFileName().toString());
@@ -64,7 +65,7 @@ public class BenchmarkQueryLoader
 
             sqlStatement = sqlStatement.replace("\n", " ");
 
-            return new BenchmarkQuery(name, sqlStatement);
+            return new Query(name, sqlStatement);
         }
         catch (IOException e) {
             throw new BenchmarkExecutionException("Could not load path: " + path, e);

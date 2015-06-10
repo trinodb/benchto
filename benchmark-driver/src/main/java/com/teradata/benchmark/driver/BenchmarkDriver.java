@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.teradata.benchmark.driver.reporters.BenchmarkExecutionListener;
+import com.teradata.benchmark.driver.listeners.BenchmarkStatusReporter;
 import com.teradata.benchmark.driver.sql.QueryExecution;
 import com.teradata.benchmark.driver.sql.SqlStatementExecutor;
 import org.slf4j.Logger;
@@ -26,13 +26,13 @@ public class BenchmarkDriver
     private BenchmarkProperties properties;
 
     @Autowired
-    private BenchmarkQueryLoader benchmarkQueryLoader;
+    private BenchmarkLoader benchmarkLoader;
 
     @Autowired
     private SqlStatementExecutor sqlStatementExecutor;
 
     @Autowired
-    private List<BenchmarkExecutionListener> benchmarkExecutionListeners;
+    private BenchmarkStatusReporter statusReporter;
 
     /**
      * @return true if all benchmark queries passed
@@ -41,76 +41,41 @@ public class BenchmarkDriver
     {
         LOG.info("Running benchmark with properties: {}", properties);
 
-        List<BenchmarkQuery> benchmarkQueries = benchmarkQueryLoader.loadBenchmarkQueries();
-        LOG.info("Loaded {} benchmark queries", benchmarkQueries.size());
+        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks();
+        LOG.info("Loaded {} benchmarks", benchmarks.size());
 
-        List<BenchmarkQueryResult> benchmarkResults = executeSuite(benchmarkQueries);
-        reportBenchmarkFinished(benchmarkResults);
+        List<BenchmarkResult> benchmarkResults = executeSuite(benchmarks);
+        statusReporter.reportBenchmarkFinished(benchmarkResults);
 
         return !benchmarkResults.stream()
                 .filter(result -> !result.isSuccessful())
                 .findAny().isPresent();
     }
 
-    private List<BenchmarkQueryResult> executeSuite(List<BenchmarkQuery> benchmarkQueries)
+    private List<BenchmarkResult> executeSuite(List<Benchmark> benchmarks)
     {
-        List<BenchmarkQueryResult> benchmarkResults = newArrayList();
-        for (BenchmarkQuery benchmarkQuery : benchmarkQueries) {
-            BenchmarkQueryResult benchmarkQueryResult = new BenchmarkQueryResult(benchmarkQuery);
-            reportBenchmarkStarted(benchmarkQuery);
+        List<BenchmarkResult> benchmarkResults = newArrayList();
+        for (Benchmark benchmark : benchmarks) {
+            BenchmarkResult benchmarkResult = new BenchmarkResult(benchmark.getQueries().get(0));
+            statusReporter.reportBenchmarkStarted(benchmark.getQueries().get(0));
 
             for (int run = 0; run < properties.getRuns(); run++) {
-                executeQuery(benchmarkQuery, run, benchmarkQueryResult);
+                executeQuery(benchmark.getQueries().get(0), run, benchmarkResult);
             }
 
-            reportBenchmarkFinished(benchmarkQueryResult);
-            benchmarkResults.add(benchmarkQueryResult);
+            statusReporter.reportBenchmarkFinished(benchmarkResult);
+            benchmarkResults.add(benchmarkResult);
         }
         return Collections.unmodifiableList(benchmarkResults);
     }
 
-    private void executeQuery(BenchmarkQuery benchmarkQuery, int run, BenchmarkQueryResult benchmarkQueryResult)
+    private void executeQuery(Query benchmarkQuery, int run, BenchmarkResult benchmarkResult)
     {
-        reportExecutionStarted(benchmarkQuery, run);
+        statusReporter.reportExecutionStarted(benchmarkQuery, run);
 
         QueryExecution execution = sqlStatementExecutor.executeQuery(benchmarkQuery);
 
-        reportExecutionFinished(benchmarkQuery, run, execution);
-        benchmarkQueryResult.addExecution(execution);
-    }
-
-    private void reportBenchmarkStarted(BenchmarkQuery benchmarkQuery)
-    {
-        for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
-            reporter.benchmarkStarted(benchmarkQuery);
-        }
-    }
-
-    private void reportBenchmarkFinished(BenchmarkQueryResult result)
-    {
-        for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
-            reporter.benchmarkFinished(result);
-        }
-    }
-
-    private void reportExecutionStarted(BenchmarkQuery benchmarkQuery, int run)
-    {
-        for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
-            reporter.executionStarted(benchmarkQuery, run);
-        }
-    }
-
-    private void reportExecutionFinished(BenchmarkQuery benchmarkQuery, int run, QueryExecution execution)
-    {
-        for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
-            reporter.executionFinished(benchmarkQuery, run, execution);
-        }
-    }
-
-    private void reportBenchmarkFinished(List<BenchmarkQueryResult> benchmarkResults)
-    {
-        for (BenchmarkExecutionListener reporter : benchmarkExecutionListeners) {
-            reporter.suiteFinished(benchmarkResults);
-        }
+        statusReporter.reportExecutionFinished(benchmarkQuery, run, execution);
+        benchmarkResult.addExecution(execution);
     }
 }

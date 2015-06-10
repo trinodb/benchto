@@ -25,10 +25,31 @@
                         value /= 60;
                     }
 
-                    outputValueText += numberFilter(value, 4);
+                    outputValueText += numberFilter(value, 2);
+                }
+                else if (unit === 'BYTES') {
+                    outputUnitText = 'B';
+                    if ((value / 1000) > 1) {
+                        outputUnitText = 'KB';
+                        value /= 1000;
+                    }
+                    if ((value / 1000) > 1) {
+                        outputUnitText = 'MB';
+                        value /= 1000;
+                    }
+                    if ((value / 1000) > 1) {
+                        outputUnitText = 'GB';
+                        value /= 1000;
+                    }
+
+                    outputValueText += numberFilter(value, 2);
+                }
+                else if (unit === 'PERCENT') {
+                    outputValueText += numberFilter(value, 2);
+                    outputUnitText = '%';
                 }
                 else {
-                    outputValueText += numberFilter(value, 4);
+                    outputValueText += numberFilter(value, 2);
                     outputUnitText = unit;
                 }
 

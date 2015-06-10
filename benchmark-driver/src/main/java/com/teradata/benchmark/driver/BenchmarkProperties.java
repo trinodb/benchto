@@ -3,19 +3,20 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import javax.annotation.PostConstruct;
+
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
 
 @Component
 public class BenchmarkProperties
-        implements InitializingBean
 {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss:SSS");
@@ -32,12 +33,20 @@ public class BenchmarkProperties
     @Value("${environment.name}")
     private String environmentName;
 
-    @Override
-    public void afterPropertiesSet()
-            throws Exception
+    @Value("${graphite.metrics.cpu:#{null}}")
+    private String cpuGraphiteExpr;
+
+    @Value("${graphite.metrics.memory:#{null}}")
+    private String memoryGraphiteExpr;
+
+    @Value("${graphite.metrics.network:#{null}}")
+    private String networkGraphiteExpr;
+
+    @PostConstruct
+    public void initExecutionSequenceId()
     {
-        if (Strings.isNullOrEmpty(executionSequenceId)) {
-            executionSequenceId = ZonedDateTime.now(ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+        if (isNullOrEmpty(executionSequenceId)) {
+            executionSequenceId = nowUtc().format(DATE_TIME_FORMATTER);
         }
     }
 
@@ -61,10 +70,25 @@ public class BenchmarkProperties
         return environmentName;
     }
 
+    public Optional<String> getCpuGraphiteExpr()
+    {
+        return Optional.ofNullable(cpuGraphiteExpr);
+    }
+
+    public Optional<String> getMemoryGraphiteExpr()
+    {
+        return Optional.ofNullable(memoryGraphiteExpr);
+    }
+
+    public Optional<String> getNetworkGraphiteExpr()
+    {
+        return Optional.ofNullable(networkGraphiteExpr);
+    }
+
     @Override
     public String toString()
     {
-        return MoreObjects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("runs", runs)
                 .add("sqlDir", sqlDir)
                 .add("executionSequenceId", executionSequenceId)
