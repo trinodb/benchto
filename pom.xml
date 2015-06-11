@@ -27,11 +27,17 @@
     <modules>
         <module>benchmark-service</module>
         <module>benchmark-driver</module>
-        <module>benchmark-tests</module>
+        <module>benchmark-tests-presto</module>
     </modules>
 
     <properties>
         <java.version>1.8</java.version>
+
+        <encoding>UTF-8</encoding>
+
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+        <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
 
         <air.main.basedir>${project.basedir}</air.main.basedir>
 

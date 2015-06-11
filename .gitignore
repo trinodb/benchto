@@ -6,3 +6,6 @@ service.iml
 target/
 
 deploy.sh
+
+benchmark-tests-presto/application.yaml
+benchmark-tests-querygrid/application.yaml

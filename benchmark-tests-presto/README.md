@@ -1,4 +1,4 @@
-# benchmark-tests
+# benchmark-tests-presto
 
 Project containing benchmark tests.
 
@@ -18,6 +18,6 @@ More information about configuration properties can be found in [https://github-
 ```
 $ mvn test -Pbenchmark
 ...
-[INFO] --- exec-maven-plugin:1.4.0:java (exec-benchmark) @ benchmark-tests ---
+[INFO] --- exec-maven-plugin:1.4.0:java (exec-benchmark) @ benchmark-tests-presto ---
 ...
 ```

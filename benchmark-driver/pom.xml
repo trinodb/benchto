@@ -115,7 +115,7 @@
             </plugin>
             <plugin>
                 <groupId>com.ning.maven.plugins</groupId>
-                <artifactId>duplicate-finder-maven-plugin</artifactId>
+                <artifactId>maven-duplicate-finder-plugin</artifactId>
                 <version>1.0.8</version>
                 <configuration>
                     <exceptions>
