@@ -3,12 +3,13 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkResult;
-import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.graphite.GraphiteClient;
 import com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteEventRequest;
 import com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteEventRequest.GraphiteEventRequestBuilder;
 import com.teradata.benchmark.driver.sql.QueryExecution;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,10 @@ public class GraphiteEventExecutionListener
     private GraphiteClient graphiteClient;
 
     @Override
-    public void benchmarkStarted(Query benchmarkQuery)
+    public void benchmarkStarted(Benchmark benchmark)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s started", benchmarkQuery.getName()))
+                .what(format("Benchmark %s started", benchmark.getName()))
                 .tags("benchmark", "started")
                 .build();
 
@@ -41,7 +42,7 @@ public class GraphiteEventExecutionListener
     public void benchmarkFinished(BenchmarkResult benchmarkResult)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s ended", benchmarkResult.getQuery().getName()))
+                .what(format("Benchmark %s ended", benchmarkResult.getBenchmark().getName()))
                 .tags("benchmark ended")
                 .data(format("successful %b, mean: %f.2, stdDev: %f.2", benchmarkResult.isSuccessful(),
                         benchmarkResult.getDurationStatistics().getMean(),
@@ -52,10 +53,10 @@ public class GraphiteEventExecutionListener
     }
 
     @Override
-    public void executionStarted(Query benchmarkQuery, int run)
+    public void executionStarted(QueryExecution execution)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Execution %s-%d started", benchmarkQuery.getName(), run))
+                .what(format("Execution %s-%d started", execution.getBenchmark().getName(), execution.getRun()))
                 .tags("execution", "started")
                 .build();
 
@@ -63,12 +64,12 @@ public class GraphiteEventExecutionListener
     }
 
     @Override
-    public void executionFinished(Query benchmarkQuery, int run, QueryExecution queryExecution)
+    public void executionFinished(QueryExecutionResult executionResult)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Execution %s-%d ended", benchmarkQuery.getName(), run))
+                .what(format("Execution %s-%d ended", executionResult.getBenchmark().getName(), executionResult.getQueryExecution().getRun()))
                 .tags("execution", "ended")
-                .data(format("duration: %d ms", queryExecution.getQueryDuration().toMillis()))
+                .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
                 .build();
 
         graphiteClient.storeEvent(request);

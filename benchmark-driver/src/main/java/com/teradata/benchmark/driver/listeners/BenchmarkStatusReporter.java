@@ -1,9 +1,12 @@
 package com.teradata.benchmark.driver.listeners;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkResult;
-import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.sql.QueryExecution;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,38 +18,42 @@ public class BenchmarkStatusReporter
     @Autowired
     private List<BenchmarkExecutionListener> executionListeners;
 
-    public void reportBenchmarkStarted(Query query)
+    @Qualifier("defaultTaskExecutor")
+    @Autowired
+    private TaskExecutor taskExecutor;
+
+    public void reportBenchmarkStarted(Benchmark benchmark)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.benchmarkStarted(query);
+            taskExecutor.execute(() -> listener.benchmarkStarted(benchmark));
         }
     }
 
     public void reportBenchmarkFinished(BenchmarkResult result)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.benchmarkFinished(result);
+            taskExecutor.execute(() -> listener.benchmarkFinished(result));
         }
     }
 
-    public void reportExecutionStarted(Query query, int run)
+    public void reportExecutionStarted(QueryExecution queryExecution)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.executionStarted(query, run);
+            taskExecutor.execute(() -> listener.executionStarted(queryExecution));
         }
     }
 
-    public void reportExecutionFinished(Query query, int run, QueryExecution execution)
+    public void reportExecutionFinished(QueryExecutionResult execution)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.executionFinished(query, run, execution);
+            taskExecutor.execute(() -> listener.executionFinished(execution));
         }
     }
 
     public void reportBenchmarkFinished(List<BenchmarkResult> benchmarkResults)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.suiteFinished(benchmarkResults);
+            taskExecutor.execute(() -> listener.suiteFinished(benchmarkResults));
         }
     }
 }

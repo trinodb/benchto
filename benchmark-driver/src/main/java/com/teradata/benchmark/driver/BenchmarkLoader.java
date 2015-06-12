@@ -35,7 +35,7 @@ public class BenchmarkLoader
         try (DirectoryStream<Path> sqlFiles = newDirectoryStream(sqlFilesPath(), "*.sql")) {
             return StreamSupport.stream(sqlFiles.spliterator(), false)
                     .map(this::loadBenchmarkQuery)
-                    .map(query -> new Benchmark(ImmutableList.of(query), properties.getRuns()))
+                    .map(query -> new Benchmark(query.getName(), ImmutableList.of(query), properties.getRuns()))
                     .collect(toList());
         }
         catch (IOException | URISyntaxException e) {

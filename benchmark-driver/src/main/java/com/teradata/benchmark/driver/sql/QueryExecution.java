@@ -3,119 +3,45 @@
  */
 package com.teradata.benchmark.driver.sql;
 
-import com.google.common.base.MoreObjects;
-import com.teradata.benchmark.driver.utils.TimeUtils;
+import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.Query;
 
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import static com.google.common.base.Preconditions.checkState;
-import static java.time.temporal.ChronoUnit.NANOS;
-import static java.util.Optional.empty;
+import static com.google.common.base.MoreObjects.toStringHelper;
 
 public class QueryExecution
 {
-    private int rowsCount;
-    private Exception failureCause;
-    private long start, end;
-    private ZonedDateTime utcStart, utcEnd;
+    private final Benchmark benchmark;
+    private final Query query;
+    private final int run;
 
-    // presto specific
-    private Optional<String> prestoQueryId = empty();
-
-    private QueryExecution()
+    public QueryExecution(Benchmark benchmark, Query query, int run)
     {
+        this.benchmark = benchmark;
+        this.query = query;
+        this.run = run;
     }
 
-    public boolean isSuccessful()
+    public Benchmark getBenchmark()
     {
-        return failureCause == null;
+        return benchmark;
     }
 
-    public int getRowsCount()
+    public Query getQuery()
     {
-        return rowsCount;
+        return query;
     }
 
-    public Duration getQueryDuration()
+    public int getRun()
     {
-        return Duration.of(end - start, NANOS);
-    }
-
-    public Exception getFailureCause()
-    {
-        return failureCause;
-    }
-
-    public Optional<String> getPrestoQueryId()
-    {
-        return prestoQueryId;
-    }
-
-    public ZonedDateTime getStart()
-    {
-        return utcStart;
-    }
-
-    public ZonedDateTime getEnd()
-    {
-        return utcEnd;
+        return run;
     }
 
     @Override
     public String toString()
     {
-        return MoreObjects.toStringHelper(this)
-                .add("successful", isSuccessful())
-                .add("rowsCount", rowsCount)
-                .add("failureCause", failureCause)
-                .add("queryDuration", getQueryDuration().toMillis() + " ms")
-                .add("prestoQueryId", prestoQueryId)
+        return toStringHelper(this)
+                .add("query", query)
+                .add("run", run)
                 .toString();
-    }
-
-    public static class QueryExecutionBuilder
-    {
-
-        private QueryExecution queryExecution = new QueryExecution();
-
-        public QueryExecutionBuilder startTimer()
-        {
-            queryExecution.start = System.nanoTime();
-            queryExecution.utcStart = TimeUtils.nowUtc();
-            return this;
-        }
-
-        public QueryExecutionBuilder endTimer()
-        {
-            checkState(queryExecution.start > 0);
-            queryExecution.end = System.nanoTime();
-            queryExecution.utcEnd = TimeUtils.nowUtc();
-            return this;
-        }
-
-        public QueryExecutionBuilder failed(Exception cause)
-        {
-            queryExecution.failureCause = cause;
-            return this;
-        }
-
-        public QueryExecutionBuilder setRowsCount(int rowsCount)
-        {
-            queryExecution.rowsCount = rowsCount;
-            return this;
-        }
-
-        public QueryExecutionBuilder setPrestoQueryId(String prestoQueryId)
-        {
-            queryExecution.prestoQueryId = Optional.of(prestoQueryId);
-            return this;
-        }
-
-        public QueryExecution build()
-        {
-            return queryExecution;
-        }
     }
 }

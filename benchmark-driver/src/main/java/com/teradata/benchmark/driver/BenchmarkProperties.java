@@ -3,13 +3,14 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.teradata.benchmark.driver.graphite.GraphiteProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -33,14 +34,8 @@ public class BenchmarkProperties
     @Value("${environment.name}")
     private String environmentName;
 
-    @Value("${graphite.metrics.cpu:#{null}}")
-    private String cpuGraphiteExpr;
-
-    @Value("${graphite.metrics.memory:#{null}}")
-    private String memoryGraphiteExpr;
-
-    @Value("${graphite.metrics.network:#{null}}")
-    private String networkGraphiteExpr;
+    @Autowired
+    private GraphiteProperties graphiteProperties;
 
     @PostConstruct
     public void initExecutionSequenceId()
@@ -70,19 +65,9 @@ public class BenchmarkProperties
         return environmentName;
     }
 
-    public Optional<String> getCpuGraphiteExpr()
+    public GraphiteProperties getGraphiteProperties()
     {
-        return Optional.ofNullable(cpuGraphiteExpr);
-    }
-
-    public Optional<String> getMemoryGraphiteExpr()
-    {
-        return Optional.ofNullable(memoryGraphiteExpr);
-    }
-
-    public Optional<String> getNetworkGraphiteExpr()
-    {
-        return Optional.ofNullable(networkGraphiteExpr);
+        return graphiteProperties;
     }
 
     @Override
@@ -92,6 +77,8 @@ public class BenchmarkProperties
                 .add("runs", runs)
                 .add("sqlDir", sqlDir)
                 .add("executionSequenceId", executionSequenceId)
+                .add("environmentName", environmentName)
+                .add("graphiteProperties", graphiteProperties)
                 .toString();
     }
 }

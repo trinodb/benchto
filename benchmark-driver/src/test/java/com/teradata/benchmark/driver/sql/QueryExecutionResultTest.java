@@ -3,28 +3,28 @@
  */
 package com.teradata.benchmark.driver.sql;
 
-import com.teradata.benchmark.driver.sql.QueryExecution.QueryExecutionBuilder;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult.QueryExecutionResultBuilder;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class QueryExecutionTest
+public class QueryExecutionResultTest
 {
 
     @Test
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        QueryExecutionBuilder queryExecutionBuilder = new QueryExecutionBuilder()
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0))
                 .setRowsCount(100);
 
-        queryExecutionBuilder.startTimer();
+        queryExecutionResultBuilder.startTimer();
         TimeUnit.MILLISECONDS.sleep(500L);
-        queryExecutionBuilder.endTimer();
+        queryExecutionResultBuilder.endTimer();
 
-        QueryExecution execution = queryExecutionBuilder.build();
+        QueryExecutionResult execution = queryExecutionResultBuilder.build();
 
         assertThat(execution.isSuccessful()).isTrue();
         assertThat(execution.getRowsCount()).isEqualTo(100);
@@ -35,14 +35,14 @@ public class QueryExecutionTest
     public void testBuilder_failed_run()
             throws InterruptedException
     {
-        QueryExecutionBuilder queryExecutionBuilder = new QueryExecutionBuilder();
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0));
 
-        queryExecutionBuilder.startTimer();
+        queryExecutionResultBuilder.startTimer();
         TimeUnit.MILLISECONDS.sleep(500L);
-        queryExecutionBuilder.failed(new NullPointerException());
-        queryExecutionBuilder.endTimer();
+        queryExecutionResultBuilder.failed(new NullPointerException());
+        queryExecutionResultBuilder.endTimer();
 
-        QueryExecution execution = queryExecutionBuilder.build();
+        QueryExecutionResult execution = queryExecutionResultBuilder.build();
 
         assertThat(execution.isSuccessful()).isFalse();
         assertThat(execution.getRowsCount()).isEqualTo(0);

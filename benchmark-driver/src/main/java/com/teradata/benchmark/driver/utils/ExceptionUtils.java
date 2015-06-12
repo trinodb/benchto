@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver.utils;
 
-import com.teradata.benchmark.driver.sql.QueryExecution;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,11 +11,11 @@ import java.io.StringWriter;
 public final class ExceptionUtils
 {
 
-    public static String stackTraceToString(QueryExecution queryExecution)
+    public static String stackTraceToString(QueryExecutionResult queryExecutionResult)
     {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        queryExecution.getFailureCause().printStackTrace(pw);
+        queryExecutionResult.getFailureCause().printStackTrace(pw);
         return sw.toString();
     }
 

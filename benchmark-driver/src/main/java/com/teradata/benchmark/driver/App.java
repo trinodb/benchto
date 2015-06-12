@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
@@ -36,5 +37,25 @@ public class App
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         return restTemplate;
+    }
+
+    @Bean(name = "defaultTaskExecutor")
+    public ThreadPoolTaskExecutor defaultTaskExecutor()
+    {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setMaxPoolSize(5);
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        return taskExecutor;
+    }
+
+    @Bean(name = "queryTaskExecutor")
+    public ThreadPoolTaskExecutor queryTaskExecutor()
+    {
+        // make it parallel
+        ThreadPoolTaskExecutor queryExecutor = new ThreadPoolTaskExecutor();
+        queryExecutor.setMaxPoolSize(1);
+        queryExecutor.setCorePoolSize(1);
+        queryExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        return queryExecutor;
     }
 }

@@ -3,47 +3,47 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.teradata.benchmark.driver.sql.QueryExecution;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.time.Duration;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 public class BenchmarkResult
 {
-    private final Query query;
-    private List<QueryExecution> executions;
+    private final Benchmark benchmark;
+    private final List<QueryExecutionResult> executions;
+    private final DescriptiveStatistics durationStatistics;
 
-    public BenchmarkResult(Query query)
+    public BenchmarkResult(Benchmark benchmark, List<QueryExecutionResult> executions)
     {
-        this.query = query;
-        this.executions = newArrayList();
-    }
-
-    public void addExecution(QueryExecution execution)
-    {
-        executions.add(execution);
-    }
-
-    public DescriptiveStatistics getDurationStatistics()
-    {
-        return new DescriptiveStatistics(
+        this.benchmark = benchmark;
+        this.executions = executions;
+        this.durationStatistics = new DescriptiveStatistics(
                 executions.stream()
-                        .map(QueryExecution::getQueryDuration)
+                        .map(QueryExecutionResult::getQueryDuration)
                         .map(Duration::toMillis)
                         .mapToDouble(Long::doubleValue)
                         .toArray());
     }
 
-    public Query getQuery()
+    public Benchmark getBenchmark()
     {
-        return query;
+        return benchmark;
+    }
+
+    public List<QueryExecutionResult> getExecutions()
+    {
+        return executions;
+    }
+
+    public DescriptiveStatistics getDurationStatistics()
+    {
+        return durationStatistics;
     }
 
     public boolean isSuccessful()
     {
-        return executions.stream().allMatch(QueryExecution::isSuccessful);
+        return executions.stream().allMatch(QueryExecutionResult::isSuccessful);
     }
 }

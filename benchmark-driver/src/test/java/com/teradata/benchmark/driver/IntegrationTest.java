@@ -9,7 +9,7 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = App.class)
+@SpringApplicationConfiguration(classes = {App.class, TestConfig.class})
 @org.springframework.boot.test.IntegrationTest({"executionSequenceId=BEN_SEQ_ID", "runs=2"})
 public abstract class IntegrationTest
 {

@@ -3,13 +3,12 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.BenchmarkResult;
-import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.graphite.GraphiteMetricsLoader;
 import com.teradata.benchmark.driver.presto.PrestoClient;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
-import com.teradata.benchmark.driver.service.BenchmarkServiceClient.BenchmarkStartRequest;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.ExecutionStartRequest;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.ExecutionStartRequest.ExecutionStartRequestBuilder;
@@ -17,6 +16,7 @@ import com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishReques
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.FinishRequestBuilder;
 import com.teradata.benchmark.driver.service.Measurement;
 import com.teradata.benchmark.driver.sql.QueryExecution;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +26,18 @@ import org.springframework.stereotype.Component;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.google.common.collect.Iterables.getFirst;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.FAILED;
 import static com.teradata.benchmark.driver.service.Measurement.measurement;
 import static com.teradata.benchmark.driver.utils.ExceptionUtils.stackTraceToString;
 
 @Component
-public class BenchmarkServiceBenchmarkExecutionListener
+public class BenchmarkServiceExecutionListener
         implements BenchmarkExecutionListener
 {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BenchmarkServiceBenchmarkExecutionListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BenchmarkServiceExecutionListener.class);
 
     @Value("${benchmark-service.url}")
     private String serviceUrl;
@@ -54,16 +55,18 @@ public class BenchmarkServiceBenchmarkExecutionListener
     private BenchmarkServiceClient benchmarkServiceClient;
 
     @Override
-    public void benchmarkStarted(Query benchmarkQuery)
+    public void benchmarkStarted(Benchmark benchmark)
     {
-        BenchmarkStartRequest request = new BenchmarkStartRequestBuilder()
-                .environmentName(benchmarkProperties.getEnvironmentName())
-                .addAttribute("sqlStatement", benchmarkQuery.getSql())
-                .build();
+        BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder()
+                .environmentName(benchmarkProperties.getEnvironmentName());
 
-        LOG.info("Benchmark URL: {}/#/benchmark/{}/{}", serviceUrl, benchmarkQuery.getName(), benchmarkSequenceId());
+        if (benchmark.getQueries().size() == 1) {
+            requestBuilder.addAttribute("sqlStatement", getFirst(benchmark.getQueries(), null).getSql());
+        }
 
-        benchmarkServiceClient.startBenchmark(benchmarkQuery.getName(), benchmarkSequenceId(), request);
+        LOG.info("Benchmark URL: {}/#/benchmark/{}/{}", serviceUrl, benchmark.getName(), benchmarkSequenceId());
+
+        benchmarkServiceClient.startBenchmark(benchmark.getName(), benchmarkSequenceId(), requestBuilder.build());
     }
 
     @Override
@@ -73,43 +76,44 @@ public class BenchmarkServiceBenchmarkExecutionListener
                 .withStatus(benchmarkResult.isSuccessful() ? ENDED : FAILED)
                 .build();
 
-        benchmarkServiceClient.finishBenchmark(benchmarkResult.getQuery().getName(), benchmarkSequenceId(), request);
+        benchmarkServiceClient.finishBenchmark(benchmarkResult.getBenchmark().getName(), benchmarkSequenceId(), request);
     }
 
     @Override
-    public void executionStarted(Query benchmarkQuery, int run)
+    public void executionStarted(QueryExecution execution)
     {
         ExecutionStartRequest request = new ExecutionStartRequestBuilder()
                 .build();
 
-        benchmarkServiceClient.startExecution(benchmarkQuery.getName(), benchmarkSequenceId(), executionSequenceId(run), request);
+        benchmarkServiceClient.startExecution(execution.getBenchmark().getName(), benchmarkSequenceId(), executionSequenceId(execution), request);
     }
 
     @Override
-    public void executionFinished(Query benchmarkQuery, int run, QueryExecution queryExecution)
+    public void executionFinished(QueryExecutionResult executionResult)
     {
-        List<Measurement> graphiteMeasurements = graphiteMetricsLoader.loadMetrics(queryExecution.getStart(), queryExecution.getEnd());
+        List<Measurement> graphiteMeasurements = graphiteMetricsLoader.loadMetrics(executionResult.getStart(), executionResult.getEnd());
 
         FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
-                .withStatus(queryExecution.isSuccessful() ? ENDED : FAILED)
-                .addMeasurement(measurement("duration", "MILLISECONDS", queryExecution.getQueryDuration().toMillis()))
+                .withStatus(executionResult.isSuccessful() ? ENDED : FAILED)
+                .addMeasurement(measurement("duration", "MILLISECONDS", executionResult.getQueryDuration().toMillis()))
                 .addMeasurements(graphiteMeasurements);
 
-        if (queryExecution.getPrestoQueryId().isPresent()) {
-            requestBuilder.addAttribute("prestoQueryId", queryExecution.getPrestoQueryId().get());
-            requestBuilder.addMeasurements(prestoClient.loadMetrics(queryExecution.getPrestoQueryId().get()));
+        if (executionResult.getPrestoQueryId().isPresent()) {
+            requestBuilder.addAttribute("prestoQueryId", executionResult.getPrestoQueryId().get());
+            requestBuilder.addMeasurements(prestoClient.loadMetrics(executionResult.getPrestoQueryId().get()));
         }
 
-        if (!queryExecution.isSuccessful()) {
-            requestBuilder.addAttribute("failureMessage", queryExecution.getFailureCause().getMessage());
-            requestBuilder.addAttribute("failureStackTrace", stackTraceToString(queryExecution));
+        if (!executionResult.isSuccessful()) {
+            requestBuilder.addAttribute("failureMessage", executionResult.getFailureCause().getMessage());
+            requestBuilder.addAttribute("failureStackTrace", stackTraceToString(executionResult));
 
-            if (queryExecution.getFailureCause() instanceof SQLException) {
-                requestBuilder.addAttribute("failureSQLErrorCode", "" + ((SQLException) queryExecution.getFailureCause()).getErrorCode());
+            if (executionResult.getFailureCause() instanceof SQLException) {
+                requestBuilder.addAttribute("failureSQLErrorCode", "" + ((SQLException) executionResult.getFailureCause()).getErrorCode());
             }
         }
 
-        benchmarkServiceClient.finishExecution(benchmarkQuery.getName(), benchmarkSequenceId(), executionSequenceId(run), requestBuilder.build());
+        benchmarkServiceClient.finishExecution(executionResult.getBenchmark().getName(), benchmarkSequenceId(),
+                executionSequenceId(executionResult.getQueryExecution()), requestBuilder.build());
     }
 
     @Override
@@ -123,8 +127,8 @@ public class BenchmarkServiceBenchmarkExecutionListener
         return benchmarkProperties.getExecutionSequenceId();
     }
 
-    private String executionSequenceId(int run)
+    private String executionSequenceId(QueryExecution execution)
     {
-        return "" + run;
+        return "" + execution.getRun();
     }
 }

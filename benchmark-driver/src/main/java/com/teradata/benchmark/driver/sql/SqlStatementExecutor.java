@@ -4,8 +4,7 @@
 package com.teradata.benchmark.driver.sql;
 
 import com.facebook.presto.jdbc.PrestoResultSet;
-import com.teradata.benchmark.driver.Query;
-import com.teradata.benchmark.driver.sql.QueryExecution.QueryExecutionBuilder;
+import com.teradata.benchmark.driver.sql.QueryExecutionResult.QueryExecutionResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +25,16 @@ public class SqlStatementExecutor
     @Autowired
     private DataSource dataSource;
 
-    public QueryExecution executeQuery(Query query)
+    public QueryExecutionResult executeQuery(QueryExecution queryExecution)
     {
-        LOG.debug("Executing query {}: {}", query.getName(), query.getSql());
+        LOG.debug("Executing query {}: {}", queryExecution.getQuery().getName(), queryExecution.getQuery().getSql());
 
-        QueryExecutionBuilder queryExecutionBuilder = new QueryExecutionBuilder()
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution)
                 .startTimer();
         try (
                 Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query.getSql())
+                ResultSet resultSet = statement.executeQuery(queryExecution.getQuery().getSql())
         ) {
             int rowsCount = 0;
             if (resultSet.next()) {
@@ -45,7 +44,7 @@ public class SqlStatementExecutor
             try {
                 if (resultSet.isWrapperFor(PrestoResultSet.class)) {
                     PrestoResultSet prestoResultSet = resultSet.unwrap(PrestoResultSet.class);
-                    queryExecutionBuilder.setPrestoQueryId(prestoResultSet.getQueryId());
+                    queryExecutionResultBuilder.setPrestoQueryId(prestoResultSet.getQueryId());
                 }
             }
             catch (AbstractMethodError e) {
@@ -53,13 +52,13 @@ public class SqlStatementExecutor
                 LOG.warn("Driver ({}) does not support isWrapperFor/unwrap method", connection.toString());
             }
 
-            queryExecutionBuilder.setRowsCount(rowsCount);
+            queryExecutionResultBuilder.setRowsCount(rowsCount);
         }
         catch (SQLException e) {
-            queryExecutionBuilder.failed(e);
+            queryExecutionResultBuilder.failed(e);
         }
 
-        return queryExecutionBuilder
+        return queryExecutionResultBuilder
                 .endTimer()
                 .build();
     }

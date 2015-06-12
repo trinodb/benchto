@@ -4,7 +4,6 @@
 package com.teradata.benchmark.driver.graphite;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
-import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.service.Measurement;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +34,7 @@ public class GraphiteMetricsLoader
     private GraphiteClient graphiteClient;
 
     @Autowired
-    private BenchmarkProperties properties;
+    private GraphiteProperties graphiteProperties;
 
     private Map<String, String> queryMetrics;
 
@@ -44,22 +42,21 @@ public class GraphiteMetricsLoader
     public void initQueryMetrics()
     {
         queryMetrics = newHashMap();
-        properties.getCpuGraphiteExpr().ifPresent(value -> queryMetrics.put("cpu", value));
-        properties.getMemoryGraphiteExpr().ifPresent(value -> queryMetrics.put("memory", value));
-        properties.getNetworkGraphiteExpr().ifPresent(value -> queryMetrics.put("network", value));
-        properties.getNetworkGraphiteExpr().ifPresent(value -> queryMetrics.put("network_total", format("integral(%s)", value)));
+        graphiteProperties.getCpuGraphiteExpr().ifPresent(value -> queryMetrics.put("cpu", value));
+        graphiteProperties.getMemoryGraphiteExpr().ifPresent(value -> queryMetrics.put("memory", value));
+        graphiteProperties.getNetworkGraphiteExpr().ifPresent(value -> queryMetrics.put("network", value));
+        graphiteProperties.getNetworkGraphiteExpr().ifPresent(value -> queryMetrics.put("network_total", format("integral(%s)", value)));
     }
 
     public List<Measurement> loadMetrics(ZonedDateTime from, ZonedDateTime to)
     {
-        if (queryMetrics.isEmpty()) {
+        Optional<Integer> cutOffThresholdSeconds = graphiteProperties.cutOffThresholdSecondsForMeasurementReporting();
+        if (queryMetrics.isEmpty() || !cutOffThresholdSeconds.isPresent()) {
             return ImmutableList.of();
         }
 
-        // TODO: ugly hack - we need to fix this
-        if (Duration.between(from, to).toMinutes() < 5) {
-            from = from.minusMinutes(5);
-        }
+        from = from.minusSeconds(cutOffThresholdSeconds.get());
+        to = to.plusSeconds(cutOffThresholdSeconds.get());
 
         LOG.debug("Loading metrics {} - from: {}, to: {}", queryMetrics, from, to);
 
@@ -67,23 +64,23 @@ public class GraphiteMetricsLoader
 
         List<Measurement> measurements = newArrayList();
 
-        if (properties.getCpuGraphiteExpr().isPresent() && loadedMetrics.containsKey("cpu")) {
+        if (graphiteProperties.getCpuGraphiteExpr().isPresent() && loadedMetrics.containsKey("cpu")) {
             addMeanMaxMeasurements(loadedMetrics, measurements, "cpu", "PERCENT");
         }
 
-        if (properties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("memory")) {
+        if (graphiteProperties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("memory")) {
             addMeanMaxMeasurements(loadedMetrics, measurements, "memory", "BYTES");
         }
 
-        if (properties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("network")) {
+        if (graphiteProperties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("network")) {
             addMeanMaxMeasurements(loadedMetrics, measurements, "network", "BYTES");
         }
 
-        if (properties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("network_total")) {
+        if (graphiteProperties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("network_total")) {
             double[] metricValues = loadedMetrics.get("network_total");
             if (metricValues.length > 0) {
-                // last measurement contains total over time
-                double totalBytes = metricValues[metricValues.length - 1];
+                // last non zero measurement contains total over time
+                double totalBytes = getLastValueGreaterThanZero(metricValues);
                 measurements.add(measurement("network_total", "BYTES", totalBytes));
             }
         }
@@ -113,5 +110,15 @@ public class GraphiteMetricsLoader
         else {
             return Optional.empty();
         }
+    }
+
+    private double getLastValueGreaterThanZero(double[] metricValues)
+    {
+        for (int i = metricValues.length - 1; i >= 0; --i) {
+            if (metricValues[i] > 0.0) {
+                return metricValues[i];
+            }
+        }
+        return 0;
     }
 }

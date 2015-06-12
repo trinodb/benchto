@@ -6,10 +6,18 @@ spring:
     driver-class-name: org.hsqldb.jdbcDriver
 
 benchmark-service:
-  url: http://localhost:8080
+  url: http://benchmark-service:8080
 
 environment:
   name: TEST_ENV
 
 presto:
   url: http://presto-test-master:8090
+
+graphite:
+  url: http://graphite:18088
+  resolution.seconds: 5
+  metrics:
+    cpu: TARGET_CPU
+    memory: TARGET_MEMORY
+    network: TARGET_NETWORK
