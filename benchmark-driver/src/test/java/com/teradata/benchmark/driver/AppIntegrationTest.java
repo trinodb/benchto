@@ -3,17 +3,10 @@
  */
 package com.teradata.benchmark.driver;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpMethod;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
-import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -23,25 +16,12 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = App.class)
-@IntegrationTest({"executionSequenceId=BEN_SEQ_ID", "runs=2"})
 public class AppIntegrationTest
+        extends IntegrationTest
 {
 
     @Autowired
     private BenchmarkDriver benchmarkDriver;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    private MockRestServiceServer restServiceServer;
-
-    @Before
-    public void initializeRestServiceServer()
-    {
-        restServiceServer = MockRestServiceServer.createServer(restTemplate);
-    }
 
     @Test
     public void benchmarkTestQuery()

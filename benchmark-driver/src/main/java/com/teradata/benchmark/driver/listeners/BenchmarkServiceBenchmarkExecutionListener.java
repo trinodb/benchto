@@ -7,6 +7,7 @@ import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.BenchmarkResult;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.graphite.GraphiteMetricsLoader;
+import com.teradata.benchmark.driver.presto.PrestoClient;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.BenchmarkStartRequest;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
@@ -45,6 +46,9 @@ public class BenchmarkServiceBenchmarkExecutionListener
 
     @Autowired
     private GraphiteMetricsLoader graphiteMetricsLoader;
+
+    @Autowired
+    private PrestoClient prestoClient;
 
     @Autowired
     private BenchmarkServiceClient benchmarkServiceClient;
@@ -93,6 +97,7 @@ public class BenchmarkServiceBenchmarkExecutionListener
 
         if (queryExecution.getPrestoQueryId().isPresent()) {
             requestBuilder.addAttribute("prestoQueryId", queryExecution.getPrestoQueryId().get());
+            requestBuilder.addMeasurements(prestoClient.loadMetrics(queryExecution.getPrestoQueryId().get()));
         }
 
         if (!queryExecution.isSuccessful()) {

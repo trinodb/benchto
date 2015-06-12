@@ -10,3 +10,6 @@ benchmark-service:
 
 environment:
   name: TEST_ENV
+
+presto:
+  url: http://presto-test-master:8090

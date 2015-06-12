@@ -17,3 +17,6 @@ graphite:
     cpu: asPercent(sumSeries(hadoop-r3.HDPSlaves.*.cpu_{user,system,wio}),sumSeries(hadoop-r3.HDPSlaves.*.cpu_{aidle,idle,nice,system,user,wio}))
     memory: diffSeries(sumSeries(hadoop-r3.HDPSlaves.*.mem_total),sumSeries(hadoop-r3.HDPSlaves.*.mem_free))
     network: sumSeries(hadoop-r3.HDPSlaves.*.bytes_{in,out})
+
+presto:
+  url: http://localhost:8090

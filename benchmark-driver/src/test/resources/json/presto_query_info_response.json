@@ -1,0 +1,2645 @@
+{
+  "queryId" : "20150612_132633_00081_48m6q",
+  "session" : {
+    "user" : "hdfs",
+    "source" : "presto-jdbc",
+    "catalog" : "hive",
+    "schema" : "default",
+    "timeZoneKey" : 2103,
+    "locale" : "en_US",
+    "remoteUserAddress" : "153.65.66.153",
+    "userAgent" : "StatementClient/0.101",
+    "startTime" : 1434115593566,
+    "systemProperties" : { },
+    "catalogProperties" : { }
+  },
+  "state" : "FINISHED",
+  "scheduled" : true,
+  "self" : "http://10.25.17.79:8090/v1/query/20150612_132633_00081_48m6q",
+  "fieldNames" : [ "nation", "o_year", "sum_profit" ],
+  "query" : "SELECT   nation,   o_year,   sum(amount) AS sum_profit FROM (        SELECT          n_name                                                          AS nation,          extract(YEAR FROM o_orderdate)                                  AS o_year,          l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity AS amount        FROM          part,          supplier,          lineitem,          partsupp,          orders,          nation        WHERE          s_suppkey = l_suppkey          AND ps_suppkey = l_suppkey          AND ps_partkey = l_partkey          AND p_partkey = l_partkey          AND o_orderkey = l_orderkey          AND s_nationkey = n_nationkey          AND p_name LIKE \u0027%green%\u0027      ) AS profit GROUP BY   nation,   o_year ORDER BY   nation,   o_year DESC ",
+  "queryStats" : {
+    "createTime" : "2015-06-12T13:26:33.567Z",
+    "executionStartTime" : "2015-06-12T13:26:33.595Z",
+    "lastHeartbeat" : "2015-06-12T13:47:55.139Z",
+    "endTime" : "2015-06-12T13:27:13.722Z",
+    "elapsedTime" : "40.16s",
+    "queuedTime" : "2.52ms",
+    "analysisTime" : "21.07ms",
+    "distributedPlanningTime" : "1.01ms",
+    "totalPlanningTime" : "24.72ms",
+    "totalTasks" : 24,
+    "runningTasks" : 0,
+    "completedTasks" : 24,
+    "totalDrivers" : 45,
+    "queuedDrivers" : 0,
+    "runningDrivers" : 0,
+    "completedDrivers" : 45,
+    "totalMemoryReservation" : "0B",
+    "totalScheduledTime" : "1.10m",
+    "totalCpuTime" : "1.06m",
+    "totalUserTime" : "1.04m",
+    "totalBlockedTime" : "4.79m",
+    "rawInputDataSize" : "1.34GB",
+    "rawInputPositions" : 16822480,
+    "processedInputDataSize" : "739.61MB",
+    "processedInputPositions" : 16633144,
+    "outputDataSize" : "6.90kB",
+    "outputPositions" : 175
+  },
+  "setSessionProperties" : { },
+  "resetSessionProperties" : [ ],
+  "outputStage" : {
+    "stageId" : "20150612_132633_00081_48m6q.0",
+    "state" : "FINISHED",
+    "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.0",
+    "plan" : {
+      "id" : "7",
+      "root" : {
+        "type" : "output",
+        "id" : "23",
+        "source" : {
+          "type" : "sort",
+          "id" : "19",
+          "source" : {
+            "type" : "remoteSource",
+            "id" : "54",
+            "sourceFragmentIds" : [ "6" ],
+            "outputs" : [ "n_name", "expr", "sum" ]
+          },
+          "orderBy" : [ "n_name", "expr" ],
+          "orderings" : {
+            "n_name" : "ASC_NULLS_LAST",
+            "expr" : "DESC_NULLS_LAST"
+          }
+        },
+        "columns" : [ "nation", "o_year", "sum_profit" ],
+        "outputs" : [ "n_name", "expr", "sum" ]
+      },
+      "symbols" : {
+        "sum" : "double",
+        "n_name" : "varchar",
+        "expr" : "bigint"
+      },
+      "outputLayout" : [ "n_name", "expr", "sum" ],
+      "distribution" : "SINGLE",
+      "outputPartitioning" : "NONE",
+      "partitionBy" : [ ],
+      "hash" : null
+    },
+    "types" : [ "varchar", "bigint", "double" ],
+    "stageStats" : {
+      "schedulingComplete" : "2015-06-12T13:26:33.595Z",
+      "getSplitDistribution" : {
+        "maxError" : "NaN",
+        "count" : 0.0,
+        "total" : 0.0,
+        "p01" : -9223372036854775808,
+        "p05" : -9223372036854775808,
+        "p10" : -9223372036854775808,
+        "p25" : -9223372036854775808,
+        "p50" : -9223372036854775808,
+        "p75" : -9223372036854775808,
+        "p90" : -9223372036854775808,
+        "p95" : -9223372036854775808,
+        "p99" : -9223372036854775808,
+        "min" : 9223372036854775807,
+        "max" : -9223372036854775808
+      },
+      "scheduleTaskDistribution" : {
+        "maxError" : "NaN",
+        "count" : 0.0,
+        "total" : 0.0,
+        "p01" : -9223372036854775808,
+        "p05" : -9223372036854775808,
+        "p10" : -9223372036854775808,
+        "p25" : -9223372036854775808,
+        "p50" : -9223372036854775808,
+        "p75" : -9223372036854775808,
+        "p90" : -9223372036854775808,
+        "p95" : -9223372036854775808,
+        "p99" : -9223372036854775808,
+        "min" : 9223372036854775807,
+        "max" : -9223372036854775808
+      },
+      "addSplitDistribution" : {
+        "maxError" : "NaN",
+        "count" : 0.0,
+        "total" : 0.0,
+        "p01" : -9223372036854775808,
+        "p05" : -9223372036854775808,
+        "p10" : -9223372036854775808,
+        "p25" : -9223372036854775808,
+        "p50" : -9223372036854775808,
+        "p75" : -9223372036854775808,
+        "p90" : -9223372036854775808,
+        "p95" : -9223372036854775808,
+        "p99" : -9223372036854775808,
+        "min" : 9223372036854775807,
+        "max" : -9223372036854775808
+      },
+      "totalTasks" : 1,
+      "runningTasks" : 0,
+      "completedTasks" : 1,
+      "totalDrivers" : 1,
+      "queuedDrivers" : 0,
+      "runningDrivers" : 0,
+      "completedDrivers" : 1,
+      "totalMemoryReservation" : "0B",
+      "totalScheduledTime" : "4.71ms",
+      "totalCpuTime" : "668.21us",
+      "totalUserTime" : "0.00ns",
+      "totalBlockedTime" : "40.11s",
+      "rawInputDataSize" : "5.73kB",
+      "rawInputPositions" : 175,
+      "processedInputDataSize" : "5.73kB",
+      "processedInputPositions" : 175,
+      "outputDataSize" : "6.90kB",
+      "outputPositions" : 175
+    },
+    "tasks" : [ {
+      "taskId" : "20150612_132633_00081_48m6q.0.0",
+      "nodeInstanceId" : "f8de774c-ae11-4b7b-8b45-3997a75cff15",
+      "version" : 643,
+      "state" : "FINISHED",
+      "self" : "http://10.25.17.71:8090/v1/task/20150612_132633_00081_48m6q.0.0",
+      "lastHeartbeat" : "2015-06-12T13:28:27.589Z",
+      "outputBuffers" : {
+        "state" : "FINISHED",
+        "masterSequenceId" : 0,
+        "pagesAdded" : 1,
+        "buffers" : [ {
+          "bufferId" : "output.buffer.id",
+          "finished" : true,
+          "bufferedPages" : 0,
+          "pagesSent" : 1
+        } ]
+      },
+      "noMoreSplits" : [ "54" ],
+      "stats" : {
+        "createTime" : "2015-06-12T13:27:47.517Z",
+        "firstStartTime" : "2015-06-12T13:27:47.518Z",
+        "lastStartTime" : "2015-06-12T13:27:47.518Z",
+        "endTime" : "2015-06-12T13:28:27.638Z",
+        "elapsedTime" : "40.12s",
+        "queuedTime" : "1.25ms",
+        "totalDrivers" : 1,
+        "queuedDrivers" : 0,
+        "queuedPartitionedDrivers" : 0,
+        "runningDrivers" : 0,
+        "runningPartitionedDrivers" : 0,
+        "completedDrivers" : 1,
+        "memoryReservation" : "0B",
+        "totalScheduledTime" : "4.71ms",
+        "totalCpuTime" : "668.21us",
+        "totalUserTime" : "0.00ns",
+        "totalBlockedTime" : "40.11s",
+        "rawInputDataSize" : "5.73kB",
+        "rawInputPositions" : 175,
+        "processedInputDataSize" : "5.73kB",
+        "processedInputPositions" : 175,
+        "outputDataSize" : "6.90kB",
+        "outputPositions" : 175,
+        "pipelines" : [ ]
+      },
+      "failures" : [ ]
+    } ],
+    "subStages" : [ {
+      "stageId" : "20150612_132633_00081_48m6q.1",
+      "state" : "FINISHED",
+      "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.1",
+      "plan" : {
+        "id" : "6",
+        "root" : {
+          "type" : "aggregation",
+          "id" : "17",
+          "source" : {
+            "type" : "remoteSource",
+            "id" : "52",
+            "sourceFragmentIds" : [ "5" ],
+            "outputs" : [ "n_name", "expr", "sum_50" ]
+          },
+          "groupBy" : [ "n_name", "expr" ],
+          "aggregations" : {
+            "sum" : "\"sum\"(\"sum_50\")"
+          },
+          "functions" : {
+            "sum" : {
+              "name" : "sum",
+              "typeParameters" : [ ],
+              "returnType" : "double",
+              "argumentTypes" : [ "double" ],
+              "variableArity" : false,
+              "internal" : false
+            }
+          },
+          "masks" : { },
+          "step" : "FINAL",
+          "sampleWeight" : null,
+          "confidence" : 1.0,
+          "hashSymbol" : null
+        },
+        "symbols" : {
+          "sum" : "double",
+          "n_name" : "varchar",
+          "expr" : "bigint",
+          "sum_50" : "double"
+        },
+        "outputLayout" : [ "n_name", "expr", "sum" ],
+        "distribution" : "FIXED",
+        "outputPartitioning" : "NONE",
+        "partitionBy" : [ ],
+        "hash" : null
+      },
+      "types" : [ "varchar", "bigint", "double" ],
+      "stageStats" : {
+        "schedulingComplete" : "2015-06-12T13:26:33.597Z",
+        "getSplitDistribution" : {
+          "maxError" : "NaN",
+          "count" : 0.0,
+          "total" : 0.0,
+          "p01" : -9223372036854775808,
+          "p05" : -9223372036854775808,
+          "p10" : -9223372036854775808,
+          "p25" : -9223372036854775808,
+          "p50" : -9223372036854775808,
+          "p75" : -9223372036854775808,
+          "p90" : -9223372036854775808,
+          "p95" : -9223372036854775808,
+          "p99" : -9223372036854775808,
+          "min" : 9223372036854775807,
+          "max" : -9223372036854775808
+        },
+        "scheduleTaskDistribution" : {
+          "maxError" : "NaN",
+          "count" : 0.0,
+          "total" : 0.0,
+          "p01" : -9223372036854775808,
+          "p05" : -9223372036854775808,
+          "p10" : -9223372036854775808,
+          "p25" : -9223372036854775808,
+          "p50" : -9223372036854775808,
+          "p75" : -9223372036854775808,
+          "p90" : -9223372036854775808,
+          "p95" : -9223372036854775808,
+          "p99" : -9223372036854775808,
+          "min" : 9223372036854775807,
+          "max" : -9223372036854775808
+        },
+        "addSplitDistribution" : {
+          "maxError" : "NaN",
+          "count" : 0.0,
+          "total" : 0.0,
+          "p01" : -9223372036854775808,
+          "p05" : -9223372036854775808,
+          "p10" : -9223372036854775808,
+          "p25" : -9223372036854775808,
+          "p50" : -9223372036854775808,
+          "p75" : -9223372036854775808,
+          "p90" : -9223372036854775808,
+          "p95" : -9223372036854775808,
+          "p99" : -9223372036854775808,
+          "min" : 9223372036854775807,
+          "max" : -9223372036854775808
+        },
+        "totalTasks" : 6,
+        "runningTasks" : 0,
+        "completedTasks" : 6,
+        "totalDrivers" : 6,
+        "queuedDrivers" : 0,
+        "runningDrivers" : 0,
+        "completedDrivers" : 6,
+        "totalMemoryReservation" : "0B",
+        "totalScheduledTime" : "3.07ms",
+        "totalCpuTime" : "3.03ms",
+        "totalUserTime" : "0.00ns",
+        "totalBlockedTime" : "4.01m",
+        "rawInputDataSize" : "5.73kB",
+        "rawInputPositions" : 175,
+        "processedInputDataSize" : "5.73kB",
+        "processedInputPositions" : 175,
+        "outputDataSize" : "17.40kB",
+        "outputPositions" : 175
+      },
+      "tasks" : [ {
+        "taskId" : "20150612_132633_00081_48m6q.1.1",
+        "nodeInstanceId" : "435d622b-567d-41ab-bc7e-d9e12ec6b0f9",
+        "version" : 646,
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.69:8090/v1/task/20150612_132633_00081_48m6q.1.1",
+        "lastHeartbeat" : "2015-06-12T13:29:43.749Z",
+        "outputBuffers" : {
+          "state" : "FINISHED",
+          "masterSequenceId" : 0,
+          "pagesAdded" : 1,
+          "buffers" : [ {
+            "bufferId" : "20150612_132633_00081_48m6q.0.0",
+            "finished" : true,
+            "bufferedPages" : 0,
+            "pagesSent" : 1
+          } ]
+        },
+        "noMoreSplits" : [ "52" ],
+        "stats" : {
+          "createTime" : "2015-06-12T13:29:03.673Z",
+          "firstStartTime" : "2015-06-12T13:29:03.674Z",
+          "lastStartTime" : "2015-06-12T13:29:03.674Z",
+          "endTime" : "2015-06-12T13:29:43.791Z",
+          "elapsedTime" : "40.12s",
+          "queuedTime" : "603.25us",
+          "totalDrivers" : 1,
+          "queuedDrivers" : 0,
+          "queuedPartitionedDrivers" : 0,
+          "runningDrivers" : 0,
+          "runningPartitionedDrivers" : 0,
+          "completedDrivers" : 1,
+          "memoryReservation" : "0B",
+          "totalScheduledTime" : "975.89us",
+          "totalCpuTime" : "941.88us",
+          "totalUserTime" : "0.00ns",
+          "totalBlockedTime" : "40.11s",
+          "rawInputDataSize" : "937B",
+          "rawInputPositions" : 28,
+          "processedInputDataSize" : "937B",
+          "processedInputPositions" : 28,
+          "outputDataSize" : "2.86kB",
+          "outputPositions" : 28,
+          "pipelines" : [ ]
+        },
+        "failures" : [ ]
+      }, {
+        "taskId" : "20150612_132633_00081_48m6q.1.2",
+        "nodeInstanceId" : "770cdf6b-51dc-402c-8cf7-fe678ef5a16c",
+        "version" : 644,
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.73:8090/v1/task/20150612_132633_00081_48m6q.1.2",
+        "lastHeartbeat" : "2015-06-12T13:30:53.340Z",
+        "outputBuffers" : {
+          "state" : "FINISHED",
+          "masterSequenceId" : 0,
+          "pagesAdded" : 1,
+          "buffers" : [ {
+            "bufferId" : "20150612_132633_00081_48m6q.0.0",
+            "finished" : true,
+            "bufferedPages" : 0,
+            "pagesSent" : 1
+          } ]
+        },
+        "noMoreSplits" : [ "52" ],
+        "stats" : {
+          "createTime" : "2015-06-12T13:30:13.267Z",
+          "firstStartTime" : "2015-06-12T13:30:13.269Z",
+          "lastStartTime" : "2015-06-12T13:30:13.269Z",
+          "endTime" : "2015-06-12T13:30:53.383Z",
+          "elapsedTime" : "40.12s",
+          "queuedTime" : "1.38ms",
+          "totalDrivers" : 1,
+          "queuedDrivers" : 0,
+          "queuedPartitionedDrivers" : 0,
+          "runningDrivers" : 0,
+          "runningPartitionedDrivers" : 0,
+          "completedDrivers" : 1,
+          "memoryReservation" : "0B",
+          "totalScheduledTime" : "428.59us",
+          "totalCpuTime" : "427.36us",
+          "totalUserTime" : "0.00ns",
+          "totalBlockedTime" : "40.11s",
+          "rawInputDataSize" : "1.01kB",
+          "rawInputPositions" : 31,
+          "processedInputDataSize" : "1.01kB",
+          "processedInputPositions" : 31,
+          "outputDataSize" : "2.95kB",
+          "outputPositions" : 31,
+          "pipelines" : [ ]
+        },
+        "failures" : [ ]
+      }, {
+        "taskId" : "20150612_132633_00081_48m6q.1.3",
+        "nodeInstanceId" : "6b9399c8-d953-4185-b84a-daa73b7cac4d",
+        "version" : 644,
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.79:8090/v1/task/20150612_132633_00081_48m6q.1.3",
+        "lastHeartbeat" : "2015-06-12T13:27:13.687Z",
+        "outputBuffers" : {
+          "state" : "FINISHED",
+          "masterSequenceId" : 0,
+          "pagesAdded" : 1,
+          "buffers" : [ {
+            "bufferId" : "20150612_132633_00081_48m6q.0.0",
+            "finished" : true,
+            "bufferedPages" : 0,
+            "pagesSent" : 1
+          } ]
+        },
+        "noMoreSplits" : [ "52" ],
+        "stats" : {
+          "createTime" : "2015-06-12T13:26:33.597Z",
+          "firstStartTime" : "2015-06-12T13:26:33.598Z",
+          "lastStartTime" : "2015-06-12T13:26:33.598Z",
+          "endTime" : "2015-06-12T13:27:13.716Z",
+          "elapsedTime" : "40.12s",
+          "queuedTime" : "424.25us",
+          "totalDrivers" : 1,
+          "queuedDrivers" : 0,
+          "queuedPartitionedDrivers" : 0,
+          "runningDrivers" : 0,
+          "runningPartitionedDrivers" : 0,
+          "completedDrivers" : 1,
+          "memoryReservation" : "0B",
+          "totalScheduledTime" : "494.56us",
+          "totalCpuTime" : "494.48us",
+          "totalUserTime" : "0.00ns",
+          "totalBlockedTime" : "40.11s",
+          "rawInputDataSize" : "999B",
+          "rawInputPositions" : 30,
+          "processedInputDataSize" : "999B",
+          "processedInputPositions" : 30,
+          "outputDataSize" : "2.92kB",
+          "outputPositions" : 30,
+          "pipelines" : [ ]
+        },
+        "failures" : [ ]
+      }, {
+        "taskId" : "20150612_132633_00081_48m6q.1.4",
+        "nodeInstanceId" : "4047be17-773f-429f-acc1-21813db29211",
+        "version" : 644,
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.77:8090/v1/task/20150612_132633_00081_48m6q.1.4",
+        "lastHeartbeat" : "2015-06-12T13:29:29.051Z",
+        "outputBuffers" : {
+          "state" : "FINISHED",
+          "masterSequenceId" : 0,
+          "pagesAdded" : 1,
+          "buffers" : [ {
+            "bufferId" : "20150612_132633_00081_48m6q.0.0",
+            "finished" : true,
+            "bufferedPages" : 0,
+            "pagesSent" : 1
+          } ]
+        },
+        "noMoreSplits" : [ "52" ],
+        "stats" : {
+          "createTime" : "2015-06-12T13:28:48.984Z",
+          "firstStartTime" : "2015-06-12T13:28:48.985Z",
+          "lastStartTime" : "2015-06-12T13:28:48.985Z",
+          "endTime" : "2015-06-12T13:29:29.100Z",
+          "elapsedTime" : "40.12s",
+          "queuedTime" : "722.84us",
+          "totalDrivers" : 1,
+          "queuedDrivers" : 0,
+          "queuedPartitionedDrivers" : 0,
+          "runningDrivers" : 0,
+          "runningPartitionedDrivers" : 0,
+          "completedDrivers" : 1,
+          "memoryReservation" : "0B",
+          "totalScheduledTime" : "388.07us",
+          "totalCpuTime" : "387.29us",
+          "totalUserTime" : "0.00ns",
+          "totalBlockedTime" : "40.11s",
+          "rawInputDataSize" : "953B",
+          "rawInputPositions" : 28,
+          "processedInputDataSize" : "953B",
+          "processedInputPositions" : 28,
+          "outputDataSize" : "2.88kB",
+          "outputPositions" : 28,
+          "pipelines" : [ ]
+        },
+        "failures" : [ ]
+      }, {
+        "taskId" : "20150612_132633_00081_48m6q.1.5",
+        "nodeInstanceId" : "c6ea308f-a0bf-4f89-89cf-c51f16ae231a",
+        "version" : 641,
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.75:8090/v1/task/20150612_132633_00081_48m6q.1.5",
+        "lastHeartbeat" : "2015-06-12T13:33:53.035Z",
+        "outputBuffers" : {
+          "state" : "FINISHED",
+          "masterSequenceId" : 0,
+          "pagesAdded" : 1,
+          "buffers" : [ {
+            "bufferId" : "20150612_132633_00081_48m6q.0.0",
+            "finished" : true,
+            "bufferedPages" : 0,
+            "pagesSent" : 1
+          } ]
+        },
+        "noMoreSplits" : [ "52" ],
+        "stats" : {
+          "createTime" : "2015-06-12T13:33:12.974Z",
+          "firstStartTime" : "2015-06-12T13:33:12.975Z",
+          "lastStartTime" : "2015-06-12T13:33:12.975Z",
+          "endTime" : "2015-06-12T13:33:53.091Z",
+          "elapsedTime" : "40.12s",
+          "queuedTime" : "458.03us",
+          "totalDrivers" : 1,
+          "queuedDrivers" : 0,
+          "queuedPartitionedDrivers" : 0,
+          "runningDrivers" : 0,
+          "runningPartitionedDrivers" : 0,
+          "completedDrivers" : 1,
+          "memoryReservation" : "0B",
+          "totalScheduledTime" : "374.05us",
+          "totalCpuTime" : "373.25us",
+          "totalUserTime" : "0.00ns",
+          "totalBlockedTime" : "40.11s",
+          "rawInputDataSize" : "965B",
+          "rawInputPositions" : 29,
+          "processedInputDataSize" : "965B",
+          "processedInputPositions" : 29,
+          "outputDataSize" : "2.89kB",
+          "outputPositions" : 29,
+          "pipelines" : [ ]
+        },
+        "failures" : [ ]
+      }, {
+        "taskId" : "20150612_132633_00081_48m6q.1.0",
+        "nodeInstanceId" : "f8de774c-ae11-4b7b-8b45-3997a75cff15",
+        "version" : 645,
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.71:8090/v1/task/20150612_132633_00081_48m6q.1.0",
+        "lastHeartbeat" : "2015-06-12T13:28:27.589Z",
+        "outputBuffers" : {
+          "state" : "FINISHED",
+          "masterSequenceId" : 0,
+          "pagesAdded" : 1,
+          "buffers" : [ {
+            "bufferId" : "20150612_132633_00081_48m6q.0.0",
+            "finished" : true,
+            "bufferedPages" : 0,
+            "pagesSent" : 1
+          } ]
+        },
+        "noMoreSplits" : [ "52" ],
+        "stats" : {
+          "createTime" : "2015-06-12T13:27:47.517Z",
+          "firstStartTime" : "2015-06-12T13:27:47.518Z",
+          "lastStartTime" : "2015-06-12T13:27:47.518Z",
+          "endTime" : "2015-06-12T13:28:27.632Z",
+          "elapsedTime" : "40.11s",
+          "queuedTime" : "1.19ms",
+          "totalDrivers" : 1,
+          "queuedDrivers" : 0,
+          "queuedPartitionedDrivers" : 0,
+          "runningDrivers" : 0,
+          "runningPartitionedDrivers" : 0,
+          "completedDrivers" : 1,
+          "memoryReservation" : "0B",
+          "totalScheduledTime" : "410.19us",
+          "totalCpuTime" : "409.20us",
+          "totalUserTime" : "0.00ns",
+          "totalBlockedTime" : "40.11s",
+          "rawInputDataSize" : "976B",
+          "rawInputPositions" : 29,
+          "processedInputDataSize" : "976B",
+          "processedInputPositions" : 29,
+          "outputDataSize" : "2.90kB",
+          "outputPositions" : 29,
+          "pipelines" : [ ]
+        },
+        "failures" : [ ]
+      } ],
+      "subStages" : [ {
+        "stageId" : "20150612_132633_00081_48m6q.2",
+        "state" : "FINISHED",
+        "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.2",
+        "plan" : {
+          "id" : "5",
+          "root" : {
+            "type" : "aggregation",
+            "id" : "53",
+            "source" : {
+              "type" : "project",
+              "id" : "12",
+              "source" : {
+                "type" : "join",
+                "id" : "10",
+                "type" : "INNER",
+                "left" : {
+                  "type" : "project",
+                  "id" : "45",
+                  "source" : {
+                    "type" : "join",
+                    "id" : "8",
+                    "type" : "INNER",
+                    "left" : {
+                      "type" : "project",
+                      "id" : "43",
+                      "source" : {
+                        "type" : "join",
+                        "id" : "6",
+                        "type" : "INNER",
+                        "left" : {
+                          "type" : "project",
+                          "id" : "41",
+                          "source" : {
+                            "type" : "join",
+                            "id" : "4",
+                            "type" : "INNER",
+                            "left" : {
+                              "type" : "project",
+                              "id" : "39",
+                              "source" : {
+                                "type" : "join",
+                                "id" : "2",
+                                "type" : "INNER",
+                                "left" : {
+                                  "type" : "project",
+                                  "id" : "37",
+                                  "source" : {
+                                    "type" : "filter",
+                                    "id" : "35",
+                                    "source" : {
+                                      "type" : "tablescan",
+                                      "id" : "0",
+                                      "table" : {
+                                        "connectorId" : "hive",
+                                        "connectorHandle" : {
+                                          "type" : "hive",
+                                          "clientId" : "hive",
+                                          "schemaName" : "default",
+                                          "tableName" : "part",
+                                          "session" : {
+                                            "user" : "hdfs",
+                                            "timeZoneKey" : 2103,
+                                            "locale" : "en_US",
+                                            "startTime" : 1434115593566,
+                                            "properties" : { }
+                                          }
+                                        }
+                                      },
+                                      "outputSymbols" : [ "p_partkey", "p_name" ],
+                                      "assignments" : {
+                                        "p_partkey" : {
+                                          "connectorId" : "hive",
+                                          "connectorHandle" : {
+                                            "type" : "hive",
+                                            "clientId" : "hive",
+                                            "name" : "p_partkey",
+                                            "ordinalPosition" : 0,
+                                            "hiveType" : "int",
+                                            "typeSignature" : "bigint",
+                                            "hiveColumnIndex" : 0,
+                                            "partitionKey" : false
+                                          }
+                                        },
+                                        "p_name" : {
+                                          "connectorId" : "hive",
+                                          "connectorHandle" : {
+                                            "type" : "hive",
+                                            "clientId" : "hive",
+                                            "name" : "p_name",
+                                            "ordinalPosition" : 1,
+                                            "hiveType" : "string",
+                                            "typeSignature" : "varchar",
+                                            "hiveColumnIndex" : 1,
+                                            "partitionKey" : false
+                                          }
+                                        }
+                                      },
+                                      "originalConstraint" : "(\"p_name\" LIKE \u0027%green%\u0027)",
+                                      "partitionDomainSummary" : "TupleDomain:ALL"
+                                    },
+                                    "predicate" : "(\"p_name\" LIKE \u0027%green%\u0027)"
+                                  },
+                                  "assignments" : {
+                                    "expr_22" : "0",
+                                    "p_partkey" : "\"p_partkey\""
+                                  }
+                                },
+                                "right" : {
+                                  "type" : "remoteSource",
+                                  "id" : "47",
+                                  "sourceFragmentIds" : [ "0" ],
+                                  "outputs" : [ "expr_23", "s_nationkey", "s_suppkey" ]
+                                },
+                                "criteria" : [ {
+                                  "left" : "expr_22",
+                                  "right" : "expr_23"
+                                } ],
+                                "leftHashSymbol" : null,
+                                "rightHashSymbol" : null,
+                                "outputSymbols" : [ "expr_22", "p_partkey", "expr_23", "s_nationkey", "s_suppkey" ]
+                              },
+                              "assignments" : {
+                                "p_partkey" : "\"p_partkey\"",
+                                "s_nationkey" : "\"s_nationkey\"",
+                                "s_suppkey" : "\"s_suppkey\""
+                              }
+                            },
+                            "right" : {
+                              "type" : "remoteSource",
+                              "id" : "48",
+                              "sourceFragmentIds" : [ "1" ],
+                              "outputs" : [ "l_orderkey", "l_partkey", "l_suppkey", "l_quantity", "l_extendedprice", "l_discount" ]
+                            },
+                            "criteria" : [ {
+                              "left" : "p_partkey",
+                              "right" : "l_partkey"
+                            }, {
+                              "left" : "s_suppkey",
+                              "right" : "l_suppkey"
+                            } ],
+                            "leftHashSymbol" : null,
+                            "rightHashSymbol" : null,
+                            "outputSymbols" : [ "p_partkey", "s_nationkey", "s_suppkey", "l_orderkey", "l_partkey", "l_suppkey", "l_quantity", "l_extendedprice", "l_discount" ]
+                          },
+                          "assignments" : {
+                            "l_suppkey" : "\"l_suppkey\"",
+                            "l_partkey" : "\"l_partkey\"",
+                            "l_discount" : "\"l_discount\"",
+                            "s_nationkey" : "\"s_nationkey\"",
+                            "l_orderkey" : "\"l_orderkey\"",
+                            "l_quantity" : "\"l_quantity\"",
+                            "l_extendedprice" : "\"l_extendedprice\""
+                          }
+                        },
+                        "right" : {
+                          "type" : "remoteSource",
+                          "id" : "49",
+                          "sourceFragmentIds" : [ "2" ],
+                          "outputs" : [ "ps_partkey", "ps_suppkey", "ps_supplycost" ]
+                        },
+                        "criteria" : [ {
+                          "left" : "l_partkey",
+                          "right" : "ps_partkey"
+                        }, {
+                          "left" : "l_suppkey",
+                          "right" : "ps_suppkey"
+                        } ],
+                        "leftHashSymbol" : null,
+                        "rightHashSymbol" : null,
+                        "outputSymbols" : [ "l_suppkey", "l_partkey", "l_discount", "s_nationkey", "l_orderkey", "l_quantity", "l_extendedprice", "ps_partkey", "ps_suppkey", "ps_supplycost" ]
+                      },
+                      "assignments" : {
+                        "ps_supplycost" : "\"ps_supplycost\"",
+                        "l_discount" : "\"l_discount\"",
+                        "s_nationkey" : "\"s_nationkey\"",
+                        "l_orderkey" : "\"l_orderkey\"",
+                        "l_quantity" : "\"l_quantity\"",
+                        "l_extendedprice" : "\"l_extendedprice\""
+                      }
+                    },
+                    "right" : {
+                      "type" : "remoteSource",
+                      "id" : "50",
+                      "sourceFragmentIds" : [ "3" ],
+                      "outputs" : [ "o_orderkey", "o_orderdate" ]
+                    },
+                    "criteria" : [ {
+                      "left" : "l_orderkey",
+                      "right" : "o_orderkey"
+                    } ],
+                    "leftHashSymbol" : null,
+                    "rightHashSymbol" : null,
+                    "outputSymbols" : [ "ps_supplycost", "l_discount", "s_nationkey", "l_orderkey", "l_quantity", "l_extendedprice", "o_orderkey", "o_orderdate" ]
+                  },
+                  "assignments" : {
+                    "s_nationkey" : "\"s_nationkey\"",
+                    "ps_supplycost" : "\"ps_supplycost\"",
+                    "l_discount" : "\"l_discount\"",
+                    "o_orderdate" : "\"o_orderdate\"",
+                    "l_quantity" : "\"l_quantity\"",
+                    "l_extendedprice" : "\"l_extendedprice\""
+                  }
+                },
+                "right" : {
+                  "type" : "remoteSource",
+                  "id" : "51",
+                  "sourceFragmentIds" : [ "4" ],
+                  "outputs" : [ "n_nationkey", "n_name" ]
+                },
+                "criteria" : [ {
+                  "left" : "s_nationkey",
+                  "right" : "n_nationkey"
+                } ],
+                "leftHashSymbol" : null,
+                "rightHashSymbol" : null,
+                "outputSymbols" : [ "s_nationkey", "ps_supplycost", "l_discount", "o_orderdate", "l_quantity", "l_extendedprice", "n_nationkey", "n_name" ]
+              },
+              "assignments" : {
+                "n_name" : "\"n_name\"",
+                "expr" : "\"year\"(\"o_orderdate\")",
+                "expr_1" : "((\"l_extendedprice\" * (1.0 - \"l_discount\")) - (\"ps_supplycost\" * \"l_quantity\"))"
+              }
+            },
+            "groupBy" : [ "n_name", "expr" ],
+            "aggregations" : {
+              "sum_50" : "\"sum\"(\"expr_1\")"
+            },
+            "functions" : {
+              "sum_50" : {
+                "name" : "sum",
+                "typeParameters" : [ ],
+                "returnType" : "double",
+                "argumentTypes" : [ "double" ],
+                "variableArity" : false,
+                "internal" : false
+              }
+            },
+            "masks" : { },
+            "step" : "PARTIAL",
+            "sampleWeight" : null,
+            "confidence" : 1.0,
+            "hashSymbol" : null
+          },
+          "symbols" : {
+            "l_discount" : "double",
+            "n_nationkey" : "bigint",
+            "expr_22" : "bigint",
+            "expr_23" : "bigint",
+            "o_orderdate" : "date",
+            "l_orderkey" : "bigint",
+            "l_quantity" : "double",
+            "expr_1" : "double",
+            "ps_supplycost" : "double",
+            "s_nationkey" : "bigint",
+            "p_name" : "varchar",
+            "ps_partkey" : "bigint",
+            "p_partkey" : "bigint",
+            "l_suppkey" : "bigint",
+            "l_partkey" : "bigint",
+            "n_name" : "varchar",
+            "l_extendedprice" : "double",
+            "s_suppkey" : "bigint",
+            "expr" : "bigint",
+            "ps_suppkey" : "bigint",
+            "o_orderkey" : "bigint",
+            "sum_50" : "double"
+          },
+          "outputLayout" : [ "n_name", "expr", "sum_50" ],
+          "distribution" : "SOURCE",
+          "partitionedSource" : "0",
+          "outputPartitioning" : "HASH",
+          "partitionBy" : [ "n_name", "expr" ],
+          "hash" : null
+        },
+        "types" : [ "varchar", "bigint", "double" ],
+        "stageStats" : {
+          "schedulingComplete" : "2015-06-12T13:26:33.630Z",
+          "getSplitDistribution" : {
+            "maxError" : 0.0,
+            "count" : 1.0,
+            "total" : 2.9288238E7,
+            "p01" : 29288238,
+            "p05" : 29288238,
+            "p10" : 29288238,
+            "p25" : 29288238,
+            "p50" : 29288238,
+            "p75" : 29288238,
+            "p90" : 29288238,
+            "p95" : 29288238,
+            "p99" : 29288238,
+            "min" : 29288238,
+            "max" : 29288238
+          },
+          "scheduleTaskDistribution" : {
+            "maxError" : 0.0,
+            "count" : 1.0,
+            "total" : 1955282.0,
+            "p01" : 1955282,
+            "p05" : 1955282,
+            "p10" : 1955282,
+            "p25" : 1955282,
+            "p50" : 1955282,
+            "p75" : 1955282,
+            "p90" : 1955282,
+            "p95" : 1955282,
+            "p99" : 1955282,
+            "min" : 1955282,
+            "max" : 1955282
+          },
+          "addSplitDistribution" : {
+            "maxError" : "NaN",
+            "count" : 0.0,
+            "total" : 0.0,
+            "p01" : -9223372036854775808,
+            "p05" : -9223372036854775808,
+            "p10" : -9223372036854775808,
+            "p25" : -9223372036854775808,
+            "p50" : -9223372036854775808,
+            "p75" : -9223372036854775808,
+            "p90" : -9223372036854775808,
+            "p95" : -9223372036854775808,
+            "p99" : -9223372036854775808,
+            "min" : 9223372036854775807,
+            "max" : -9223372036854775808
+          },
+          "totalTasks" : 1,
+          "runningTasks" : 0,
+          "completedTasks" : 1,
+          "totalDrivers" : 6,
+          "queuedDrivers" : 0,
+          "runningDrivers" : 0,
+          "completedDrivers" : 6,
+          "totalMemoryReservation" : "0B",
+          "totalScheduledTime" : "39.73s",
+          "totalCpuTime" : "39.33s",
+          "totalUserTime" : "39.23s",
+          "totalBlockedTime" : "6.89s",
+          "rawInputDataSize" : "373.07MB",
+          "rawInputPositions" : 8511240,
+          "processedInputDataSize" : "350.26MB",
+          "processedInputPositions" : 8321904,
+          "outputDataSize" : "6.90kB",
+          "outputPositions" : 175
+        },
+        "tasks" : [ {
+          "taskId" : "20150612_132633_00081_48m6q.2.0",
+          "nodeInstanceId" : "c6ea308f-a0bf-4f89-89cf-c51f16ae231a",
+          "version" : 640,
+          "state" : "FINISHED",
+          "self" : "http://10.25.17.75:8090/v1/task/20150612_132633_00081_48m6q.2.0",
+          "lastHeartbeat" : "2015-06-12T13:33:53.035Z",
+          "outputBuffers" : {
+            "state" : "FINISHED",
+            "masterSequenceId" : 0,
+            "pagesAdded" : 1,
+            "buffers" : [ {
+              "bufferId" : "20150612_132633_00081_48m6q.1.1",
+              "finished" : true,
+              "bufferedPages" : 0,
+              "pagesSent" : 1
+            }, {
+              "bufferId" : "20150612_132633_00081_48m6q.1.2",
+              "finished" : true,
+              "bufferedPages" : 0,
+              "pagesSent" : 1
+            }, {
+              "bufferId" : "20150612_132633_00081_48m6q.1.3",
+              "finished" : true,
+              "bufferedPages" : 0,
+              "pagesSent" : 1
+            }, {
+              "bufferId" : "20150612_132633_00081_48m6q.1.4",
+              "finished" : true,
+              "bufferedPages" : 0,
+              "pagesSent" : 1
+            }, {
+              "bufferId" : "20150612_132633_00081_48m6q.1.5",
+              "finished" : true,
+              "bufferedPages" : 0,
+              "pagesSent" : 1
+            }, {
+              "bufferId" : "20150612_132633_00081_48m6q.1.0",
+              "finished" : true,
+              "bufferedPages" : 0,
+              "pagesSent" : 1
+            } ]
+          },
+          "noMoreSplits" : [ "0", "47", "48", "49", "50", "51" ],
+          "stats" : {
+            "createTime" : "2015-06-12T13:33:13.009Z",
+            "firstStartTime" : "2015-06-12T13:33:13.041Z",
+            "lastStartTime" : "2015-06-12T13:33:13.041Z",
+            "endTime" : "2015-06-12T13:33:53.090Z",
+            "elapsedTime" : "40.08s",
+            "queuedTime" : "27.96ms",
+            "totalDrivers" : 6,
+            "queuedDrivers" : 0,
+            "queuedPartitionedDrivers" : 0,
+            "runningDrivers" : 0,
+            "runningPartitionedDrivers" : 0,
+            "completedDrivers" : 6,
+            "memoryReservation" : "0B",
+            "totalScheduledTime" : "39.73s",
+            "totalCpuTime" : "39.33s",
+            "totalUserTime" : "39.23s",
+            "totalBlockedTime" : "6.89s",
+            "rawInputDataSize" : "373.07MB",
+            "rawInputPositions" : 8511240,
+            "processedInputDataSize" : "350.26MB",
+            "processedInputPositions" : 8321904,
+            "outputDataSize" : "6.90kB",
+            "outputPositions" : 175,
+            "pipelines" : [ ]
+          },
+          "failures" : [ ]
+        } ],
+        "subStages" : [ {
+          "stageId" : "20150612_132633_00081_48m6q.3",
+          "state" : "FINISHED",
+          "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.3",
+          "plan" : {
+            "id" : "0",
+            "root" : {
+              "type" : "project",
+              "id" : "38",
+              "source" : {
+                "type" : "tablescan",
+                "id" : "1",
+                "table" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "schemaName" : "default",
+                    "tableName" : "supplier",
+                    "session" : {
+                      "user" : "hdfs",
+                      "timeZoneKey" : 2103,
+                      "locale" : "en_US",
+                      "startTime" : 1434115593566,
+                      "properties" : { }
+                    }
+                  }
+                },
+                "outputSymbols" : [ "s_suppkey", "s_nationkey" ],
+                "assignments" : {
+                  "s_suppkey" : {
+                    "connectorId" : "hive",
+                    "connectorHandle" : {
+                      "type" : "hive",
+                      "clientId" : "hive",
+                      "name" : "s_suppkey",
+                      "ordinalPosition" : 0,
+                      "hiveType" : "int",
+                      "typeSignature" : "bigint",
+                      "hiveColumnIndex" : 0,
+                      "partitionKey" : false
+                    }
+                  },
+                  "s_nationkey" : {
+                    "connectorId" : "hive",
+                    "connectorHandle" : {
+                      "type" : "hive",
+                      "clientId" : "hive",
+                      "name" : "s_nationkey",
+                      "ordinalPosition" : 3,
+                      "hiveType" : "int",
+                      "typeSignature" : "bigint",
+                      "hiveColumnIndex" : 3,
+                      "partitionKey" : false
+                    }
+                  }
+                },
+                "originalConstraint" : "true",
+                "partitionDomainSummary" : "TupleDomain:ALL"
+              },
+              "assignments" : {
+                "expr_23" : "0",
+                "s_nationkey" : "\"s_nationkey\"",
+                "s_suppkey" : "\"s_suppkey\""
+              }
+            },
+            "symbols" : {
+              "expr_23" : "bigint",
+              "s_nationkey" : "bigint",
+              "s_suppkey" : "bigint"
+            },
+            "outputLayout" : [ "expr_23", "s_nationkey", "s_suppkey" ],
+            "distribution" : "SOURCE",
+            "partitionedSource" : "1",
+            "outputPartitioning" : "NONE",
+            "partitionBy" : [ ],
+            "hash" : null
+          },
+          "types" : [ "bigint", "bigint", "bigint" ],
+          "stageStats" : {
+            "schedulingComplete" : "2015-06-12T13:26:33.614Z",
+            "getSplitDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 2.0626774E7,
+              "p01" : 20626774,
+              "p05" : 20626774,
+              "p10" : 20626774,
+              "p25" : 20626774,
+              "p50" : 20626774,
+              "p75" : 20626774,
+              "p90" : 20626774,
+              "p95" : 20626774,
+              "p99" : 20626774,
+              "min" : 20626774,
+              "max" : 20626774
+            },
+            "scheduleTaskDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 798597.0,
+              "p01" : 798597,
+              "p05" : 798597,
+              "p10" : 798597,
+              "p25" : 798597,
+              "p50" : 798597,
+              "p75" : 798597,
+              "p90" : 798597,
+              "p95" : 798597,
+              "p99" : 798597,
+              "min" : 798597,
+              "max" : 798597
+            },
+            "addSplitDistribution" : {
+              "maxError" : "NaN",
+              "count" : 0.0,
+              "total" : 0.0,
+              "p01" : -9223372036854775808,
+              "p05" : -9223372036854775808,
+              "p10" : -9223372036854775808,
+              "p25" : -9223372036854775808,
+              "p50" : -9223372036854775808,
+              "p75" : -9223372036854775808,
+              "p90" : -9223372036854775808,
+              "p95" : -9223372036854775808,
+              "p99" : -9223372036854775808,
+              "min" : 9223372036854775807,
+              "max" : -9223372036854775808
+            },
+            "totalTasks" : 1,
+            "runningTasks" : 0,
+            "completedTasks" : 1,
+            "totalDrivers" : 1,
+            "queuedDrivers" : 0,
+            "runningDrivers" : 0,
+            "completedDrivers" : 1,
+            "totalMemoryReservation" : "0B",
+            "totalScheduledTime" : "22.82ms",
+            "totalCpuTime" : "20.23ms",
+            "totalUserTime" : "20.00ms",
+            "totalBlockedTime" : "0.00ns",
+            "rawInputDataSize" : "1.34MB",
+            "rawInputPositions" : 10000,
+            "processedInputDataSize" : "288.52kB",
+            "processedInputPositions" : 10000,
+            "outputDataSize" : "288.52kB",
+            "outputPositions" : 10000
+          },
+          "tasks" : [ {
+            "taskId" : "20150612_132633_00081_48m6q.3.0",
+            "nodeInstanceId" : "770cdf6b-51dc-402c-8cf7-fe678ef5a16c",
+            "version" : 8,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.73:8090/v1/task/20150612_132633_00081_48m6q.3.0",
+            "lastHeartbeat" : "2015-06-12T13:30:13.301Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 0,
+              "pagesAdded" : 2,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 2
+              } ]
+            },
+            "noMoreSplits" : [ "1" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:30:13.283Z",
+              "firstStartTime" : "2015-06-12T13:30:13.293Z",
+              "lastStartTime" : "2015-06-12T13:30:13.293Z",
+              "endTime" : "2015-06-12T13:30:13.355Z",
+              "elapsedTime" : "70.64ms",
+              "queuedTime" : "9.52ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "22.82ms",
+              "totalCpuTime" : "20.23ms",
+              "totalUserTime" : "20.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "1.34MB",
+              "rawInputPositions" : 10000,
+              "processedInputDataSize" : "288.52kB",
+              "processedInputPositions" : 10000,
+              "outputDataSize" : "288.52kB",
+              "outputPositions" : 10000,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          } ],
+          "subStages" : [ ],
+          "failures" : [ ]
+        }, {
+          "stageId" : "20150612_132633_00081_48m6q.4",
+          "state" : "FINISHED",
+          "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.4",
+          "plan" : {
+            "id" : "1",
+            "root" : {
+              "type" : "tablescan",
+              "id" : "3",
+              "table" : {
+                "connectorId" : "hive",
+                "connectorHandle" : {
+                  "type" : "hive",
+                  "clientId" : "hive",
+                  "schemaName" : "default",
+                  "tableName" : "lineitem",
+                  "session" : {
+                    "user" : "hdfs",
+                    "timeZoneKey" : 2103,
+                    "locale" : "en_US",
+                    "startTime" : 1434115593566,
+                    "properties" : { }
+                  }
+                }
+              },
+              "outputSymbols" : [ "l_orderkey", "l_partkey", "l_suppkey", "l_quantity", "l_extendedprice", "l_discount" ],
+              "assignments" : {
+                "l_orderkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "l_orderkey",
+                    "ordinalPosition" : 0,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 0,
+                    "partitionKey" : false
+                  }
+                },
+                "l_partkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "l_partkey",
+                    "ordinalPosition" : 1,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 1,
+                    "partitionKey" : false
+                  }
+                },
+                "l_suppkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "l_suppkey",
+                    "ordinalPosition" : 2,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 2,
+                    "partitionKey" : false
+                  }
+                },
+                "l_quantity" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "l_quantity",
+                    "ordinalPosition" : 4,
+                    "hiveType" : "double",
+                    "typeSignature" : "double",
+                    "hiveColumnIndex" : 4,
+                    "partitionKey" : false
+                  }
+                },
+                "l_extendedprice" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "l_extendedprice",
+                    "ordinalPosition" : 5,
+                    "hiveType" : "double",
+                    "typeSignature" : "double",
+                    "hiveColumnIndex" : 5,
+                    "partitionKey" : false
+                  }
+                },
+                "l_discount" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "l_discount",
+                    "ordinalPosition" : 6,
+                    "hiveType" : "double",
+                    "typeSignature" : "double",
+                    "hiveColumnIndex" : 6,
+                    "partitionKey" : false
+                  }
+                }
+              },
+              "originalConstraint" : "true",
+              "partitionDomainSummary" : "TupleDomain:ALL"
+            },
+            "symbols" : {
+              "l_discount" : "double",
+              "l_orderkey" : "bigint",
+              "l_quantity" : "double",
+              "l_suppkey" : "bigint",
+              "l_partkey" : "bigint",
+              "l_extendedprice" : "double"
+            },
+            "outputLayout" : [ "l_orderkey", "l_partkey", "l_suppkey", "l_quantity", "l_extendedprice", "l_discount" ],
+            "distribution" : "SOURCE",
+            "partitionedSource" : "3",
+            "outputPartitioning" : "NONE",
+            "partitionBy" : [ ],
+            "hash" : null
+          },
+          "types" : [ "bigint", "bigint", "bigint", "double", "double", "double" ],
+          "stageStats" : {
+            "schedulingComplete" : "2015-06-12T13:26:33.620Z",
+            "getSplitDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 2.0374024E7,
+              "p01" : 20374024,
+              "p05" : 20374024,
+              "p10" : 20374024,
+              "p25" : 20374024,
+              "p50" : 20374024,
+              "p75" : 20374024,
+              "p90" : 20374024,
+              "p95" : 20374024,
+              "p99" : 20374024,
+              "min" : 20374024,
+              "max" : 20374024
+            },
+            "scheduleTaskDistribution" : {
+              "maxError" : 0.0,
+              "count" : 6.0,
+              "total" : 6627208.0,
+              "p01" : 532002,
+              "p05" : 532002,
+              "p10" : 532002,
+              "p25" : 537504,
+              "p50" : 594015,
+              "p75" : 736623,
+              "p90" : 3688946,
+              "p95" : 3688946,
+              "p99" : 3688946,
+              "min" : 532002,
+              "max" : 3688946
+            },
+            "addSplitDistribution" : {
+              "maxError" : "NaN",
+              "count" : 0.0,
+              "total" : 0.0,
+              "p01" : -9223372036854775808,
+              "p05" : -9223372036854775808,
+              "p10" : -9223372036854775808,
+              "p25" : -9223372036854775808,
+              "p50" : -9223372036854775808,
+              "p75" : -9223372036854775808,
+              "p90" : -9223372036854775808,
+              "p95" : -9223372036854775808,
+              "p99" : -9223372036854775808,
+              "min" : 9223372036854775807,
+              "max" : -9223372036854775808
+            },
+            "totalTasks" : 6,
+            "runningTasks" : 0,
+            "completedTasks" : 6,
+            "totalDrivers" : 22,
+            "queuedDrivers" : 0,
+            "runningDrivers" : 0,
+            "completedDrivers" : 22,
+            "totalMemoryReservation" : "0B",
+            "totalScheduledTime" : "20.00s",
+            "totalCpuTime" : "19.05s",
+            "totalUserTime" : "18.12s",
+            "totalBlockedTime" : "0.00ns",
+            "rawInputDataSize" : "724.66MB",
+            "rawInputPositions" : 6001215,
+            "processedInputDataSize" : "343.33MB",
+            "processedInputPositions" : 6001215,
+            "outputDataSize" : "343.33MB",
+            "outputPositions" : 6001215
+          },
+          "tasks" : [ {
+            "taskId" : "20150612_132633_00081_48m6q.4.0",
+            "nodeInstanceId" : "c6ea308f-a0bf-4f89-89cf-c51f16ae231a",
+            "version" : 22,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.75:8090/v1/task/20150612_132633_00081_48m6q.4.0",
+            "lastHeartbeat" : "2015-06-12T13:33:14.047Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 98,
+              "pagesAdded" : 99,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 99
+              } ]
+            },
+            "noMoreSplits" : [ "3" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:33:12.991Z",
+              "firstStartTime" : "2015-06-12T13:33:12.999Z",
+              "lastStartTime" : "2015-06-12T13:33:12.999Z",
+              "endTime" : "2015-06-12T13:33:14.056Z",
+              "elapsedTime" : "1.06s",
+              "queuedTime" : "7.98ms",
+              "totalDrivers" : 3,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 3,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "3.06s",
+              "totalCpuTime" : "2.53s",
+              "totalUserTime" : "2.43s",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "96MB",
+              "rawInputPositions" : 796057,
+              "processedInputDataSize" : "45.55MB",
+              "processedInputPositions" : 796057,
+              "outputDataSize" : "45.55MB",
+              "outputPositions" : 796057,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.4.1",
+            "nodeInstanceId" : "f8de774c-ae11-4b7b-8b45-3997a75cff15",
+            "version" : 19,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.71:8090/v1/task/20150612_132633_00081_48m6q.4.1",
+            "lastHeartbeat" : "2015-06-12T13:27:48.353Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 96,
+              "pagesAdded" : 99,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 99
+              } ]
+            },
+            "noMoreSplits" : [ "3" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:27:47.538Z",
+              "firstStartTime" : "2015-06-12T13:27:47.548Z",
+              "lastStartTime" : "2015-06-12T13:27:47.548Z",
+              "endTime" : "2015-06-12T13:27:48.389Z",
+              "elapsedTime" : "847.69ms",
+              "queuedTime" : "6.54ms",
+              "totalDrivers" : 3,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 3,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "2.39s",
+              "totalCpuTime" : "2.33s",
+              "totalUserTime" : "2.22s",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "96MB",
+              "rawInputPositions" : 793894,
+              "processedInputDataSize" : "45.43MB",
+              "processedInputPositions" : 793894,
+              "outputDataSize" : "45.43MB",
+              "outputPositions" : 793894,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.4.2",
+            "nodeInstanceId" : "770cdf6b-51dc-402c-8cf7-fe678ef5a16c",
+            "version" : 21,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.73:8090/v1/task/20150612_132633_00081_48m6q.4.2",
+            "lastHeartbeat" : "2015-06-12T13:30:14.103Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 131,
+              "pagesAdded" : 132,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 132
+              } ]
+            },
+            "noMoreSplits" : [ "3" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:30:13.292Z",
+              "firstStartTime" : "2015-06-12T13:30:13.298Z",
+              "lastStartTime" : "2015-06-12T13:30:13.298Z",
+              "endTime" : "2015-06-12T13:30:14.267Z",
+              "elapsedTime" : "971.65ms",
+              "queuedTime" : "3.02ms",
+              "totalDrivers" : 4,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 4,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "3.74s",
+              "totalCpuTime" : "3.64s",
+              "totalUserTime" : "3.47s",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "128MB",
+              "rawInputPositions" : 1059966,
+              "processedInputDataSize" : "60.63MB",
+              "processedInputPositions" : 1059966,
+              "outputDataSize" : "60.63MB",
+              "outputPositions" : 1059966,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.4.3",
+            "nodeInstanceId" : "435d622b-567d-41ab-bc7e-d9e12ec6b0f9",
+            "version" : 18,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.69:8090/v1/task/20150612_132633_00081_48m6q.4.3",
+            "lastHeartbeat" : "2015-06-12T13:29:04.508Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 131,
+              "pagesAdded" : 132,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 132
+              } ]
+            },
+            "noMoreSplits" : [ "3" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:29:03.696Z",
+              "firstStartTime" : "2015-06-12T13:29:03.703Z",
+              "lastStartTime" : "2015-06-12T13:29:03.703Z",
+              "endTime" : "2015-06-12T13:29:04.508Z",
+              "elapsedTime" : "811.84ms",
+              "queuedTime" : "6.25ms",
+              "totalDrivers" : 4,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 4,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "3.02s",
+              "totalCpuTime" : "2.94s",
+              "totalUserTime" : "2.78s",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "128MB",
+              "rawInputPositions" : 1061380,
+              "processedInputDataSize" : "60.72MB",
+              "processedInputPositions" : 1061380,
+              "outputDataSize" : "60.72MB",
+              "outputPositions" : 1061380,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.4.4",
+            "nodeInstanceId" : "6b9399c8-d953-4185-b84a-daa73b7cac4d",
+            "version" : 25,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.79:8090/v1/task/20150612_132633_00081_48m6q.4.4",
+            "lastHeartbeat" : "2015-06-12T13:26:34.628Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 141,
+              "pagesAdded" : 142,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 142
+              } ]
+            },
+            "noMoreSplits" : [ "3" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:26:33.620Z",
+              "firstStartTime" : "2015-06-12T13:26:33.629Z",
+              "lastStartTime" : "2015-06-12T13:26:33.629Z",
+              "endTime" : "2015-06-12T13:26:34.826Z",
+              "elapsedTime" : "1.20s",
+              "queuedTime" : "7.03ms",
+              "totalDrivers" : 4,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 4,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "3.96s",
+              "totalCpuTime" : "3.85s",
+              "totalUserTime" : "3.62s",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "138.33MB",
+              "rawInputPositions" : 1143842,
+              "processedInputDataSize" : "65.44MB",
+              "processedInputPositions" : 1143842,
+              "outputDataSize" : "65.44MB",
+              "outputPositions" : 1143842,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.4.5",
+            "nodeInstanceId" : "4047be17-773f-429f-acc1-21813db29211",
+            "version" : 24,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.77:8090/v1/task/20150612_132633_00081_48m6q.4.5",
+            "lastHeartbeat" : "2015-06-12T13:28:50.015Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 141,
+              "pagesAdded" : 142,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 142
+              } ]
+            },
+            "noMoreSplits" : [ "3" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:28:49.007Z",
+              "firstStartTime" : "2015-06-12T13:28:49.015Z",
+              "lastStartTime" : "2015-06-12T13:28:49.015Z",
+              "endTime" : "2015-06-12T13:28:50.179Z",
+              "elapsedTime" : "1.17s",
+              "queuedTime" : "7.77ms",
+              "totalDrivers" : 4,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 4,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "3.83s",
+              "totalCpuTime" : "3.76s",
+              "totalUserTime" : "3.60s",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "138.33MB",
+              "rawInputPositions" : 1146076,
+              "processedInputDataSize" : "65.56MB",
+              "processedInputPositions" : 1146076,
+              "outputDataSize" : "65.56MB",
+              "outputPositions" : 1146076,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          } ],
+          "subStages" : [ ],
+          "failures" : [ ]
+        }, {
+          "stageId" : "20150612_132633_00081_48m6q.5",
+          "state" : "FINISHED",
+          "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.5",
+          "plan" : {
+            "id" : "2",
+            "root" : {
+              "type" : "tablescan",
+              "id" : "5",
+              "table" : {
+                "connectorId" : "hive",
+                "connectorHandle" : {
+                  "type" : "hive",
+                  "clientId" : "hive",
+                  "schemaName" : "default",
+                  "tableName" : "partsupp",
+                  "session" : {
+                    "user" : "hdfs",
+                    "timeZoneKey" : 2103,
+                    "locale" : "en_US",
+                    "startTime" : 1434115593566,
+                    "properties" : { }
+                  }
+                }
+              },
+              "outputSymbols" : [ "ps_partkey", "ps_suppkey", "ps_supplycost" ],
+              "assignments" : {
+                "ps_partkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "ps_partkey",
+                    "ordinalPosition" : 0,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 0,
+                    "partitionKey" : false
+                  }
+                },
+                "ps_suppkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "ps_suppkey",
+                    "ordinalPosition" : 1,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 1,
+                    "partitionKey" : false
+                  }
+                },
+                "ps_supplycost" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "ps_supplycost",
+                    "ordinalPosition" : 3,
+                    "hiveType" : "double",
+                    "typeSignature" : "double",
+                    "hiveColumnIndex" : 3,
+                    "partitionKey" : false
+                  }
+                }
+              },
+              "originalConstraint" : "true",
+              "partitionDomainSummary" : "TupleDomain:ALL"
+            },
+            "symbols" : {
+              "ps_supplycost" : "double",
+              "ps_partkey" : "bigint",
+              "ps_suppkey" : "bigint"
+            },
+            "outputLayout" : [ "ps_partkey", "ps_suppkey", "ps_supplycost" ],
+            "distribution" : "SOURCE",
+            "partitionedSource" : "5",
+            "outputPartitioning" : "NONE",
+            "partitionBy" : [ ],
+            "hash" : null
+          },
+          "types" : [ "bigint", "bigint", "double" ],
+          "stageStats" : {
+            "schedulingComplete" : "2015-06-12T13:26:33.630Z",
+            "getSplitDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 3.5221802E7,
+              "p01" : 35221802,
+              "p05" : 35221802,
+              "p10" : 35221802,
+              "p25" : 35221802,
+              "p50" : 35221802,
+              "p75" : 35221802,
+              "p90" : 35221802,
+              "p95" : 35221802,
+              "p99" : 35221802,
+              "min" : 35221802,
+              "max" : 35221802
+            },
+            "scheduleTaskDistribution" : {
+              "maxError" : 0.0,
+              "count" : 3.0,
+              "total" : 1299923.0,
+              "p01" : 373018,
+              "p05" : 373018,
+              "p10" : 373018,
+              "p25" : 373018,
+              "p50" : 448301,
+              "p75" : 478604,
+              "p90" : 478604,
+              "p95" : 478604,
+              "p99" : 478604,
+              "min" : 373018,
+              "max" : 478604
+            },
+            "addSplitDistribution" : {
+              "maxError" : "NaN",
+              "count" : 0.0,
+              "total" : 0.0,
+              "p01" : -9223372036854775808,
+              "p05" : -9223372036854775808,
+              "p10" : -9223372036854775808,
+              "p25" : -9223372036854775808,
+              "p50" : -9223372036854775808,
+              "p75" : -9223372036854775808,
+              "p90" : -9223372036854775808,
+              "p95" : -9223372036854775808,
+              "p99" : -9223372036854775808,
+              "min" : 9223372036854775807,
+              "max" : -9223372036854775808
+            },
+            "totalTasks" : 3,
+            "runningTasks" : 0,
+            "completedTasks" : 3,
+            "totalDrivers" : 3,
+            "queuedDrivers" : 0,
+            "runningDrivers" : 0,
+            "completedDrivers" : 3,
+            "totalMemoryReservation" : "0B",
+            "totalScheduledTime" : "2.96s",
+            "totalCpuTime" : "1.86s",
+            "totalUserTime" : "1.73s",
+            "totalBlockedTime" : "0.00ns",
+            "rawInputDataSize" : "113.46MB",
+            "rawInputPositions" : 800000,
+            "processedInputDataSize" : "22.87MB",
+            "processedInputPositions" : 800000,
+            "outputDataSize" : "22.87MB",
+            "outputPositions" : 800000
+          },
+          "tasks" : [ {
+            "taskId" : "20150612_132633_00081_48m6q.5.0",
+            "nodeInstanceId" : "c6ea308f-a0bf-4f89-89cf-c51f16ae231a",
+            "version" : 15,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.75:8090/v1/task/20150612_132633_00081_48m6q.5.0",
+            "lastHeartbeat" : "2015-06-12T13:33:13.634Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 32,
+              "pagesAdded" : 33,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 33
+              } ]
+            },
+            "noMoreSplits" : [ "5" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:33:13.007Z",
+              "firstStartTime" : "2015-06-12T13:33:13.010Z",
+              "lastStartTime" : "2015-06-12T13:33:13.010Z",
+              "endTime" : "2015-06-12T13:33:13.799Z",
+              "elapsedTime" : "792.63ms",
+              "queuedTime" : "3.31ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "787.35ms",
+              "totalCpuTime" : "637.11ms",
+              "totalUserTime" : "600.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "37.82MB",
+              "rawInputPositions" : 267754,
+              "processedInputDataSize" : "7.65MB",
+              "processedInputPositions" : 267754,
+              "outputDataSize" : "7.65MB",
+              "outputPositions" : 267754,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.5.1",
+            "nodeInstanceId" : "f8de774c-ae11-4b7b-8b45-3997a75cff15",
+            "version" : 26,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.71:8090/v1/task/20150612_132633_00081_48m6q.5.1",
+            "lastHeartbeat" : "2015-06-12T13:27:48.958Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 32,
+              "pagesAdded" : 33,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 33
+              } ]
+            },
+            "noMoreSplits" : [ "5" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:27:47.548Z",
+              "firstStartTime" : "2015-06-12T13:27:47.552Z",
+              "lastStartTime" : "2015-06-12T13:27:47.552Z",
+              "endTime" : "2015-06-12T13:27:49.040Z",
+              "elapsedTime" : "1.49s",
+              "queuedTime" : "3.93ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "1.49s",
+              "totalCpuTime" : "555.88ms",
+              "totalUserTime" : "500.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "37.82MB",
+              "rawInputPositions" : 265599,
+              "processedInputDataSize" : "7.59MB",
+              "processedInputPositions" : 265599,
+              "outputDataSize" : "7.59MB",
+              "outputPositions" : 265599,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.5.2",
+            "nodeInstanceId" : "4047be17-773f-429f-acc1-21813db29211",
+            "version" : 17,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.77:8090/v1/task/20150612_132633_00081_48m6q.5.2",
+            "lastHeartbeat" : "2015-06-12T13:28:49.825Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 29,
+              "pagesAdded" : 33,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 33
+              } ]
+            },
+            "noMoreSplits" : [ "5" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:28:49.017Z",
+              "firstStartTime" : "2015-06-12T13:28:49.021Z",
+              "lastStartTime" : "2015-06-12T13:28:49.021Z",
+              "endTime" : "2015-06-12T13:28:49.860Z",
+              "elapsedTime" : "841.93ms",
+              "queuedTime" : "3.14ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "682.40ms",
+              "totalCpuTime" : "667.74ms",
+              "totalUserTime" : "630.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "37.82MB",
+              "rawInputPositions" : 266647,
+              "processedInputDataSize" : "7.63MB",
+              "processedInputPositions" : 266647,
+              "outputDataSize" : "7.63MB",
+              "outputPositions" : 266647,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          } ],
+          "subStages" : [ ],
+          "failures" : [ ]
+        }, {
+          "stageId" : "20150612_132633_00081_48m6q.6",
+          "state" : "FINISHED",
+          "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.6",
+          "plan" : {
+            "id" : "3",
+            "root" : {
+              "type" : "tablescan",
+              "id" : "7",
+              "table" : {
+                "connectorId" : "hive",
+                "connectorHandle" : {
+                  "type" : "hive",
+                  "clientId" : "hive",
+                  "schemaName" : "default",
+                  "tableName" : "orders",
+                  "session" : {
+                    "user" : "hdfs",
+                    "timeZoneKey" : 2103,
+                    "locale" : "en_US",
+                    "startTime" : 1434115593566,
+                    "properties" : { }
+                  }
+                }
+              },
+              "outputSymbols" : [ "o_orderkey", "o_orderdate" ],
+              "assignments" : {
+                "o_orderkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "o_orderkey",
+                    "ordinalPosition" : 0,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 0,
+                    "partitionKey" : false
+                  }
+                },
+                "o_orderdate" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "o_orderdate",
+                    "ordinalPosition" : 4,
+                    "hiveType" : "date",
+                    "typeSignature" : "date",
+                    "hiveColumnIndex" : 4,
+                    "partitionKey" : false
+                  }
+                }
+              },
+              "originalConstraint" : "true",
+              "partitionDomainSummary" : "TupleDomain:ALL"
+            },
+            "symbols" : {
+              "o_orderdate" : "date",
+              "o_orderkey" : "bigint"
+            },
+            "outputLayout" : [ "o_orderkey", "o_orderdate" ],
+            "distribution" : "SOURCE",
+            "partitionedSource" : "7",
+            "outputPartitioning" : "NONE",
+            "partitionBy" : [ ],
+            "hash" : null
+          },
+          "types" : [ "bigint", "date" ],
+          "stageStats" : {
+            "schedulingComplete" : "2015-06-12T13:26:33.619Z",
+            "getSplitDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 1.9314022E7,
+              "p01" : 19314022,
+              "p05" : 19314022,
+              "p10" : 19314022,
+              "p25" : 19314022,
+              "p50" : 19314022,
+              "p75" : 19314022,
+              "p90" : 19314022,
+              "p95" : 19314022,
+              "p99" : 19314022,
+              "min" : 19314022,
+              "max" : 19314022
+            },
+            "scheduleTaskDistribution" : {
+              "maxError" : 0.0,
+              "count" : 5.0,
+              "total" : 5252765.0,
+              "p01" : 322898,
+              "p05" : 322898,
+              "p10" : 322898,
+              "p25" : 329851,
+              "p50" : 373506,
+              "p75" : 1024295,
+              "p90" : 3202215,
+              "p95" : 3202215,
+              "p99" : 3202215,
+              "min" : 322898,
+              "max" : 3202215
+            },
+            "addSplitDistribution" : {
+              "maxError" : "NaN",
+              "count" : 0.0,
+              "total" : 0.0,
+              "p01" : -9223372036854775808,
+              "p05" : -9223372036854775808,
+              "p10" : -9223372036854775808,
+              "p25" : -9223372036854775808,
+              "p50" : -9223372036854775808,
+              "p75" : -9223372036854775808,
+              "p90" : -9223372036854775808,
+              "p95" : -9223372036854775808,
+              "p99" : -9223372036854775808,
+              "min" : 9223372036854775807,
+              "max" : -9223372036854775808
+            },
+            "totalTasks" : 5,
+            "runningTasks" : 0,
+            "completedTasks" : 5,
+            "totalDrivers" : 5,
+            "queuedDrivers" : 0,
+            "runningDrivers" : 0,
+            "completedDrivers" : 5,
+            "totalMemoryReservation" : "0B",
+            "totalScheduledTime" : "3.50s",
+            "totalCpuTime" : "3.28s",
+            "totalUserTime" : "3.06s",
+            "totalBlockedTime" : "0.00ns",
+            "rawInputDataSize" : "163.99MB",
+            "rawInputPositions" : 1500000,
+            "processedInputDataSize" : "22.87MB",
+            "processedInputPositions" : 1500000,
+            "outputDataSize" : "22.87MB",
+            "outputPositions" : 1500000
+          },
+          "tasks" : [ {
+            "taskId" : "20150612_132633_00081_48m6q.6.0",
+            "nodeInstanceId" : "c6ea308f-a0bf-4f89-89cf-c51f16ae231a",
+            "version" : 16,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.75:8090/v1/task/20150612_132633_00081_48m6q.6.0",
+            "lastHeartbeat" : "2015-06-12T13:33:13.625Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 35,
+              "pagesAdded" : 36,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 36
+              } ]
+            },
+            "noMoreSplits" : [ "7" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:33:12.991Z",
+              "firstStartTime" : "2015-06-12T13:33:13.000Z",
+              "lastStartTime" : "2015-06-12T13:33:13.000Z",
+              "endTime" : "2015-06-12T13:33:13.781Z",
+              "elapsedTime" : "789.63ms",
+              "queuedTime" : "7.98ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "780.28ms",
+              "totalCpuTime" : "628.39ms",
+              "totalUserTime" : "590.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "32MB",
+              "rawInputPositions" : 292108,
+              "processedInputDataSize" : "4.45MB",
+              "processedInputPositions" : 292108,
+              "outputDataSize" : "4.45MB",
+              "outputPositions" : 292108,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.6.1",
+            "nodeInstanceId" : "f8de774c-ae11-4b7b-8b45-3997a75cff15",
+            "version" : 18,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.71:8090/v1/task/20150612_132633_00081_48m6q.6.1",
+            "lastHeartbeat" : "2015-06-12T13:27:48.353Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 35,
+              "pagesAdded" : 36,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 36
+              } ]
+            },
+            "noMoreSplits" : [ "7" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:27:47.538Z",
+              "firstStartTime" : "2015-06-12T13:27:47.547Z",
+              "lastStartTime" : "2015-06-12T13:27:47.547Z",
+              "endTime" : "2015-06-12T13:27:48.385Z",
+              "elapsedTime" : "843.88ms",
+              "queuedTime" : "6.03ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "599.00ms",
+              "totalCpuTime" : "583.44ms",
+              "totalUserTime" : "540.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "32MB",
+              "rawInputPositions" : 292324,
+              "processedInputDataSize" : "4.46MB",
+              "processedInputPositions" : 292324,
+              "outputDataSize" : "4.46MB",
+              "outputPositions" : 292324,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.6.2",
+            "nodeInstanceId" : "770cdf6b-51dc-402c-8cf7-fe678ef5a16c",
+            "version" : 17,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.73:8090/v1/task/20150612_132633_00081_48m6q.6.2",
+            "lastHeartbeat" : "2015-06-12T13:30:13.902Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 34,
+              "pagesAdded" : 36,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 36
+              } ]
+            },
+            "noMoreSplits" : [ "7" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:30:13.292Z",
+              "firstStartTime" : "2015-06-12T13:30:13.296Z",
+              "lastStartTime" : "2015-06-12T13:30:13.296Z",
+              "endTime" : "2015-06-12T13:30:14.041Z",
+              "elapsedTime" : "747.36ms",
+              "queuedTime" : "2.89ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "722.56ms",
+              "totalCpuTime" : "702.86ms",
+              "totalUserTime" : "650.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "32MB",
+              "rawInputPositions" : 292216,
+              "processedInputDataSize" : "4.46MB",
+              "processedInputPositions" : 292216,
+              "outputDataSize" : "4.46MB",
+              "outputPositions" : 292216,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.6.3",
+            "nodeInstanceId" : "435d622b-567d-41ab-bc7e-d9e12ec6b0f9",
+            "version" : 14,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.69:8090/v1/task/20150612_132633_00081_48m6q.6.3",
+            "lastHeartbeat" : "2015-06-12T13:29:04.301Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 35,
+              "pagesAdded" : 36,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 36
+              } ]
+            },
+            "noMoreSplits" : [ "7" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:29:03.696Z",
+              "firstStartTime" : "2015-06-12T13:29:03.702Z",
+              "lastStartTime" : "2015-06-12T13:29:03.702Z",
+              "endTime" : "2015-06-12T13:29:04.327Z",
+              "elapsedTime" : "631.57ms",
+              "queuedTime" : "6.56ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "598.04ms",
+              "totalCpuTime" : "585.70ms",
+              "totalUserTime" : "560.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "32MB",
+              "rawInputPositions" : 294570,
+              "processedInputDataSize" : "4.48MB",
+              "processedInputPositions" : 294570,
+              "outputDataSize" : "4.48MB",
+              "outputPositions" : 294570,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          }, {
+            "taskId" : "20150612_132633_00081_48m6q.6.4",
+            "nodeInstanceId" : "6b9399c8-d953-4185-b84a-daa73b7cac4d",
+            "version" : 17,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.79:8090/v1/task/20150612_132633_00081_48m6q.6.4",
+            "lastHeartbeat" : "2015-06-12T13:26:34.226Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 40,
+              "pagesAdded" : 41,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 41
+              } ]
+            },
+            "noMoreSplits" : [ "7" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:26:33.619Z",
+              "firstStartTime" : "2015-06-12T13:26:33.627Z",
+              "lastStartTime" : "2015-06-12T13:26:33.627Z",
+              "endTime" : "2015-06-12T13:26:34.426Z",
+              "elapsedTime" : "806.23ms",
+              "queuedTime" : "7.70ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "797.37ms",
+              "totalCpuTime" : "777.13ms",
+              "totalUserTime" : "720.00ms",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "35.99MB",
+              "rawInputPositions" : 328782,
+              "processedInputDataSize" : "5.02MB",
+              "processedInputPositions" : 328782,
+              "outputDataSize" : "5.02MB",
+              "outputPositions" : 328782,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          } ],
+          "subStages" : [ ],
+          "failures" : [ ]
+        }, {
+          "stageId" : "20150612_132633_00081_48m6q.7",
+          "state" : "FINISHED",
+          "self" : "http://10.25.17.79:8090/v1/stage/20150612_132633_00081_48m6q.7",
+          "plan" : {
+            "id" : "4",
+            "root" : {
+              "type" : "tablescan",
+              "id" : "9",
+              "table" : {
+                "connectorId" : "hive",
+                "connectorHandle" : {
+                  "type" : "hive",
+                  "clientId" : "hive",
+                  "schemaName" : "default",
+                  "tableName" : "nation",
+                  "session" : {
+                    "user" : "hdfs",
+                    "timeZoneKey" : 2103,
+                    "locale" : "en_US",
+                    "startTime" : 1434115593566,
+                    "properties" : { }
+                  }
+                }
+              },
+              "outputSymbols" : [ "n_nationkey", "n_name" ],
+              "assignments" : {
+                "n_nationkey" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "n_nationkey",
+                    "ordinalPosition" : 0,
+                    "hiveType" : "int",
+                    "typeSignature" : "bigint",
+                    "hiveColumnIndex" : 0,
+                    "partitionKey" : false
+                  }
+                },
+                "n_name" : {
+                  "connectorId" : "hive",
+                  "connectorHandle" : {
+                    "type" : "hive",
+                    "clientId" : "hive",
+                    "name" : "n_name",
+                    "ordinalPosition" : 1,
+                    "hiveType" : "string",
+                    "typeSignature" : "varchar",
+                    "hiveColumnIndex" : 1,
+                    "partitionKey" : false
+                  }
+                }
+              },
+              "originalConstraint" : "true",
+              "partitionDomainSummary" : "TupleDomain:ALL"
+            },
+            "symbols" : {
+              "n_nationkey" : "bigint",
+              "n_name" : "varchar"
+            },
+            "outputLayout" : [ "n_nationkey", "n_name" ],
+            "distribution" : "SOURCE",
+            "partitionedSource" : "9",
+            "outputPartitioning" : "NONE",
+            "partitionBy" : [ ],
+            "hash" : null
+          },
+          "types" : [ "bigint", "varchar" ],
+          "stageStats" : {
+            "schedulingComplete" : "2015-06-12T13:26:33.629Z",
+            "getSplitDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 3.5031446E7,
+              "p01" : 35031446,
+              "p05" : 35031446,
+              "p10" : 35031446,
+              "p25" : 35031446,
+              "p50" : 35031446,
+              "p75" : 35031446,
+              "p90" : 35031446,
+              "p95" : 35031446,
+              "p99" : 35031446,
+              "min" : 35031446,
+              "max" : 35031446
+            },
+            "scheduleTaskDistribution" : {
+              "maxError" : 0.0,
+              "count" : 1.0,
+              "total" : 694477.0,
+              "p01" : 694477,
+              "p05" : 694477,
+              "p10" : 694477,
+              "p25" : 694477,
+              "p50" : 694477,
+              "p75" : 694477,
+              "p90" : 694477,
+              "p95" : 694477,
+              "p99" : 694477,
+              "min" : 694477,
+              "max" : 694477
+            },
+            "addSplitDistribution" : {
+              "maxError" : "NaN",
+              "count" : 0.0,
+              "total" : 0.0,
+              "p01" : -9223372036854775808,
+              "p05" : -9223372036854775808,
+              "p10" : -9223372036854775808,
+              "p25" : -9223372036854775808,
+              "p50" : -9223372036854775808,
+              "p75" : -9223372036854775808,
+              "p90" : -9223372036854775808,
+              "p95" : -9223372036854775808,
+              "p99" : -9223372036854775808,
+              "min" : 9223372036854775807,
+              "max" : -9223372036854775808
+            },
+            "totalTasks" : 1,
+            "runningTasks" : 0,
+            "completedTasks" : 1,
+            "totalDrivers" : 1,
+            "queuedDrivers" : 0,
+            "runningDrivers" : 0,
+            "completedDrivers" : 1,
+            "totalMemoryReservation" : "0B",
+            "totalScheduledTime" : "857.88us",
+            "totalCpuTime" : "446.45us",
+            "totalUserTime" : "0.00ns",
+            "totalBlockedTime" : "0.00ns",
+            "rawInputDataSize" : "2.17kB",
+            "rawInputPositions" : 25,
+            "processedInputDataSize" : "1.56kB",
+            "processedInputPositions" : 25,
+            "outputDataSize" : "1.56kB",
+            "outputPositions" : 25
+          },
+          "tasks" : [ {
+            "taskId" : "20150612_132633_00081_48m6q.7.0",
+            "nodeInstanceId" : "c6ea308f-a0bf-4f89-89cf-c51f16ae231a",
+            "version" : 4,
+            "state" : "FINISHED",
+            "self" : "http://10.25.17.75:8090/v1/task/20150612_132633_00081_48m6q.7.0",
+            "lastHeartbeat" : "2015-06-12T13:33:13.013Z",
+            "outputBuffers" : {
+              "state" : "FINISHED",
+              "masterSequenceId" : 0,
+              "pagesAdded" : 1,
+              "buffers" : [ {
+                "bufferId" : "20150612_132633_00081_48m6q.2.0",
+                "finished" : true,
+                "bufferedPages" : 0,
+                "pagesSent" : 1
+              } ]
+            },
+            "noMoreSplits" : [ "9" ],
+            "stats" : {
+              "createTime" : "2015-06-12T13:33:13.007Z",
+              "firstStartTime" : "2015-06-12T13:33:13.012Z",
+              "lastStartTime" : "2015-06-12T13:33:13.012Z",
+              "endTime" : "2015-06-12T13:33:13.064Z",
+              "elapsedTime" : "56.80ms",
+              "queuedTime" : "4.64ms",
+              "totalDrivers" : 1,
+              "queuedDrivers" : 0,
+              "queuedPartitionedDrivers" : 0,
+              "runningDrivers" : 0,
+              "runningPartitionedDrivers" : 0,
+              "completedDrivers" : 1,
+              "memoryReservation" : "0B",
+              "totalScheduledTime" : "857.88us",
+              "totalCpuTime" : "446.45us",
+              "totalUserTime" : "0.00ns",
+              "totalBlockedTime" : "0.00ns",
+              "rawInputDataSize" : "2.17kB",
+              "rawInputPositions" : 25,
+              "processedInputDataSize" : "1.56kB",
+              "processedInputPositions" : 25,
+              "outputDataSize" : "1.56kB",
+              "outputPositions" : 25,
+              "pipelines" : [ ]
+            },
+            "failures" : [ ]
+          } ],
+          "subStages" : [ ],
+          "failures" : [ ]
+        } ],
+        "failures" : [ ]
+      } ],
+      "failures" : [ ]
+    } ],
+    "failures" : [ ]
+  },
+  "inputs" : [ {
+    "connectorId" : "hive",
+    "schema" : "default",
+    "table" : "supplier",
+    "columns" : [ {
+      "name" : "s_nationkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "s_suppkey",
+      "type" : "bigint",
+      "domain" : null
+    } ]
+  }, {
+    "connectorId" : "hive",
+    "schema" : "default",
+    "table" : "part",
+    "columns" : [ {
+      "name" : "p_partkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "p_name",
+      "type" : "varchar",
+      "domain" : null
+    } ]
+  }, {
+    "connectorId" : "hive",
+    "schema" : "default",
+    "table" : "lineitem",
+    "columns" : [ {
+      "name" : "l_orderkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "l_quantity",
+      "type" : "double",
+      "domain" : null
+    }, {
+      "name" : "l_suppkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "l_extendedprice",
+      "type" : "double",
+      "domain" : null
+    }, {
+      "name" : "l_discount",
+      "type" : "double",
+      "domain" : null
+    }, {
+      "name" : "l_partkey",
+      "type" : "bigint",
+      "domain" : null
+    } ]
+  }, {
+    "connectorId" : "hive",
+    "schema" : "default",
+    "table" : "nation",
+    "columns" : [ {
+      "name" : "n_name",
+      "type" : "varchar",
+      "domain" : null
+    }, {
+      "name" : "n_nationkey",
+      "type" : "bigint",
+      "domain" : null
+    } ]
+  }, {
+    "connectorId" : "hive",
+    "schema" : "default",
+    "table" : "partsupp",
+    "columns" : [ {
+      "name" : "ps_partkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "ps_suppkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "ps_supplycost",
+      "type" : "double",
+      "domain" : null
+    } ]
+  }, {
+    "connectorId" : "hive",
+    "schema" : "default",
+    "table" : "orders",
+    "columns" : [ {
+      "name" : "o_orderkey",
+      "type" : "bigint",
+      "domain" : null
+    }, {
+      "name" : "o_orderdate",
+      "type" : "date",
+      "domain" : null
+    } ]
+  } ]
+}
