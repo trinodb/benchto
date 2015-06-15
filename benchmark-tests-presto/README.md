@@ -1,6 +1,6 @@
 # benchmark-tests-presto
 
-Project containing benchmark tests.
+Project containing benchmark tests for presto.
 
 ## Configuration
 

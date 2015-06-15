@@ -37,7 +37,7 @@ public class SqlStatementExecutor
                 ResultSet resultSet = statement.executeQuery(queryExecution.getQuery().getSql())
         ) {
             int rowsCount = 0;
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 rowsCount++;
             }
 
