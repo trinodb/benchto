@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Category(IntegrationTest.class)
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = App.class)
+@SpringApplicationConfiguration(classes = ServiceApp.class)
 @WebAppConfiguration
 public class IntegrationTestBase
 {

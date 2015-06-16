@@ -16,12 +16,12 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.teradata.benchmark")
-public class App
+public class DriverApp
 {
 
     public static void main(String[] args)
     {
-        ConfigurableApplicationContext ctx = SpringApplication.run(App.class, args);
+        ConfigurableApplicationContext ctx = SpringApplication.run(DriverApp.class, args);
         BenchmarkDriver benchmarkDriver = ctx.getBean(BenchmarkDriver.class);
 
         boolean successful = benchmarkDriver.run();

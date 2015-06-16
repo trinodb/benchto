@@ -19,7 +19,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-public class AppIntegrationTest
+public class DriverAppIntegrationTest
         extends IntegrationTest
 {
 
