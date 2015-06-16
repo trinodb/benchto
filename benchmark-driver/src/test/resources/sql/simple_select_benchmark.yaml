@@ -1,0 +1,5 @@
+datasource: test_datasource
+query-names: presto/simple_select.sql
+variables:
+  1:
+    schema: INFORMATION_SCHEMA

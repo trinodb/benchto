@@ -3,7 +3,6 @@
  */
 package com.teradata.benchmark.driver.loader;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
@@ -14,37 +13,75 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.StreamSupport;
+import java.util.Map;
 
-import static com.google.common.io.Files.getNameWithoutExtension;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.ClassLoader.getSystemClassLoader;
-import static java.nio.file.Files.newDirectoryStream;
-import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class BenchmarkLoader
 {
+    private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
     @Autowired
     private BenchmarkProperties properties;
 
+    @Autowired
+    private QueryLoader queryLoader;
+
     public List<Benchmark> loadBenchmarks()
     {
-        try (DirectoryStream<Path> sqlFiles = newDirectoryStream(sqlFilesPath(), "*.sql")) {
-            return StreamSupport.stream(sqlFiles.spliterator(), false)
-                    .map(this::loadBenchmarkQuery)
-                    .map(query -> new Benchmark(query.getName(), ImmutableList.of(query), properties.getRuns(), 1))
+        try {
+            return Files.walk(sqlFilesPath())
+                    .filter(file -> isRegularFile(file) && file.toString().endsWith(BENCHMARK_FILE_SUFFIX))
+                    .sorted((p1, p2) -> p1.toString().compareTo(p2.toString()))
+                    .flatMap(file -> loadBenchmarks(file).stream())
                     .collect(toList());
         }
-        catch (IOException | URISyntaxException e) {
-            throw new BenchmarkExecutionException("Could not load sql files", e);
+        catch (URISyntaxException | IOException e) {
+            throw new BenchmarkExecutionException("could not load benchmarks", e);
         }
+    }
+
+    public List<Benchmark> loadBenchmarks(Path benchmarkFile)
+    {
+        try {
+            BenchmarkDescriptor descriptor = BenchmarkDescriptor.loadFromFile(benchmarkFile);
+
+            List<Map<String, String>> variableMapList = descriptor.getVariableMapList();
+            if (variableMapList.isEmpty()) {
+                variableMapList.add(newHashMap());
+            }
+
+            return variableMapList
+                    .stream()
+                    .map(variables -> createBenchmark(benchmarkFile, descriptor, variables))
+                    .collect(toList());
+        }
+        catch (IOException e) {
+            throw new BenchmarkExecutionException("could not load benchmark: " + benchmarkFile, e);
+        }
+    }
+
+    private Benchmark createBenchmark(Path benchmarkFile, BenchmarkDescriptor descriptor, Map<String, String> variables)
+    {
+        List<Query> queries = loadQueries(benchmarkFile, descriptor.getQueryNames(), variables);
+        return new Benchmark(descriptor.getName(), queries, descriptor.getRuns(), descriptor.getConcurrency());
+    }
+
+    private List<Query> loadQueries(Path benchmarkFile, List<String> queryNames, Map<String, String> variables)
+    {
+        return queryNames
+                .stream()
+                .map(queryName -> queryLoader.loadFromFile(benchmarkFile.getParent().resolve(queryName), variables))
+                .collect(toList());
     }
 
     private Path sqlFilesPath()
@@ -55,24 +92,5 @@ public class BenchmarkLoader
             return Paths.get(sqlDir.toURI());
         }
         return FileSystems.getDefault().getPath(properties.getSqlDir());
-    }
-
-    private Query loadBenchmarkQuery(Path path)
-    {
-        try {
-            String name = getNameWithoutExtension(path.getFileName().toString());
-            String sqlStatement = new String(readAllBytes(path));
-
-            if (sqlStatement.endsWith(";")) {
-                sqlStatement = sqlStatement.substring(0, sqlStatement.length() - 1);
-            }
-
-            sqlStatement = sqlStatement.replace("\n", " ");
-
-            return new Query(name, sqlStatement);
-        }
-        catch (IOException e) {
-            throw new BenchmarkExecutionException("Could not load path: " + path, e);
-        }
     }
 }

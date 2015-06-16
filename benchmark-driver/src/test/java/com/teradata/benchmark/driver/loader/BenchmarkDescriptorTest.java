@@ -81,7 +81,7 @@ public class BenchmarkDescriptorTest
             throws IOException
     {
         BenchmarkDescriptor descriptor = descriptorFromString(BENCHMARK_WITH_VARIABLES);
-        assertThat(descriptor.getVariableList()).containsExactly(
+        assertThat(descriptor.getVariableMapList()).containsExactly(
                 ImmutableMap.of("size", "1GB", "format", "txt"),
                 ImmutableMap.of("size", "1GB", "format", "orc"),
                 ImmutableMap.of("size", "2GB", "format", "txt"),

@@ -38,113 +38,26 @@ public class DriverAppIntegrationTest
     @Test
     public void benchmarkTestQuery()
     {
-
-        // benchmark start
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/test_query/BEN_SEQ_ID/start"),
-                method(HttpMethod.POST),
-                jsonPath("$.environmentName", is("TEST_ENV")),
-                jsonPath("$.attributes.sqlStatement", is("SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS"))
-        )).andRespond(withSuccess());
+        // simple_select benchmark start
+        verifyBenchmarkStart("simple_select_benchmark", "SELECT 1\nFROM \"INFORMATION_SCHEMA\".SYSTEM_USERS\n");
 
         // first execution
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark test_query started")),
-                jsonPath("$.tags", is("benchmark started")),
-                jsonPath("$.data", is(""))
-        )).andRespond(withSuccess());
+        verifyExecution("simple_select_benchmark", "simple_select", 0, "ENDED");
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/0/start"),
-                method(HttpMethod.POST)
-        )).andRespond(withSuccess());
+        // simple_select benchmark end
+        verifyBenchmarkFinish("simple_select_benchmark", "ENDED");
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Execution test_query-0 started")),
-                jsonPath("$.tags", is("execution started")),
-                jsonPath("$.data", is(""))
-        )).andRespond(withSuccess());
+        // test_benchmark benchmark start
+        verifyBenchmarkStart("test_benchmark", "SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS\n");
 
-        restServiceServer.expect(matchAll(
-                requestTo(startsWith("http://graphite:18088/render?format=json")),
-                requestTo(containsString("&target=alias(TARGET_CPU,'cpu')")),
-                requestTo(containsString("&target=alias(TARGET_MEMORY,'memory')")),
-                requestTo(containsString("&target=alias(TARGET_NETWORK,'network')")),
-                requestTo(containsString("&target=alias(integral(TARGET_NETWORK),'network_total')")),
-                method(HttpMethod.GET)
-        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
-
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/0/finish"),
-                method(HttpMethod.POST),
-                jsonPath("$.status", is("ENDED")),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(MEASUREMENT_NAMES))
-        )).andRespond(withSuccess());
-
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Execution test_query-0 ended")),
-                jsonPath("$.tags", is("execution ended")),
-                jsonPath("$.data", startsWith("duration: "))
-        )).andRespond(withSuccess());
+        // first execution
+        verifyExecution("test_benchmark", "test_query", 0, "ENDED");
 
         // second execution
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/1/start"),
-                method(HttpMethod.POST)
-        )).andRespond(withSuccess());
+        verifyExecution("test_benchmark", "test_query", 1, "ENDED");
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Execution test_query-1 started")),
-                jsonPath("$.tags", is("execution started")),
-                jsonPath("$.data", is(""))
-        )).andRespond(withSuccess());
-
-        restServiceServer.expect(matchAll(
-                requestTo(startsWith("http://graphite:18088/render?format=json")),
-                requestTo(containsString("&target=alias(TARGET_CPU,'cpu')")),
-                requestTo(containsString("&target=alias(TARGET_MEMORY,'memory')")),
-                requestTo(containsString("&target=alias(TARGET_NETWORK,'network')")),
-                requestTo(containsString("&target=alias(integral(TARGET_NETWORK),'network_total')")),
-                method(HttpMethod.GET)
-        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
-
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/test_query/BEN_SEQ_ID/execution/1/finish"),
-                method(HttpMethod.POST),
-                jsonPath("$.status", is("ENDED")),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(MEASUREMENT_NAMES))
-        )).andRespond(withSuccess());
-
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Execution test_query-1 ended")),
-                jsonPath("$.tags", is("execution ended")),
-                jsonPath("$.data", startsWith("duration: "))
-        )).andRespond(withSuccess());
-
-        // benchmark finished
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/test_query/BEN_SEQ_ID/finish"),
-                method(HttpMethod.POST),
-                jsonPath("$.status", is("ENDED"))
-        )).andRespond(withSuccess());
-
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark test_query ended")),
-                jsonPath("$.tags", is("benchmark ended")),
-                jsonPath("$.data", startsWith("successful true, mean: "))
-        )).andRespond(withSuccess());
+        // test_benchmark benchmark finished
+        verifyBenchmarkFinish("test_benchmark", "ENDED");
 
         boolean successful = benchmarkDriver.run();
 
@@ -153,7 +66,82 @@ public class DriverAppIntegrationTest
         restServiceServer.verify();
     }
 
-    public RequestMatcher matchAll(RequestMatcher... matchers)
+    private void verifyBenchmarkStart(String benchmarkName, String sql)
+    {
+        restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/start"),
+                method(HttpMethod.POST),
+                jsonPath("$.environmentName", is("TEST_ENV")),
+                jsonPath("$.attributes.sqlStatement", is(sql))
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://graphite:18088/events/"),
+                method(HttpMethod.POST),
+                jsonPath("$.what", is("Benchmark " + benchmarkName + " started")),
+                jsonPath("$.tags", is("benchmark started")),
+                jsonPath("$.data", is(""))
+        )).andRespond(withSuccess());
+    }
+
+    private void verifyBenchmarkFinish(String benchmarkName, String status)
+    {
+        restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/finish"),
+                method(HttpMethod.POST),
+                jsonPath("$.status", is(status))
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://graphite:18088/events/"),
+                method(HttpMethod.POST),
+                jsonPath("$.what", is("Benchmark " + benchmarkName + " ended")),
+                jsonPath("$.tags", is("benchmark ended")),
+                jsonPath("$.data", startsWith("successful"))
+        )).andRespond(withSuccess());
+    }
+
+    private void verifyExecution(String benchmarkName, String queryName, int executionNumber, String status)
+    {
+        restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/start"),
+                method(HttpMethod.POST)
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://graphite:18088/events/"),
+                method(HttpMethod.POST),
+                jsonPath("$.what", is("Execution " + queryName + "-" + executionNumber + " started")),
+                jsonPath("$.tags", is("execution started")),
+                jsonPath("$.data", is(""))
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo(startsWith("http://graphite:18088/render?format=json")),
+                requestTo(containsString("&target=alias(TARGET_CPU,'cpu')")),
+                requestTo(containsString("&target=alias(TARGET_MEMORY,'memory')")),
+                requestTo(containsString("&target=alias(TARGET_NETWORK,'network')")),
+                requestTo(containsString("&target=alias(integral(TARGET_NETWORK),'network_total')")),
+                method(HttpMethod.GET)
+        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
+                method(HttpMethod.POST),
+                jsonPath("$.status", is(status)),
+                jsonPath("$.measurements.[*].name", containsInAnyOrder(MEASUREMENT_NAMES))
+        )).andRespond(withSuccess());
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://graphite:18088/events/"),
+                method(HttpMethod.POST),
+                jsonPath("$.what", is("Execution " + queryName + "-" + executionNumber + " ended")),
+                jsonPath("$.tags", is("execution ended")),
+                jsonPath("$.data", startsWith("duration: "))
+        )).andRespond(withSuccess());
+    }
+
+    private RequestMatcher matchAll(RequestMatcher... matchers)
     {
         return request -> {
             for (RequestMatcher matcher : matchers) {

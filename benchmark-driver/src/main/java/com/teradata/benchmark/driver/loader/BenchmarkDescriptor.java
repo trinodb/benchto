@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.teradata.benchmark.driver.utils.CartesianProductUtils.cartesianProduct;
+import static com.teradata.benchmark.driver.utils.YamlUtils.asList;
 import static com.teradata.benchmark.driver.utils.YamlUtils.loadYamlFromString;
 import static com.teradata.benchmark.driver.utils.YamlUtils.stringifyList;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -54,7 +55,7 @@ public class BenchmarkDescriptor
         return new BenchmarkDescriptor(
                 name,
                 yaml.get(DATA_SOURCE_KEY).toString(),
-                stringifyList((List) yaml.get(QUERY_NAMES_KEY)),
+                stringifyList(asList(yaml.get(QUERY_NAMES_KEY))),
                 runs, concurrency,
                 extractVariableMaps(yaml));
     }
@@ -74,16 +75,16 @@ public class BenchmarkDescriptor
     private List<String> queryNames;
     private int runs;
     private int concurrency;
-    private List<Map<String, String>> variableList;
+    private List<Map<String, String>> variableMapList;
 
-    public BenchmarkDescriptor(String name, String dataSource, List<String> queryNames, int runs, int concurrency, List<Map<String, String>> variableList)
+    public BenchmarkDescriptor(String name, String dataSource, List<String> queryNames, int runs, int concurrency, List<Map<String, String>> variableMapList)
     {
         this.name = name;
         this.dataSource = dataSource;
         this.queryNames = queryNames;
         this.runs = runs;
         this.concurrency = concurrency;
-        this.variableList = variableList;
+        this.variableMapList = variableMapList;
     }
 
     public String getName()
@@ -111,8 +112,8 @@ public class BenchmarkDescriptor
         return concurrency;
     }
 
-    public List<Map<String, String>> getVariableList()
+    public List<Map<String, String>> getVariableMapList()
     {
-        return variableList;
+        return variableMapList;
     }
 }

@@ -1,0 +1,3 @@
+datasource: test_datasource
+query-names: test_query.sql
+runs: 2

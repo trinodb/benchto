@@ -43,14 +43,16 @@ public class DriverApp
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplate()
+    {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         return restTemplate;
     }
 
     @Bean(name = "defaultTaskExecutor")
-    public ThreadPoolTaskExecutor defaultTaskExecutor() {
+    public ThreadPoolTaskExecutor defaultTaskExecutor()
+    {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setMaxPoolSize(5);
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
@@ -58,7 +60,8 @@ public class DriverApp
     }
 
     @Bean(name = "queryTaskExecutor")
-    public ThreadPoolTaskExecutor queryTaskExecutor() {
+    public ThreadPoolTaskExecutor queryTaskExecutor()
+    {
         // make it parallel
         ThreadPoolTaskExecutor queryExecutor = new ThreadPoolTaskExecutor();
         queryExecutor.setMaxPoolSize(1);
@@ -68,10 +71,11 @@ public class DriverApp
     }
 
     @Bean
-    public FreeMarkerConfigurationFactoryBean freemarkerConfiguration() throws IOException, TemplateException {
+    public FreeMarkerConfigurationFactoryBean freemarkerConfiguration()
+            throws IOException, TemplateException
+    {
         FreeMarkerConfigurationFactoryBean factory = new FreeMarkerConfigurationFactoryBean();
         factory.setDefaultEncoding("UTF-8");
-        factory.setTemplateLoaderPath("classpath:/");
         return factory;
     }
 }

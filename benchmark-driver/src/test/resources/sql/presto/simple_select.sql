@@ -1,3 +1,3 @@
 <#-- comment -->
-SELECT count(*)
-FROM "${database}"."${schema}"."table"
+SELECT 1
+FROM "${schema}".SYSTEM_USERS

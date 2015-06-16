@@ -56,7 +56,7 @@ public class GraphiteEventExecutionListener
     public void executionStarted(QueryExecution execution)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Execution %s-%d started", execution.getBenchmark().getName(), execution.getRun()))
+                .what(format("Execution %s-%d started", execution.getQuery().getName(), execution.getRun()))
                 .tags("execution", "started")
                 .build();
 
@@ -67,7 +67,7 @@ public class GraphiteEventExecutionListener
     public void executionFinished(QueryExecutionResult executionResult)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Execution %s-%d ended", executionResult.getBenchmark().getName(), executionResult.getQueryExecution().getRun()))
+                .what(format("Execution %s-%d ended", executionResult.getQuery().getName(), executionResult.getQueryExecution().getRun()))
                 .tags("execution", "ended")
                 .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
                 .build();
