@@ -10,6 +10,10 @@
     <logger name="com.teradata.benchmark.driver" level="TRACE"/>
     <logger name="org.springframework" level="WARN"/>
 
+    <!-- Logs messages related to template execution -->
+    <!-- We don't need any logs printed by freemarker. When template processing fails - we will get an exception -->
+    <logger name="freemarker.runtime" level="OFF"/>
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
