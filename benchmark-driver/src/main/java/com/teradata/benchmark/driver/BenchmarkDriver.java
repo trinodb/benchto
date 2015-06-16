@@ -4,6 +4,7 @@
 package com.teradata.benchmark.driver;
 
 import com.teradata.benchmark.driver.listeners.BenchmarkStatusReporter;
+import com.teradata.benchmark.driver.loader.BenchmarkLoader;
 import com.teradata.benchmark.driver.sql.QueryExecution;
 import com.teradata.benchmark.driver.sql.QueryExecutionResult;
 import com.teradata.benchmark.driver.sql.SqlStatementExecutor;

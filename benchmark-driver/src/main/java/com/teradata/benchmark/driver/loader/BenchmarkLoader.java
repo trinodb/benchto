@@ -1,9 +1,13 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver;
+package com.teradata.benchmark.driver.loader;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.BenchmarkExecutionException;
+import com.teradata.benchmark.driver.BenchmarkProperties;
+import com.teradata.benchmark.driver.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +39,7 @@ public class BenchmarkLoader
         try (DirectoryStream<Path> sqlFiles = newDirectoryStream(sqlFilesPath(), "*.sql")) {
             return StreamSupport.stream(sqlFiles.spliterator(), false)
                     .map(this::loadBenchmarkQuery)
-                    .map(query -> new Benchmark(query.getName(), ImmutableList.of(query), properties.getRuns()))
+                    .map(query -> new Benchmark(query.getName(), ImmutableList.of(query), properties.getRuns(), 1))
                     .collect(toList());
         }
         catch (IOException | URISyntaxException e) {
