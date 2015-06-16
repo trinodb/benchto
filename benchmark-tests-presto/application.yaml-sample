@@ -1,5 +1,5 @@
-spring:
-  datasource:
+data-sources:
+  presto:
     url: jdbc:presto://presto-master:8080/hive/tpch_100gb
     username: hdfs
     password: na

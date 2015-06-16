@@ -1,9 +1,15 @@
-spring:
-  datasource:
+data-sources:
+  presto:
     url: jdbc:hsqldb:mem:.
     username: sa
     password:
     driver-class-name: org.hsqldb.jdbcDriver
+  hive:
+    url: jdbc:hsqldb:mem:.
+    username: sa
+    password:
+    driver-class-name: org.hsqldb.jdbcDriver
+
 
 benchmark-service:
   url: http://benchmark-service:8080

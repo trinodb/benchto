@@ -1,5 +1,5 @@
-spring:
-  datasource:
+data-sources:
+  presto:
     url: jdbc:teradata://teradata-master
     username: test_presto_user
     password: test_presto_password
