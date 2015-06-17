@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver.utils;
 
-import com.teradata.benchmark.driver.sql.QueryExecutionResult;
+import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

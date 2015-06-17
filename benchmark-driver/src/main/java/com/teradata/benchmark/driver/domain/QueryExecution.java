@@ -1,9 +1,8 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.sql;
+package com.teradata.benchmark.driver.domain;
 
-import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Query;
 
 import static com.google.common.base.MoreObjects.toStringHelper;

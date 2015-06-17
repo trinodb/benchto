@@ -3,10 +3,16 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.google.common.collect.ImmutableList;
+import com.teradata.benchmark.driver.execution.BenchmarkDriver;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.RequestMatcher;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -29,41 +35,65 @@ public class DriverAppIntegrationTest
             ",{\"target\":\"network\",\"datapoints\":[[10, 10],[10, 10]]}" +
             ",{\"target\":\"network_total\",\"datapoints\":[[10, 10],[10, 10]]}" +
             "]";
-    private static final String[] MEASUREMENT_NAMES = new String[] {
-            "duration", "memory_max", "memory_mean", "cpu_max", "cpu_mean", "network_max", "network_mean", "network_total"};
+    private static final List<String> GRAPHITE_MEASUREMENT_NAMES = ImmutableList.of(
+            "memory_max", "memory_mean", "cpu_max", "cpu_mean", "network_max", "network_mean", "network_total");
+
+    private static final String TEST_QUERY = "SELECT 1\nFROM \"INFORMATION_SCHEMA\".SYSTEM_USERS\n";
+
+    private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
     @Autowired
     private BenchmarkDriver benchmarkDriver;
 
+    @Autowired
+    private BenchmarkProperties benchmarkProperties;
+
     @Test
-    public void benchmarkTestQuery()
+    public void simpleSelectBenchmark()
     {
-        // simple_select benchmark start
-        verifyBenchmarkStart("simple_select_benchmark", "SELECT 1\nFROM \"INFORMATION_SCHEMA\".SYSTEM_USERS\n");
+        setBenchmark("simple_select_benchmark.yaml");
+        verifyBenchmarkStart("simple_select_benchmark", TEST_QUERY);
+        verifySerialExecution("simple_select_benchmark", "simple_select", 0);
+        verifyBenchmarkFinish("simple_select_benchmark", ImmutableList.of("duration"));
+        verifyComplete();
+    }
 
-        // first execution
-        verifyExecution("simple_select_benchmark", "simple_select", 0, "ENDED");
+    @Test
+    public void testBenchmark()
+    {
+        setBenchmark("test_benchmark.yaml");
+        verifyBenchmarkStart("test_benchmark", TEST_QUERY);
+        verifySerialExecution("test_benchmark", "test_query", 0);
+        verifySerialExecution("test_benchmark", "test_query", 1);
+        verifyBenchmarkFinish("test_benchmark", ImmutableList.of("duration"));
+        verifyComplete();
+    }
 
-        // simple_select benchmark end
-        verifyBenchmarkFinish("simple_select_benchmark", "ENDED");
+    @Test
+    public void testConcurrentBenchmark()
+    {
+        ImmutableList<String> concurrentQueryMeasurementName = ImmutableList.of("duration");
+        ImmutableList<String> concurrentBenchmarkMeasurementNames = ImmutableList.<String>builder()
+                .addAll(GRAPHITE_MEASUREMENT_NAMES)
+                .addAll(concurrentQueryMeasurementName)
+                .add("throughput")
+                .build();
 
-        // test_benchmark benchmark start
-        verifyBenchmarkStart("test_benchmark", "SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS\n");
+        setBenchmark("test_concurrent_benchmark.yaml");
 
-        // first execution
-        verifyExecution("test_benchmark", "test_query", 0, "ENDED");
+        verifyBenchmarkStart("test_concurrent_benchmark", TEST_QUERY);
+        verifyExecutionStarted("test_concurrent_benchmark", "test_query", 0);
+        verifyExecutionFinished("test_concurrent_benchmark", "test_query", 0, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark", "test_query", 1);
+        verifyExecutionFinished("test_concurrent_benchmark", "test_query", 1, concurrentQueryMeasurementName);
+        verifyGetGraphiteMeasurements();
+        verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
+        verifyComplete();
+    }
 
-        // second execution
-        verifyExecution("test_benchmark", "test_query", 1, "ENDED");
-
-        // test_benchmark benchmark finished
-        verifyBenchmarkFinish("test_benchmark", "ENDED");
-
-        boolean successful = benchmarkDriver.run();
-
-        assertThat(successful).isTrue();
-
-        restServiceServer.verify();
+    private void setBenchmark(String s)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", s);
     }
 
     private void verifyBenchmarkStart(String benchmarkName, String sql)
@@ -84,12 +114,13 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifyBenchmarkFinish(String benchmarkName, String status)
+    private void verifyBenchmarkFinish(String benchmarkName, List<String> measurementNames)
     {
         restServiceServer.expect(matchAll(
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/finish"),
                 method(HttpMethod.POST),
-                jsonPath("$.status", is(status))
+                jsonPath("$.status", ENDED_STATUS_MATCHER),
+                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
         )).andRespond(withSuccess());
 
         restServiceServer.expect(matchAll(
@@ -101,7 +132,18 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifyExecution(String benchmarkName, String queryName, int executionNumber, String status)
+    private void verifySerialExecution(String benchmarkName, String queryName, int executionNumber)
+    {
+        ImmutableList<String> serialQueryMeasurementNames = ImmutableList.<String>builder()
+                .addAll(GRAPHITE_MEASUREMENT_NAMES)
+                .add("duration")
+                .build();
+        verifyExecutionStarted(benchmarkName, queryName, executionNumber);
+        verifyGetGraphiteMeasurements();
+        verifyExecutionFinished(benchmarkName, queryName, executionNumber, serialQueryMeasurementNames);
+    }
+
+    private void verifyExecutionStarted(String benchmarkName, String queryName, int executionNumber)
     {
         restServiceServer.expect(matchAll(
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/start"),
@@ -115,21 +157,15 @@ public class DriverAppIntegrationTest
                 jsonPath("$.tags", is("execution started")),
                 jsonPath("$.data", is(""))
         )).andRespond(withSuccess());
+    }
 
-        restServiceServer.expect(matchAll(
-                requestTo(startsWith("http://graphite:18088/render?format=json")),
-                requestTo(containsString("&target=alias(TARGET_CPU,'cpu')")),
-                requestTo(containsString("&target=alias(TARGET_MEMORY,'memory')")),
-                requestTo(containsString("&target=alias(TARGET_NETWORK,'network')")),
-                requestTo(containsString("&target=alias(integral(TARGET_NETWORK),'network_total')")),
-                method(HttpMethod.GET)
-        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
-
+    private void verifyExecutionFinished(String benchmarkName, String queryName, int executionNumber, List<String> measurementNames)
+    {
         restServiceServer.expect(matchAll(
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
                 method(HttpMethod.POST),
-                jsonPath("$.status", is(status)),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(MEASUREMENT_NAMES))
+                jsonPath("$.status", ENDED_STATUS_MATCHER),
+                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
         )).andRespond(withSuccess());
 
         restServiceServer.expect(matchAll(
@@ -139,6 +175,24 @@ public class DriverAppIntegrationTest
                 jsonPath("$.tags", is("execution ended")),
                 jsonPath("$.data", startsWith("duration: "))
         )).andRespond(withSuccess());
+    }
+
+    private void verifyGetGraphiteMeasurements()
+    {
+        restServiceServer.expect(matchAll(
+                requestTo(startsWith("http://graphite:18088/render?format=json")),
+                requestTo(containsString("&target=alias(TARGET_CPU,'cpu')")),
+                requestTo(containsString("&target=alias(TARGET_MEMORY,'memory')")),
+                requestTo(containsString("&target=alias(TARGET_NETWORK,'network')")),
+                requestTo(containsString("&target=alias(integral(TARGET_NETWORK),'network_total')")),
+                method(HttpMethod.GET)
+        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
+    }
+
+    private void verifyComplete()
+    {
+        boolean successful = benchmarkDriver.run();
+        assertThat(successful).isTrue();
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)

@@ -1,26 +1,29 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver;
+package com.teradata.benchmark.driver.execution;
 
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.teradata.benchmark.driver.BenchmarkExecutionException;
+import com.teradata.benchmark.driver.BenchmarkProperties;
+import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.concurrent.ExecutorServiceFactory;
+import com.teradata.benchmark.driver.domain.Benchmark;
+import com.teradata.benchmark.driver.domain.BenchmarkResult;
+import com.teradata.benchmark.driver.domain.BenchmarkResult.BenchmarkResultBuilder;
+import com.teradata.benchmark.driver.domain.QueryExecution;
+import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 import com.teradata.benchmark.driver.listeners.BenchmarkStatusReporter;
 import com.teradata.benchmark.driver.loader.BenchmarkLoader;
-import com.teradata.benchmark.driver.sql.QueryExecution;
-import com.teradata.benchmark.driver.sql.QueryExecutionResult;
-import com.teradata.benchmark.driver.sql.SqlStatementExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.toList;
@@ -38,14 +41,13 @@ public class BenchmarkDriver
     private BenchmarkLoader benchmarkLoader;
 
     @Autowired
-    private SqlStatementExecutor sqlStatementExecutor;
+    private QueryExecutor queryExecutor;
 
     @Autowired
     private BenchmarkStatusReporter statusReporter;
 
-    @Qualifier("queryTaskExecutor")
     @Autowired
-    private ThreadPoolTaskExecutor queryTaskExecutor;
+    private ExecutorServiceFactory executorServiceFactory;
 
     /**
      * @return true if all benchmark queries passed
@@ -60,7 +62,7 @@ public class BenchmarkDriver
         List<BenchmarkResult> benchmarkResults = benchmarks.stream()
                 .map(this::executeBenchmark)
                 .collect(toList());
-        statusReporter.reportBenchmarkFinished(benchmarkResults);
+        statusReporter.reportSuiteFinished(benchmarkResults);
 
         return !benchmarkResults.stream()
                 .filter(result -> !result.isSuccessful())
@@ -71,15 +73,20 @@ public class BenchmarkDriver
     {
         statusReporter.reportBenchmarkStarted(benchmark);
 
-        List<QueryExecutionCallable> executionCallables = buildQueryExecutionCallables(benchmark);
+        BenchmarkResultBuilder benchmarkResultBuilder = new BenchmarkResultBuilder(benchmark)
+                .startTimer();
 
+        ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
         try {
-            List<Future<QueryExecutionResult>> executionFutures = queryTaskExecutor.getThreadPoolExecutor().invokeAll(executionCallables);
+            List<Future<QueryExecutionResult>> executionFutures = executorService.invokeAll(buildQueryExecutionCallables(benchmark));
             List<QueryExecutionResult> executionResults = executionFutures.stream()
                     .map(this::awaitAndExtractExecutionResult)
                     .collect(toList());
 
-            BenchmarkResult benchmarkResult = new BenchmarkResult(benchmark, executionResults);
+            BenchmarkResult benchmarkResult = benchmarkResultBuilder
+                    .endTimer()
+                    .setExecutions(executionResults)
+                    .build();
 
             statusReporter.reportBenchmarkFinished(benchmarkResult);
 
@@ -88,18 +95,18 @@ public class BenchmarkDriver
         catch (InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute benchmark", e);
         }
+        finally {
+            executorService.shutdown();
+        }
     }
 
-    private List<QueryExecutionCallable> buildQueryExecutionCallables(Benchmark benchmark)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark)
     {
-        List<QueryExecutionCallable> executionCallables = newArrayList();
+        List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
             for (int run = 0; run < benchmark.getRuns(); ++run) {
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
-                QueryExecutionCallable queryExecutionCallable = new QueryExecutionCallable(queryExecution, statusReporter, sqlStatementExecutor,
-                        properties.getGraphiteProperties().waitSecondsBeforeExecutionReporting());
-
-                executionCallables.add(queryExecutionCallable);
+                executionCallables.add(() -> queryExecutor.execute(queryExecution));
             }
         }
         return executionCallables;
@@ -117,41 +124,6 @@ public class BenchmarkDriver
         catch (ExecutionException e) {
             Throwable cause = e.getCause();
             throw new BenchmarkExecutionException("Could not execute benchmark query: " + cause.getMessage(), cause);
-        }
-    }
-
-    private static class QueryExecutionCallable
-            implements Callable<QueryExecutionResult>
-    {
-
-        private QueryExecution queryExecution;
-        private BenchmarkStatusReporter statusReporter;
-        private SqlStatementExecutor sqlStatementExecutor;
-        private Optional<Integer> waitSecondsBeforeExecutionReporting;
-
-        public QueryExecutionCallable(QueryExecution queryExecution, BenchmarkStatusReporter statusReporter, SqlStatementExecutor sqlStatementExecutor, Optional<Integer> waitSecondsBeforeExecutionReporting)
-        {
-            this.queryExecution = queryExecution;
-            this.statusReporter = statusReporter;
-            this.sqlStatementExecutor = sqlStatementExecutor;
-            this.waitSecondsBeforeExecutionReporting = waitSecondsBeforeExecutionReporting;
-        }
-
-        @Override
-        public QueryExecutionResult call()
-                throws Exception
-        {
-            statusReporter.reportExecutionStarted(queryExecution);
-
-            QueryExecutionResult result = sqlStatementExecutor.executeQuery(queryExecution);
-
-            if (waitSecondsBeforeExecutionReporting.isPresent()) {
-                TimeUnit.SECONDS.sleep(waitSecondsBeforeExecutionReporting.get());
-            }
-
-            statusReporter.reportExecutionFinished(result);
-
-            return result;
         }
     }
 }

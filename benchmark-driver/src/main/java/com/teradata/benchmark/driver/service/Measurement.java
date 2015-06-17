@@ -1,11 +1,15 @@
+/*
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ */
+
 package com.teradata.benchmark.driver.service;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.google.common.base.MoreObjects;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@SuppressWarnings("unused")
 @JsonAutoDetect(fieldVisibility = ANY)
 public class Measurement
 {
@@ -47,5 +51,15 @@ public class Measurement
         temp = Double.doubleToLongBits(value);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        return MoreObjects.toStringHelper(this)
+                .add("name", name)
+                .add("unit", unit)
+                .add("value", value)
+                .toString();
     }
 }

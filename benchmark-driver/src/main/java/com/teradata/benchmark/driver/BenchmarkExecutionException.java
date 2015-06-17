@@ -16,4 +16,9 @@ public class BenchmarkExecutionException
     {
         super(message, cause);
     }
+
+    public BenchmarkExecutionException(Throwable cause)
+    {
+        super(cause);
+    }
 }

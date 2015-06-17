@@ -1,5 +1,6 @@
 package com.teradata.benchmark.driver;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,5 +23,10 @@ public abstract class IntegrationTest
     public void initializeRestServiceServer()
     {
         restServiceServer = MockRestServiceServer.createServer(restTemplate);
+    }
+
+    @After
+    public void verifyRestServiceServer() {
+        restServiceServer.verify();
     }
 }

@@ -8,5 +8,6 @@ public enum MeasurementUnit
     MILLISECONDS,
     BYTES,
     PERCENT,
+    QUERY_PER_SECOND,
     NONE
 }

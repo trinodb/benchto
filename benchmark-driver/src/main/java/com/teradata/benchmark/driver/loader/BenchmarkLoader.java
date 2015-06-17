@@ -3,10 +3,12 @@
  */
 package com.teradata.benchmark.driver.loader;
 
-import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.domain.Benchmark;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static java.nio.file.Files.isRegularFile;
@@ -26,7 +30,10 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 @Component
-public class BenchmarkLoader {
+public class BenchmarkLoader
+{
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkLoader.class);
+
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
     @Autowired
@@ -40,6 +47,7 @@ public class BenchmarkLoader {
             return Files.walk(benchmarksFilesPath())
                     .filter(file -> isRegularFile(file) && file.toString().endsWith(BENCHMARK_FILE_SUFFIX))
                     .sorted((p1, p2) -> p1.toString().compareTo(p2.toString()))
+                    .filter(pathIsListedInBenchmarksListIfProvided())
                     .flatMap(file -> loadBenchmarks(file).stream())
                     .collect(toList());
         } catch (IOException e) {
@@ -112,5 +120,18 @@ public class BenchmarkLoader {
      */
     private String sanitizeBenchmarkName(String benchmarkName) {
         return benchmarkName.replaceAll("[^A-Za-z0-9_-]", "_");
+    }
+
+    private Predicate<Path> pathIsListedInBenchmarksListIfProvided()
+    {
+        return path -> {
+            Optional<List<String>> benchmarks = properties.getActiveBenchmarks();
+            if (benchmarks.isPresent()) {
+                boolean included = benchmarks.get().contains(path.getFileName().toString());
+                LOGGER.info("Benchmark: '{}' will be {}.", path.toString(), included ? "included" : "EXCLUDED");
+                return included;
+            }
+            return true;
+        };
     }
 }

@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.teradata.benchmark.driver.execution.BenchmarkDriver;
 import freemarker.template.TemplateException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

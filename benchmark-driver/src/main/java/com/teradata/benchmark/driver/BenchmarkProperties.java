@@ -3,6 +3,9 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.graphite.GraphiteProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +14,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -22,14 +27,14 @@ public class BenchmarkProperties
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss:SSS");
 
-    @Value("${runs:3}")
-    private int runs;
-
     @Value("${sql:sql}")
     private String sqlDir;
 
     @Value("${benchmarks:benchmarks}")
     private String benchmarksDir;
+
+    @Value("${activeBenchmarks:#{null}}")
+    private String activeBenchmarks;
 
     @Value("${executionSequenceId:}")
     private String executionSequenceId;
@@ -46,11 +51,6 @@ public class BenchmarkProperties
         if (isNullOrEmpty(executionSequenceId)) {
             executionSequenceId = nowUtc().format(DATE_TIME_FORMATTER);
         }
-    }
-
-    public int getRuns()
-    {
-        return runs;
     }
 
     public String getSqlDir()
@@ -77,16 +77,29 @@ public class BenchmarkProperties
         return graphiteProperties;
     }
 
+    public Optional<List<String>> getActiveBenchmarks()
+    {
+        if (isNullOrEmpty(activeBenchmarks)) {
+            return Optional.empty();
+        }
+        Iterable<String> splittedBenchmarks = Splitter.on(",").trimResults().split(activeBenchmarks);
+        return Optional.of(ImmutableList.copyOf(splittedBenchmarks));
+    }
+
     @Override
     public String toString()
     {
-        return toStringHelper(this)
-                .add("runs", runs)
+        MoreObjects.ToStringHelper toStringHelper = toStringHelper(this)
                 .add("sqlDir", sqlDir)
                 .add("benchmarksDir", benchmarksDir)
                 .add("executionSequenceId", executionSequenceId)
                 .add("environmentName", environmentName)
                 .add("graphiteProperties", graphiteProperties)
-                .toString();
+                .add("graphiteProperties", graphiteProperties);
+        Optional<List<String>> benchmarks = getActiveBenchmarks();
+        if (benchmarks.isPresent()) {
+            toStringHelper.add("activeBenchmarks", benchmarks.get());
+        }
+        return toStringHelper.toString();
     }
 }

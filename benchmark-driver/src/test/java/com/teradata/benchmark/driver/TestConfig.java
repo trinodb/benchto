@@ -12,7 +12,8 @@ public class TestConfig
 
     @Primary
     @Bean(name = "defaultTaskExecutor")
-    public TaskExecutor taskExecutor() {
+    public TaskExecutor taskExecutor()
+    {
         // MockRestServiceServer expects calls in particular order,
         // we need to use sync task executor
         return new SyncTaskExecutor();

@@ -3,10 +3,10 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
-import com.teradata.benchmark.driver.Benchmark;
-import com.teradata.benchmark.driver.BenchmarkResult;
-import com.teradata.benchmark.driver.sql.QueryExecution;
-import com.teradata.benchmark.driver.sql.QueryExecutionResult;
+import com.teradata.benchmark.driver.domain.Benchmark;
+import com.teradata.benchmark.driver.domain.BenchmarkResult;
+import com.teradata.benchmark.driver.domain.QueryExecution;
+import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,13 +34,13 @@ public class LoggingBenchmarkExecutionListener
     @Override
     public void benchmarkFinished(BenchmarkResult result)
     {
-        // Report at the end in benchmark result reporting
+        LOG.info("Finished benchmark: {}", result.getBenchmark().getName());
     }
 
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        // Report at the end in benchmark result reporting
+        LOG.info("Query execution started: {}", execution.getQuery().getName());
     }
 
     @Override

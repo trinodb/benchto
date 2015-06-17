@@ -20,7 +20,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 public class PrestoClientIntegrationTest
-        extends com.teradata.benchmark.driver.IntegrationTest
+        extends IntegrationTest
 {
     @Autowired
     private PrestoClient prestoClient;

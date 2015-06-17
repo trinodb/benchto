@@ -4,10 +4,14 @@
 package com.teradata.benchmark.driver.service;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.google.common.base.MoreObjects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriTemplate;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,6 +24,7 @@ import static com.google.common.collect.Maps.newHashMap;
 @Component
 public class BenchmarkServiceClient
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkServiceClient.class);
 
     @Value("${benchmark-service.url}")
     private String serviceUrl;
@@ -31,14 +36,14 @@ public class BenchmarkServiceClient
     {
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", request, Object.class, requestParams);
+        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", request, requestParams);
     }
 
     public void finishBenchmark(String benchmarkName, String benchmarkSequenceId, FinishRequest request)
     {
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", request, Object.class, requestParams);
+        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", request, requestParams);
     }
 
     public void startExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, ExecutionStartRequest request)
@@ -46,7 +51,7 @@ public class BenchmarkServiceClient
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
         requestParams.put("executionSequenceId", executionSequenceId);
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, Object.class, requestParams);
+        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, requestParams);
     }
 
     public void finishExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, FinishRequest request)
@@ -54,7 +59,7 @@ public class BenchmarkServiceClient
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
         requestParams.put("executionSequenceId", executionSequenceId);
 
-        restTemplate.postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, Object.class, requestParams);
+        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, requestParams);
     }
 
     private Map<String, String> requestParams(String benchmarkName, String benchmarkSequenceId)
@@ -64,6 +69,17 @@ public class BenchmarkServiceClient
         params.put("benchmarkName", benchmarkName);
         params.put("benchmarkSequenceId", benchmarkSequenceId);
         return params;
+    }
+
+    private Object postForObject(String url, Object request, Map<String, String> requestParams)
+    {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Post object to benchmark service on URL: {}, with request: {}",
+                    new UriTemplate(url).expand(requestParams),
+                    request);
+        }
+
+        return restTemplate.postForObject(url, request, Object.class, requestParams);
     }
 
     @SuppressWarnings("unused")
@@ -118,6 +134,15 @@ public class BenchmarkServiceClient
                 return this;
             }
         }
+
+        @Override
+        public String toString()
+        {
+            return MoreObjects.toStringHelper(this)
+                    .add("environmentName", environmentName)
+                    .add("attributes", attributes)
+                    .toString();
+        }
     }
 
     public static class ExecutionStartRequest
@@ -136,9 +161,16 @@ public class BenchmarkServiceClient
                 super(new ExecutionStartRequest());
             }
         }
+
+        @Override
+        public String toString()
+        {
+            return MoreObjects.toStringHelper(this)
+                    .add("attributes", attributes)
+                    .toString();
+        }
     }
 
-    @SuppressWarnings("unused")
     public static class FinishRequest
             extends AttributeRequest
     {
@@ -180,6 +212,16 @@ public class BenchmarkServiceClient
                 request.measurements.addAll(measurements);
                 return this;
             }
+        }
+
+        @Override
+        public String toString()
+        {
+            return MoreObjects.toStringHelper(this)
+                    .add("measurements", measurements)
+                    .add("status", status)
+                    .add("attributes", attributes)
+                    .toString();
         }
     }
 }
