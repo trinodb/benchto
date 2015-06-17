@@ -8,9 +8,9 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>benchmark-tests-querygrid</artifactId>
+    <artifactId>benchmark-tests</artifactId>
     <packaging>pom</packaging>
-    <name>benchmark-tests-querygrid</name>
+    <name>benchmark-tests</name>
 
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
@@ -28,6 +28,10 @@
             <groupId>com.teradata.benchmark</groupId>
             <artifactId>benchmark-driver</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.facebook.presto</groupId>
+            <artifactId>presto-jdbc</artifactId>
         </dependency>
         <dependency>
             <groupId>com.teradata</groupId>

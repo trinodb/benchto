@@ -27,8 +27,7 @@
     <modules>
         <module>benchmark-service</module>
         <module>benchmark-driver</module>
-        <module>benchmark-tests-presto</module>
-        <module>benchmark-tests-querygrid</module>
+        <module>benchmark-tests</module>
     </modules>
 
     <properties>
