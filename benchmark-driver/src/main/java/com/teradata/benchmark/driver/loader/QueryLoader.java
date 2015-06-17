@@ -53,6 +53,8 @@ public class QueryLoader
     private Template getQueryTemplate(Path templatePath)
             throws IOException
     {
-        return new Template("name", new InputStreamReader(newInputStream(templatePath)), freemarkerConfiguration);
+        // template name must be unique to ensure correct templates caching
+        String templateName = templatePath.toString();
+        return new Template(templateName, new InputStreamReader(newInputStream(templatePath)), freemarkerConfiguration);
     }
 }

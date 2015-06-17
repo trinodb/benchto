@@ -1,3 +1,6 @@
+/*
+ * Copyright 2015, Teradata, Inc. All rights reserved.
+ */
 package com.teradata.benchmark.driver.jdbc;
 
 import com.teradata.benchmark.driver.IntegrationTest;
