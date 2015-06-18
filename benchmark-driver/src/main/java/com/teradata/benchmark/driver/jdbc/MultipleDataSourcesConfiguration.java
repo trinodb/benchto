@@ -3,6 +3,8 @@
  */
 package com.teradata.benchmark.driver.jdbc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -18,12 +20,17 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 import static com.teradata.benchmark.driver.utils.PropertiesUtils.resolveEnvironmentProperties;
+import static com.teradata.benchmark.driver.utils.Types.checkType;
 import static java.util.stream.Collectors.toMap;
 
 @Configuration
 public class MultipleDataSourcesConfiguration
         implements BeanFactoryPostProcessor, EnvironmentAware
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleDataSourcesConfiguration.class);
+
+    static final int INITIAL_POOL_SIZE = 1;
+    static final int MAX_POOL_SIZE = 100;
 
     private MultipleDataSourcesProperties multipleDataSourcesProperties;
 
@@ -51,13 +58,15 @@ public class MultipleDataSourcesConfiguration
 
     private DataSource createDataSource(DataSourceProperties properties)
     {
-        return DataSourceBuilder
+        DataSource dataSource = DataSourceBuilder
                 .create()
                 .url(properties.getUrl())
                 .username(properties.getUsername())
                 .password(properties.getPassword())
                 .driverClassName(properties.getDriverClassName())
                 .build();
+        setConnectionPoolProperties(dataSource);
+        return dataSource;
     }
 
     private void register(ConfigurableListableBeanFactory beanFactory, Map<String, DataSource> dataSources)
@@ -66,5 +75,22 @@ public class MultipleDataSourcesConfiguration
         for (Map.Entry<String, DataSource> entry : dataSources.entrySet()) {
             beanFactory.registerSingleton(entry.getKey(), entry.getValue());
         }
+    }
+
+    private void setConnectionPoolProperties(DataSource dataSource)
+    {
+        org.apache.tomcat.jdbc.pool.DataSource tomcatDataSource = checkType(
+                dataSource, org.apache.tomcat.jdbc.pool.DataSource.class, "dataSource"
+        );
+
+        tomcatDataSource.setInitialSize(INITIAL_POOL_SIZE);
+        tomcatDataSource.setMaxActive(MAX_POOL_SIZE);
+
+        // do not wait for connection
+        // when all the connections are used, just throw an exception that connection pool is exhausted
+        // we must use here 1ms instead 0ms, because 0 means wait forever.
+        tomcatDataSource.setMaxWait(1);
+
+        LOGGER.info("DataSource connection pool properties have been successfully set.");
     }
 }
