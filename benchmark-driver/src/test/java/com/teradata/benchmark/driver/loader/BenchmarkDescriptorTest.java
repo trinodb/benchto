@@ -16,7 +16,6 @@ public class BenchmarkDescriptorTest
     private static final String DEFAULT_NAME = "xyz";
 
     private static final String SIMPLE_BENCHMARK = "" +
-            "name: boo\n" +
             "datasource: foo\n" +
             "query-names: [q1, q2, 1, 2]";
 
@@ -49,7 +48,6 @@ public class BenchmarkDescriptorTest
             throws IOException
     {
         BenchmarkDescriptor descriptor = descriptorFromString(SIMPLE_BENCHMARK);
-        assertThat(descriptor.getName()).isEqualTo("boo");
         assertThat(descriptor.getQueryNames()).containsExactly("q1", "q2", "1", "2");
         assertThat(descriptor.getDataSource()).isEqualTo("foo");
         assertThat(descriptor.getRuns()).isEqualTo(1);
@@ -100,6 +98,6 @@ public class BenchmarkDescriptorTest
     private BenchmarkDescriptor descriptorFromString(String string)
             throws IOException
     {
-        return loadFromString(string, DEFAULT_NAME);
+        return loadFromString(null, string);
     }
 }

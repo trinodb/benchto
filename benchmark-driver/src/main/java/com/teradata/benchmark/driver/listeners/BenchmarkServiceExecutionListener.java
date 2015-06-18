@@ -3,7 +3,6 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
-import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.domain.Benchmark;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
 import com.teradata.benchmark.driver.domain.Measurable;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.collect.Iterables.getFirst;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
@@ -39,9 +39,6 @@ public class BenchmarkServiceExecutionListener
     private String serviceUrl;
 
     @Autowired
-    private BenchmarkProperties benchmarkProperties;
-
-    @Autowired
     private GraphiteMetricsLoader graphiteMetricsLoader;
 
     @Autowired
@@ -54,13 +51,20 @@ public class BenchmarkServiceExecutionListener
     public void benchmarkStarted(Benchmark benchmark)
     {
         BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder()
-                .environmentName(benchmarkProperties.getEnvironmentName());
+                .environmentName(benchmark.getEnvironment());
+
+        requestBuilder.addAttribute("dataSource", benchmark.getDataSource())
+                .addAttribute("runs", "" + benchmark.getRuns())
+                .addAttribute("concurrency", "" + benchmark.getConcurrency());
+        for (Map.Entry<String, String> variableEntry : benchmark.getVariables().entrySet()) {
+            requestBuilder.addAttribute(variableEntry.getKey(), variableEntry.getValue());
+        }
 
         if (benchmark.getQueries().size() == 1) {
             requestBuilder.addAttribute("sqlStatement", getFirst(benchmark.getQueries(), null).getSql());
         }
 
-        benchmarkServiceClient.startBenchmark(benchmark.getName(), benchmarkSequenceId(), requestBuilder.build());
+        benchmarkServiceClient.startBenchmark(benchmark.getName(), benchmark.getSequenceId(), requestBuilder.build());
     }
 
     @Override
@@ -75,7 +79,7 @@ public class BenchmarkServiceExecutionListener
         }
         finishRequestBuilder.addMeasurement(measurement("duration", "MILLISECONDS", benchmarkResult.getQueryDuration().toMillis()));
 
-        benchmarkServiceClient.finishBenchmark(benchmarkResult.getBenchmark().getName(), benchmarkSequenceId(), finishRequestBuilder.build());
+        benchmarkServiceClient.finishBenchmark(benchmarkResult.getBenchmark().getName(), benchmarkResult.getBenchmark().getSequenceId(), finishRequestBuilder.build());
     }
 
     private double calculateThroughput(BenchmarkResult benchmarkResult)
@@ -90,7 +94,7 @@ public class BenchmarkServiceExecutionListener
         ExecutionStartRequest request = new ExecutionStartRequestBuilder()
                 .build();
 
-        benchmarkServiceClient.startExecution(execution.getBenchmark().getName(), benchmarkSequenceId(), executionSequenceId(execution), request);
+        benchmarkServiceClient.startExecution(execution.getBenchmark().getName(), execution.getBenchmark().getSequenceId(), executionSequenceId(execution), request);
     }
 
     @Override
@@ -119,7 +123,7 @@ public class BenchmarkServiceExecutionListener
             }
         }
 
-        benchmarkServiceClient.finishExecution(executionResult.getBenchmark().getName(), benchmarkSequenceId(),
+        benchmarkServiceClient.finishExecution(executionResult.getBenchmark().getName(), executionResult.getBenchmark().getSequenceId(),
                 executionSequenceId(executionResult.getQueryExecution()), requestBuilder.build());
     }
 
@@ -133,11 +137,6 @@ public class BenchmarkServiceExecutionListener
     public void suiteFinished(List<BenchmarkResult> queryResults)
     {
         // DO NOTHING
-    }
-
-    private String benchmarkSequenceId()
-    {
-        return benchmarkProperties.getExecutionSequenceId();
     }
 
     private String executionSequenceId(QueryExecution execution)

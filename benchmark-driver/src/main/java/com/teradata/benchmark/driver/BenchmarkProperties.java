@@ -11,21 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
 
 @Component
 public class BenchmarkProperties
 {
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss:SSS");
 
     @Value("${sql:sql}")
     private String sqlDir;
@@ -33,10 +27,16 @@ public class BenchmarkProperties
     @Value("${benchmarks:benchmarks}")
     private String benchmarksDir;
 
+    /**
+     * Active benchmarks. If this property is set benchmarks will be filtered by name.
+     */
     @Value("${activeBenchmarks:#{null}}")
     private String activeBenchmarks;
 
-    @Value("${executionSequenceId:}")
+    /**
+     * Execution identifier. Should be unique between runs. If not set, it will be automatically set based on timestamp.
+     */
+    @Value("${executionSequenceId:#{null}}")
     private String executionSequenceId;
 
     @Value("${environment.name}")
@@ -45,26 +45,19 @@ public class BenchmarkProperties
     @Autowired
     private GraphiteProperties graphiteProperties;
 
-    @PostConstruct
-    public void initExecutionSequenceId()
-    {
-        if (isNullOrEmpty(executionSequenceId)) {
-            executionSequenceId = nowUtc().format(DATE_TIME_FORMATTER);
-        }
-    }
-
     public String getSqlDir()
     {
         return sqlDir;
     }
 
-    public String getBenchmarksDir() {
+    public String getBenchmarksDir()
+    {
         return benchmarksDir;
     }
 
-    public String getExecutionSequenceId()
+    public Optional<String> getExecutionSequenceId()
     {
-        return executionSequenceId;
+        return Optional.ofNullable(executionSequenceId);
     }
 
     public String getEnvironmentName()
@@ -94,7 +87,6 @@ public class BenchmarkProperties
                 .add("benchmarksDir", benchmarksDir)
                 .add("executionSequenceId", executionSequenceId)
                 .add("environmentName", environmentName)
-                .add("graphiteProperties", graphiteProperties)
                 .add("graphiteProperties", graphiteProperties);
         Optional<List<String>> benchmarks = getActiveBenchmarks();
         if (benchmarks.isPresent()) {

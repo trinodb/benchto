@@ -36,7 +36,7 @@ public class DriverAppIntegrationTest
             ",{\"target\":\"network_total\",\"datapoints\":[[10, 10],[10, 10]]}" +
             "]";
     private static final List<String> GRAPHITE_MEASUREMENT_NAMES = ImmutableList.of(
-            "memory_max", "memory_mean", "cpu_max", "cpu_mean", "network_max", "network_mean", "network_total");
+            "cluster-memory_max", "cluster-memory_mean", "cluster-cpu_max", "cluster-cpu_mean", "cluster-network_max", "cluster-network_mean", "cluster-network_total");
 
     private static final String TEST_QUERY = "SELECT 1\nFROM \"INFORMATION_SCHEMA\".SYSTEM_USERS\n";
 
@@ -52,9 +52,9 @@ public class DriverAppIntegrationTest
     public void simpleSelectBenchmark()
     {
         setBenchmark("simple_select_benchmark.yaml");
-        verifyBenchmarkStart("simple_select_benchmark", TEST_QUERY);
-        verifySerialExecution("simple_select_benchmark", "simple_select", 0);
-        verifyBenchmarkFinish("simple_select_benchmark", ImmutableList.of("duration"));
+        verifyBenchmarkStart("simple_select_benchmark-schema-INFORMATION_SCHEMA", TEST_QUERY);
+        verifySerialExecution("simple_select_benchmark-schema-INFORMATION_SCHEMA", "simple_select", 0);
+        verifyBenchmarkFinish("simple_select_benchmark-schema-INFORMATION_SCHEMA", ImmutableList.of("duration"));
         verifyComplete();
     }
 

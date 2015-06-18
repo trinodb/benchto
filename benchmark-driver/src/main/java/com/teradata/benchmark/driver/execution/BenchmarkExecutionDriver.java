@@ -22,17 +22,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class BenchmarkExecutionDriver
 {
-
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss:SSS");
     private static final Logger LOG = LoggerFactory.getLogger(BenchmarkExecutionDriver.class);
 
     @Autowired
@@ -55,9 +57,11 @@ public class BenchmarkExecutionDriver
      */
     public boolean run()
     {
-        LOG.info("Running benchmark with properties: {}", properties);
+        String executionSequenceId = benchmarkExecutionSequenceId();
 
-        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks();
+        LOG.info("Running benchmarks(executionSequenceId={}) with properties: {}", executionSequenceId, properties);
+
+        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks(executionSequenceId);
         LOG.info("Loaded {} benchmarks", benchmarks.size());
 
         List<BenchmarkResult> benchmarkResults = benchmarks.stream()
@@ -68,6 +72,11 @@ public class BenchmarkExecutionDriver
         return !benchmarkResults.stream()
                 .filter(result -> !result.isSuccessful())
                 .findAny().isPresent();
+    }
+
+    private String benchmarkExecutionSequenceId()
+    {
+        return properties.getExecutionSequenceId().orElse(nowUtc().format(DATE_TIME_FORMATTER));
     }
 
     private BenchmarkResult executeBenchmark(Benchmark benchmark)

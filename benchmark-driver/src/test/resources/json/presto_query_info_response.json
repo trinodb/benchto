@@ -38,7 +38,7 @@
     "totalMemoryReservation" : "0B",
     "totalScheduledTime" : "1.10m",
     "totalCpuTime" : "1.06m",
-    "totalUserTime" : "1.04m",
+    "totalUserTime" : "1.04h",
     "totalBlockedTime" : "4.79m",
     "rawInputDataSize" : "1.34GB",
     "rawInputPositions" : 16822480,

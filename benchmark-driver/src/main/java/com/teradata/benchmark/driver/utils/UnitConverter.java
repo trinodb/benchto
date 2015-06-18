@@ -6,6 +6,8 @@ package com.teradata.benchmark.driver.utils;
 import javax.measure.unit.Unit;
 
 import static javax.measure.unit.NonSI.BYTE;
+import static javax.measure.unit.NonSI.DAY;
+import static javax.measure.unit.NonSI.HOUR;
 import static javax.measure.unit.NonSI.MINUTE;
 import static javax.measure.unit.SI.GIGA;
 import static javax.measure.unit.SI.KILO;
@@ -24,6 +26,10 @@ public final class UnitConverter
     public static Unit<?> unitFor(String source)
     {
         switch (source) {
+            case "d":
+                return DAY;
+            case "h":
+                return HOUR;
             case "m":
                 return MINUTE;
             case "s":

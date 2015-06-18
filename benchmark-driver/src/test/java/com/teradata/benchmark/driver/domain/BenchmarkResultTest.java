@@ -8,6 +8,7 @@ import com.teradata.benchmark.driver.domain.BenchmarkResult.BenchmarkResultBuild
 import org.junit.Test;
 
 import static com.teradata.benchmark.driver.utils.TimeUtils.sleep;
+import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +19,7 @@ public class BenchmarkResultTest
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        BenchmarkResultBuilder builder = new BenchmarkResultBuilder(new Benchmark("name", "datasource", ImmutableList.of(), 1, 1));
+        BenchmarkResultBuilder builder = new BenchmarkResultBuilder(new Benchmark("name", "sequenceId", "datasource", "environment", ImmutableList.of(), 1, 1, emptyMap()));
 
         builder.startTimer();
         sleep(500, MILLISECONDS);

@@ -81,7 +81,7 @@ public class GraphiteMetricsLoader
             if (metricValues.length > 0) {
                 // last non zero measurement contains total over time
                 double totalBytes = getLastValueGreaterThanZero(metricValues);
-                measurements.add(measurement("network_total", "BYTES", totalBytes));
+                measurements.add(measurement("cluster-network_total", "BYTES", totalBytes));
             }
         }
 
@@ -92,8 +92,8 @@ public class GraphiteMetricsLoader
     {
         Optional<StatisticalSummary> statistics = getStats(loadedMetrics, metricName);
         if (statistics.isPresent()) {
-            measurements.add(measurement(metricName + "_max", unit, statistics.get().getMax()));
-            measurements.add(measurement(metricName + "_mean", unit, statistics.get().getMean()));
+            measurements.add(measurement("cluster-" + metricName + "_max", unit, statistics.get().getMax()));
+            measurements.add(measurement("cluster-" + metricName + "_mean", unit, statistics.get().getMean()));
         }
     }
 

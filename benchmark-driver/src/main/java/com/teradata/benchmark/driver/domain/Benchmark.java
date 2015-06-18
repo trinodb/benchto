@@ -7,24 +7,31 @@ import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchmark.driver.Query;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Benchmark
 {
     private final String name;
+    private final String sequenceId;
     private final String dataSource;
+    private final String environment;
     private final List<Query> queries;
     private final int runs;
     private final int concurrency;
+    private final Map<String, String> variables;
 
-    public Benchmark(String name, String dataSource, List<Query> queries, int runs, int concurrency)
+    public Benchmark(String name, String sequenceId, String dataSource, String environment, List<Query> queries, int runs, int concurrency, Map<String, String> variables)
     {
         this.name = name;
+        this.sequenceId = sequenceId;
         this.dataSource = dataSource;
+        this.environment = environment;
         this.queries = ImmutableList.copyOf(checkNotNull(queries));
         this.runs = runs;
         this.concurrency = concurrency;
+        this.variables = variables;
     }
 
     public boolean isSerial()
@@ -42,9 +49,19 @@ public class Benchmark
         return name;
     }
 
+    public String getSequenceId()
+    {
+        return sequenceId;
+    }
+
     public String getDataSource()
     {
         return dataSource;
+    }
+
+    public String getEnvironment()
+    {
+        return environment;
     }
 
     public List<Query> getQueries()
@@ -60,5 +77,10 @@ public class Benchmark
     public int getConcurrency()
     {
         return concurrency;
+    }
+
+    public Map<String, String> getVariables()
+    {
+        return variables;
     }
 }

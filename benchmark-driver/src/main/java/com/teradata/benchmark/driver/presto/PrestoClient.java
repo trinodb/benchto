@@ -94,7 +94,7 @@ public class PrestoClient
         Unit<?> unit = UnitConverter.unitFor(matcher.group(UNIT_GROUP_INDEX));
         value = unit.getConverterTo(requiredUnit).convert(value);
 
-        return measurement(name, UnitConverter.format(requiredUnit), value);
+        return measurement("prestoQuery-" + name, UnitConverter.format(requiredUnit), value);
     }
 
     @SuppressWarnings("unused")

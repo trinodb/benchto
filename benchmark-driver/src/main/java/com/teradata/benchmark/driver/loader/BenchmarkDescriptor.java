@@ -25,7 +25,6 @@ import static java.util.stream.Collectors.toList;
  */
 public class BenchmarkDescriptor
 {
-    private static final String NAME_KEY = "name";
     private static final String DATA_SOURCE_KEY = "datasource";
     private static final String QUERY_NAMES_KEY = "query-names";
     private static final String RUNS_KEY = "runs";
@@ -35,24 +34,23 @@ public class BenchmarkDescriptor
     private static final int DEFAULT_RUNS = 1;
     private static final int DEFAULT_CONCURRENCY = 1;
 
-    public static BenchmarkDescriptor loadFromFile(Path file, String defaultName)
+    public static BenchmarkDescriptor loadFromFile(Path file)
             throws IOException
     {
-        return loadFromString(new String(readAllBytes(file), UTF_8), defaultName);
+        return loadFromString(file, new String(readAllBytes(file), UTF_8));
     }
 
-    public static BenchmarkDescriptor loadFromString(String string, String defaultName)
+    public static BenchmarkDescriptor loadFromString(Path file, String content)
     {
-        Map<String, Object> yaml = (Map) loadYamlFromString(string, BenchmarkDescriptor.class);
+        Map<String, Object> yaml = (Map) loadYamlFromString(content, BenchmarkDescriptor.class);
 
-        String name = yaml.getOrDefault(NAME_KEY, defaultName).toString();
         int concurrency = (int) yaml.getOrDefault(CONCURRENCY_KEY, DEFAULT_CONCURRENCY);
         int runs = (int) yaml.getOrDefault(RUNS_KEY, yaml.containsKey(CONCURRENCY_KEY) ? concurrency : DEFAULT_RUNS);
 
         checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Benchmark yaml must contain '%s' key", DATA_SOURCE_KEY);
 
         return new BenchmarkDescriptor(
-                name,
+                file,
                 yaml.get(DATA_SOURCE_KEY).toString(),
                 stringifyList(asList(yaml.get(QUERY_NAMES_KEY))),
                 runs, concurrency,
@@ -69,16 +67,16 @@ public class BenchmarkDescriptor
                 .collect(toList());
     }
 
-    private String name;
+    private Path descriptorPath;
     private String dataSource;
     private List<String> queryNames;
     private int runs;
     private int concurrency;
     private List<Map<String, String>> variableMapList;
 
-    public BenchmarkDescriptor(String name, String dataSource, List<String> queryNames, int runs, int concurrency, List<Map<String, String>> variableMapList)
+    public BenchmarkDescriptor(Path descriptorPath, String dataSource, List<String> queryNames, int runs, int concurrency, List<Map<String, String>> variableMapList)
     {
-        this.name = name;
+        this.descriptorPath = descriptorPath;
         this.dataSource = dataSource;
         this.queryNames = queryNames;
         this.runs = runs;
@@ -86,9 +84,9 @@ public class BenchmarkDescriptor
         this.variableMapList = variableMapList;
     }
 
-    public String getName()
+    public Path getDescriptorPath()
     {
-        return name;
+        return descriptorPath;
     }
 
     public String getDataSource()
