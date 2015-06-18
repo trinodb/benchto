@@ -12,13 +12,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Benchmark
 {
     private final String name;
+    private final String dataSource;
     private final List<Query> queries;
     private final int runs;
     private final int concurrency;
 
-    public Benchmark(String name, List<Query> queries, int runs, int concurrency)
+    public Benchmark(String name, String dataSource, List<Query> queries, int runs, int concurrency)
     {
         this.name = name;
+        this.dataSource = dataSource;
         this.queries = ImmutableList.copyOf(checkNotNull(queries));
         this.runs = runs;
         this.concurrency = concurrency;
@@ -27,6 +29,11 @@ public class Benchmark
     public String getName()
     {
         return name;
+    }
+
+    public String getDataSource()
+    {
+        return dataSource;
     }
 
     public List<Query> getQueries()

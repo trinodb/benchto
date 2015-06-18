@@ -1,9 +1,14 @@
 data-sources:
   presto:
-    url: jdbc:presto://presto-master:8080/hive/tpch_100gb
-    username: hdfs
-    password: na
+    url: jdbc:presto://presto-master:8080
+    username: presto
+    password: presto
     driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+  teradata:
+    url: jdbc:teradata://teradata-master
+    username: test_presto_user
+    password: test_presto_password
+    driver-class-name: com.teradata.jdbc.TeraDriver
 
 benchmark-service:
   url: http://localhost:8080

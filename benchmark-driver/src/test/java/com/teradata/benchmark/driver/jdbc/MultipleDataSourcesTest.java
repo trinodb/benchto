@@ -25,8 +25,8 @@ public class MultipleDataSourcesTest extends IntegrationTest {
 
     @Test
     public void testAllDataSourcesAvailable() throws Exception {
-        testDataSourceAvailable("presto");
-        testDataSourceAvailable("hive");
+        testDataSourceAvailable("test_datasource");
+        testDataSourceAvailable("test_datasource_2");
     }
 
     private void testDataSourceAvailable(String dataSourceName) throws SQLException {

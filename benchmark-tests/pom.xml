@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>benchmark-tests</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>benchmark-tests</name>
 
     <properties>

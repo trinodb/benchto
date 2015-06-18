@@ -1,10 +1,10 @@
 data-sources:
-  presto:
+  test_datasource:
     url: jdbc:hsqldb:mem:.
     username: sa
     password:
     driver-class-name: org.hsqldb.jdbcDriver
-  hive:
+  test_datasource_2:
     url: jdbc:hsqldb:mem:.
     username: sa
     password:

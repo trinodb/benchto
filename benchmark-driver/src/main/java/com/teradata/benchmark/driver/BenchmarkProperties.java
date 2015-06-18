@@ -28,6 +28,9 @@ public class BenchmarkProperties
     @Value("${sql:sql}")
     private String sqlDir;
 
+    @Value("${benchmarks:benchmarks}")
+    private String benchmarksDir;
+
     @Value("${executionSequenceId:}")
     private String executionSequenceId;
 
@@ -55,6 +58,10 @@ public class BenchmarkProperties
         return sqlDir;
     }
 
+    public String getBenchmarksDir() {
+        return benchmarksDir;
+    }
+
     public String getExecutionSequenceId()
     {
         return executionSequenceId;
@@ -76,6 +83,7 @@ public class BenchmarkProperties
         return toStringHelper(this)
                 .add("runs", runs)
                 .add("sqlDir", sqlDir)
+                .add("benchmarksDir", benchmarksDir)
                 .add("executionSequenceId", executionSequenceId)
                 .add("environmentName", environmentName)
                 .add("graphiteProperties", graphiteProperties)

@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.teradata.benchmark.driver.utils.CartesianProductUtils.cartesianProduct;
 import static com.teradata.benchmark.driver.utils.YamlUtils.asList;
 import static com.teradata.benchmark.driver.utils.YamlUtils.loadYamlFromString;
@@ -36,10 +35,10 @@ public class BenchmarkDescriptor
     private static final int DEFAULT_RUNS = 1;
     private static final int DEFAULT_CONCURRENCY = 1;
 
-    public static BenchmarkDescriptor loadFromFile(Path file)
+    public static BenchmarkDescriptor loadFromFile(Path file, String defaultName)
             throws IOException
     {
-        return loadFromString(new String(readAllBytes(file), UTF_8), getNameWithoutExtension(file.getFileName().toString()));
+        return loadFromString(new String(readAllBytes(file), UTF_8), defaultName);
     }
 
     public static BenchmarkDescriptor loadFromString(String string, String defaultName)

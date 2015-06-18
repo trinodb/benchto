@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -109,8 +110,13 @@ public class BenchmarkDriver
         try {
             return resultFuture.get();
         }
-        catch (Exception e) {
-            throw new BenchmarkExecutionException("Could not execute benchmark query", e);
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BenchmarkExecutionException("Query execution was interrupted", e);
+        }
+        catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            throw new BenchmarkExecutionException("Could not execute benchmark query: " + cause.getMessage(), cause);
         }
     }
 

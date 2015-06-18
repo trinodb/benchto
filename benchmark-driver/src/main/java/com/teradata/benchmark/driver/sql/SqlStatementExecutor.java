@@ -8,11 +8,10 @@ import com.teradata.benchmark.driver.sql.QueryExecutionResult.QueryExecutionResu
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,8 +23,7 @@ public class SqlStatementExecutor
     private static final Logger LOG = LoggerFactory.getLogger(SqlStatementExecutor.class);
 
     @Autowired
-    @Qualifier("presto")
-    private DataSource dataSource;
+    private ApplicationContext applicationContext;
 
     public QueryExecutionResult executeQuery(QueryExecution queryExecution)
     {
@@ -33,6 +31,8 @@ public class SqlStatementExecutor
 
         QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution)
                 .startTimer();
+
+        DataSource dataSource = applicationContext.getBean(queryExecution.getBenchmark().getDataSource(), DataSource.class);
         try (
                 Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();

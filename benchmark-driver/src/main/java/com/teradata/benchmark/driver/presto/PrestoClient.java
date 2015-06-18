@@ -31,6 +31,7 @@ import static javax.measure.unit.SI.MILLI;
 import static javax.measure.unit.SI.SECOND;
 
 @Component
+// TODO: make it optional somehow
 public class PrestoClient
 {
     private static final Map<String, Unit> DEFAULT_METRICS = ImmutableMap.<String, Unit>builder()

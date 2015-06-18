@@ -1,0 +1,5 @@
+datasource: teradata
+query-names: teradata/linear-scan/selectivity-50.sql
+variables:
+  1:
+    schema: tpch_100gb
