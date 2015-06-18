@@ -34,23 +34,23 @@ public class LoggingBenchmarkExecutionListener
     @Override
     public void benchmarkFinished(BenchmarkResult result)
     {
-        LOG.info("Finished benchmark: {}", result.getBenchmark().getName());
+        LOG.trace("Finished benchmark: {}", result.getBenchmark().getName());
     }
 
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        LOG.info("Query execution started: {}", execution.getQuery().getName());
+        LOG.trace("Query started: {} ({})", execution.getQuery().getName(), execution.getRun());
     }
 
     @Override
-    public void executionFinished(QueryExecutionResult queryExecutionResult)
+    public void executionFinished(QueryExecutionResult result)
     {
-        if (queryExecutionResult.isSuccessful()) {
-            LOG.trace("Query: {}, rows count: {}, duration: {}", queryExecutionResult.getBenchmark().getName(), queryExecutionResult.getRowsCount(), queryExecutionResult.getQueryDuration());
+        if (result.isSuccessful()) {
+            LOG.trace("Query finished: {} ({}), rows count: {}, duration: {}", result.getQueryName(), result.getQueryExecution().getRun(), result.getRowsCount(), result.getQueryDuration());
         }
         else {
-            LOG.error("Query: {}, execution error: {}", queryExecutionResult.getBenchmark().getName(), queryExecutionResult.getFailureCause().getMessage());
+            LOG.error("Query failed: {} ({}), execution error: {}", result.getQueryName(), result.getQueryExecution().getRun(), result.getFailureCause().getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ public class LoggingBenchmarkExecutionListener
         System.out.println(format("\nTests run: %d, Failures: %d\n", benchmarkResults.size(), failed.size()));
 
         for (BenchmarkResult result : successful) {
-            System.out.println(format("Benchmark %s - min: %f, max: %f, mean: %f, std-dev: %f",
+            System.out.println(format("Benchmark query duration times for %s - min: %f, max: %f, mean: %f, std-dev: %f",
                     result.getBenchmark().getName(),
                     result.getDurationStatistics().getMin(),
                     result.getDurationStatistics().getMax(),

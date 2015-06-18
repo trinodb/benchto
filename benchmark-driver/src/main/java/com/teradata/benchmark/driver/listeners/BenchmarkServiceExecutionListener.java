@@ -81,7 +81,7 @@ public class BenchmarkServiceExecutionListener
     private double calculateThroughput(BenchmarkResult benchmarkResult)
     {
         long durationInMillis = benchmarkResult.getQueryDuration().toMillis();
-        return (double) benchmarkResult.getExecutions().size() / (durationInMillis * 1000);
+        return (double) benchmarkResult.getExecutions().size() / durationInMillis * 1000;
     }
 
     @Override

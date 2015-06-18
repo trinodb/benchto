@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.teradata.benchmark.driver.execution.BenchmarkDriver;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
 import freemarker.template.TemplateException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -34,9 +34,9 @@ public class DriverApp
     public static void main(String[] args)
     {
         ConfigurableApplicationContext ctx = SpringApplication.run(DriverApp.class, args);
-        BenchmarkDriver benchmarkDriver = ctx.getBean(BenchmarkDriver.class);
+        BenchmarkExecutionDriver benchmarkExecutionDriver = ctx.getBean(BenchmarkExecutionDriver.class);
 
-        boolean successful = benchmarkDriver.run();
+        boolean successful = benchmarkExecutionDriver.run();
         if (successful) {
             System.exit(0);
         }
@@ -57,6 +57,8 @@ public class DriverApp
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setMaxPoolSize(5);
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        taskExecutor.setAwaitTerminationSeconds(Integer.MAX_VALUE);
+
         return taskExecutor;
     }
 

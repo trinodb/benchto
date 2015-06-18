@@ -60,6 +60,10 @@ public class QueryExecutionResult
         return prestoQueryId;
     }
 
+    public String getQueryName() {
+        return getQuery().getName();
+    }
+
     @Override
     public String toString()
     {

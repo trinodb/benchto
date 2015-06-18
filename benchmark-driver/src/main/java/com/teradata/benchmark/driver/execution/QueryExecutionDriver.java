@@ -15,15 +15,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 @Component
-public class QueryExecutor
+public class QueryExecutionDriver
 {
-    private static final Logger LOG = LoggerFactory.getLogger(QueryExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QueryExecutionDriver.class);
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -33,8 +34,6 @@ public class QueryExecutor
 
     public QueryExecutionResult execute(QueryExecution queryExecution)
     {
-        LOG.debug("Executing query {}: {}", queryExecution.getQuery().getName(), queryExecution.getQuery().getSql());
-
         statusReporter.reportExecutionStarted(queryExecution);
 
         QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution)

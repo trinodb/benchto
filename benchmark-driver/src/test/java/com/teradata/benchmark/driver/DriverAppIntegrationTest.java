@@ -4,7 +4,7 @@
 package com.teradata.benchmark.driver;
 
 import com.google.common.collect.ImmutableList;
-import com.teradata.benchmark.driver.execution.BenchmarkDriver;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class DriverAppIntegrationTest
     private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
     @Autowired
-    private BenchmarkDriver benchmarkDriver;
+    private BenchmarkExecutionDriver benchmarkExecutionDriver;
 
     @Autowired
     private BenchmarkProperties benchmarkProperties;
@@ -191,7 +191,7 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
-        boolean successful = benchmarkDriver.run();
+        boolean successful = benchmarkExecutionDriver.run();
         assertThat(successful).isTrue();
     }
 

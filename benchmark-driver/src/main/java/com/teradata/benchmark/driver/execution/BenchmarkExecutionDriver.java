@@ -3,6 +3,8 @@
  */
 package com.teradata.benchmark.driver.execution;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
@@ -23,16 +25,15 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class BenchmarkDriver
+public class BenchmarkExecutionDriver
 {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BenchmarkDriver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BenchmarkExecutionDriver.class);
 
     @Autowired
     private BenchmarkProperties properties;
@@ -41,7 +42,7 @@ public class BenchmarkDriver
     private BenchmarkLoader benchmarkLoader;
 
     @Autowired
-    private QueryExecutor queryExecutor;
+    private QueryExecutionDriver queryExecutionDriver;
 
     @Autowired
     private BenchmarkStatusReporter statusReporter;
@@ -78,10 +79,7 @@ public class BenchmarkDriver
 
         ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
         try {
-            List<Future<QueryExecutionResult>> executionFutures = executorService.invokeAll(buildQueryExecutionCallables(benchmark));
-            List<QueryExecutionResult> executionResults = executionFutures.stream()
-                    .map(this::awaitAndExtractExecutionResult)
-                    .collect(toList());
+            List<QueryExecutionResult> executionResults = runQueries(benchmark, executorService);
 
             BenchmarkResult benchmarkResult = benchmarkResultBuilder
                     .endTimer()
@@ -100,22 +98,13 @@ public class BenchmarkDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark)
-    {
-        List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
-        for (Query query : benchmark.getQueries()) {
-            for (int run = 0; run < benchmark.getRuns(); ++run) {
-                QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
-                executionCallables.add(() -> queryExecutor.execute(queryExecution));
-            }
-        }
-        return executionCallables;
-    }
-
-    private QueryExecutionResult awaitAndExtractExecutionResult(Future<QueryExecutionResult> resultFuture)
+    private List<QueryExecutionResult> runQueries(Benchmark benchmark, ListeningExecutorService executorService)
+            throws InterruptedException
     {
         try {
-            return resultFuture.get();
+            @SuppressWarnings("unchecked")
+            List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(buildQueryExecutionCallables(benchmark));
+            return Futures.allAsList(executionFutures).get();
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -125,5 +114,17 @@ public class BenchmarkDriver
             Throwable cause = e.getCause();
             throw new BenchmarkExecutionException("Could not execute benchmark query: " + cause.getMessage(), cause);
         }
+    }
+
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark)
+    {
+        List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
+        for (Query query : benchmark.getQueries()) {
+            for (int run = 0; run < benchmark.getRuns(); ++run) {
+                QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
+                executionCallables.add(() -> queryExecutionDriver.execute(queryExecution));
+            }
+        }
+        return executionCallables;
     }
 }
