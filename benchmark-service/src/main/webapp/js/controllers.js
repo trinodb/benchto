@@ -33,24 +33,25 @@
                         return benchmarkRun.status === 'ENDED';
                     });
 
-                    var measurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
+                    // query measurements graph data
+                    var queryMeasurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
                         function (benchmarkRun) {
-                            return _.allKeys(benchmarkRun.aggregatedMeasurements);
+                            return _.allKeys(benchmarkRun.queryAggregatedMeasurements);
                         }
                     )));
 
-                    var measurementUnit = function (measurementKey) {
-                        return benchmarkRuns[0].aggregatedMeasurements[measurementKey].unit;
+                    var queryMeasurementUnit = function (measurementKey) {
+                        return benchmarkRuns[0].queryAggregatedMeasurements[measurementKey].unit;
                     };
 
-                    var extractAggregatedMeasurements = function (measurementKey) {
+                    var extractQueryAggregatedMeasurements = function (measurementKey) {
                         return _.map(benchmarkRuns, function (benchmarkRun) {
-                            return benchmarkRun.aggregatedMeasurements[measurementKey];
+                            return benchmarkRun.queryAggregatedMeasurements[measurementKey];
                         });
                     };
 
-                    var dataFor = function (measurementKey) {
-                        var aggregatedMeasurementsForKey = extractAggregatedMeasurements(measurementKey);
+                    var dataForQueryMeasurementKey = function (measurementKey) {
+                        var aggregatedMeasurementsForKey = extractQueryAggregatedMeasurements(measurementKey);
                         return [
                             _.pluck(aggregatedMeasurementsForKey, 'mean'),
                             _.pluck(aggregatedMeasurementsForKey, 'min'),
@@ -59,26 +60,60 @@
                         ];
                     };
 
-                    $scope.measurementGraphsData = _.map(measurementKeys, function (measurementKey) {
+                    $scope.queryMeasurementGraphsData = _.map(queryMeasurementKeys, function (measurementKey) {
                         return {
                             name: measurementKey,
-                            unit: measurementUnit(measurementKey),
-                            data: dataFor(measurementKey),
+                            unit: queryMeasurementUnit(measurementKey),
+                            data: dataForQueryMeasurementKey(measurementKey),
                             labels: _.pluck(benchmarkRuns, 'sequenceId'),
                             series: ['mean', 'min', 'max', 'stdDev']
+                        }
+                    });
+
+                    // benchmark measurements graph data
+                    var benchmarkMeasurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
+                        function (benchmarkRun) {
+                            return _.pluck(benchmarkRun.measurements, 'name');
+                        }
+                    )));
+
+                    var findBenchmarkMeasurement= function(benchmarkRun, measurementKey) {
+                        return _.findWhere(benchmarkRun.measurements, { name: measurementKey });
+                    }
+
+                    var benchmarkMeasurementUnit = function (measurementKey) {
+                        return findBenchmarkMeasurement(benchmarkRuns[0], measurementKey).unit;
+                    };
+
+                    var extractBenchmarkMeasurements = function (measurementKey) {
+                        return _.map(benchmarkRuns, function (benchmarkRun) {
+                            return findBenchmarkMeasurement(benchmarkRun, measurementKey);
+                        });
+                    };
+
+                    var dataForBenchmarkMeasurementKey = function (measurementKey) {
+                        var measurementsForKey = extractBenchmarkMeasurements(measurementKey);
+                        return [
+                            _.pluck(measurementsForKey, 'value')
+                        ];
+                    };
+
+                    $scope.benchmarkMeasurementGraphsData = _.map(benchmarkMeasurementKeys, function (measurementKey) {
+                        return {
+                            name: measurementKey,
+                            unit: benchmarkMeasurementUnit(measurementKey),
+                            data: dataForBenchmarkMeasurementKey(measurementKey),
+                            labels: _.pluck(benchmarkRuns, 'sequenceId'),
+                            series: ['value']
                         }
                     });
                 });
         }])
         .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', function ($scope, $routeParams, $modal, BenchmarkService) {
-            var loadBenchmark = function () {
-                BenchmarkService.loadBenchmarkRun($routeParams.benchmarkName, $routeParams.benchmarkSequenceId)
-                    .then(function (benchmarkRun) {
-                        $scope.benchmarkRun = benchmarkRun;
-                    });
-            };
-
-            loadBenchmark();
+            BenchmarkService.loadBenchmarkRun($routeParams.benchmarkName, $routeParams.benchmarkSequenceId)
+                .then(function (benchmarkRun) {
+                    $scope.benchmarkRun = benchmarkRun;
+                });
 
             $scope.benchmarkFromParam = function (benchmarkRun) {
                 return benchmarkRun.started - 60 * 1000; // one minute before start
@@ -92,7 +127,7 @@
             };
 
             $scope.measurementUnit = function (measurementKey) {
-                return $scope.benchmarkRun.aggregatedMeasurements[measurementKey].unit;
+                return $scope.benchmarkRun.benchmarkMeasurements[measurementKey].unit;
             };
 
             $scope.showFailure = function (execution) {

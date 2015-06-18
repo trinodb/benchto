@@ -105,7 +105,7 @@ public class BenchmarkRun
     private Map<String, String> attributes = newHashMap();
 
     @Transient
-    private Map<String, AggregatedMeasurement> aggregatedMeasurements;
+    private Map<String, AggregatedMeasurement> queryAggregatedMeasurements;
 
     public long getId()
     {
@@ -207,19 +207,19 @@ public class BenchmarkRun
         this.attributes = attributes;
     }
 
-    public Map<String, AggregatedMeasurement> getAggregatedMeasurements()
+    public Map<String, AggregatedMeasurement> getQueryAggregatedMeasurements()
     {
-        if (aggregatedMeasurements == null) {
+        if (queryAggregatedMeasurements == null) {
             ListMultimap<Measurement, Double> measurementValues = ArrayListMultimap.create();
             for (BenchmarkRunExecution execution : executions) {
                 for (Measurement measurement : execution.getMeasurements()) {
                     measurementValues.put(measurement, measurement.getValue());
                 }
             }
-            aggregatedMeasurements = measurementValues.asMap().entrySet().stream()
+            queryAggregatedMeasurements = measurementValues.asMap().entrySet().stream()
                     .collect(toMap(entry -> entry.getKey().getName(), entry -> aggregate(entry.getKey().getUnit(), entry.getValue())));
         }
-        return aggregatedMeasurements;
+        return queryAggregatedMeasurements;
     }
 
     @Override

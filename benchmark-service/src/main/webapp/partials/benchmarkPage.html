@@ -3,14 +3,52 @@
         <li><a href="#/">Home</a></li>
         <li class="active">{{benchmark.name}}</li>
     </ol>
-
+</div>
+<div class="row">
     <div class="col-sm-12">
         <h2 class="sub-header">Benchmark: {{benchmark.name}}</h2>
     </div>
 </div>
 <div class="row">
     <div class="col-sm-12 col-md-6 col-lg-4 text-center" ng-repeat="graphData in measurementGraphsData" class="measurementGraph">
-        <strong>{{graphData.name}} {{graphData.unit}}</strong>
+        <strong>{{graphData.name}} in {{graphData.unit}}</strong>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <h3 class="sub-header">Benchmark graphs</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3 text-center" ng-repeat="graphData in benchmarkMeasurementGraphsData" class="measurementGraph">
+        <strong>{{graphData.name}} in {{graphData.unit}}</strong>
+        <canvas id="chart-{{graphData.name}}" class="chart chart-line" data="graphData.data" click="onBenchmarkClick"
+                labels="graphData.labels" legend="false" series="graphData.series"
+                options="{
+                    bezierCurve: false,
+                    scaleBeginAtZero: true,
+                    scaleShowVerticalLines: false,
+                    legendTemplate : '<ul class=\'<%=name.toLowerCase()%>-legend\'><% for (var i=0; i<datasets.length; i++){%><li><span style=\'background-color:<%=datasets[i].strokeColor%>\'></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>'
+                }"
+                colours="[
+                {
+                    fillColor: 'rgba(102, 178, 255, 0.4)',
+                    strokeColor: 'rgba(102, 178, 255, 0.8)',
+                    highlightFill: 'rgba(102, 178, 255, 0.8)',
+                    highlightStroke: 'rgba(102, 178, 255, 0.8)'
+                }
+                ]">
+        </canvas>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <h3 class="sub-header">Query graphs</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-3 text-center" ng-repeat="graphData in queryMeasurementGraphsData" class="measurementGraph">
+        <strong>{{graphData.name}} in {{graphData.unit}}</strong>
         <canvas id="chart-{{graphData.name}}" class="chart chart-line" data="graphData.data" click="onBenchmarkClick"
                 labels="graphData.labels" legend="true" series="graphData.series"
                 options="{
