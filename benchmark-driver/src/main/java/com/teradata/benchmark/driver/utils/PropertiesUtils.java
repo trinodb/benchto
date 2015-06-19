@@ -29,7 +29,7 @@ public final class PropertiesUtils
             return properties;
         }
         catch (BindException ex) {
-            throw new FatalBeanException("Could not bind DataSourceSettings properties", ex);
+            throw new FatalBeanException("Could not bind " + clazz + " properties", ex);
         }
     }
 

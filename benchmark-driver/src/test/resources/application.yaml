@@ -27,3 +27,12 @@ graphite:
     cpu: TARGET_CPU
     memory: TARGET_MEMORY
     network: TARGET_NETWORK
+
+macros:
+  create-file:
+    command: touch ${FILENAME}${USER}
+  error-macro:
+    command: exit 1
+  no-command-macro:
+    test: x
+
