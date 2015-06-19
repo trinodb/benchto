@@ -23,3 +23,11 @@ graphite:
 
 presto:
   url: http://localhost:8090
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: true
+      metrics.collection.enabled: true
+    presto:
+      metrics.collection.enabled: true

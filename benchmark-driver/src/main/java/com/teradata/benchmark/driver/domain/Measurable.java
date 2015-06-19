@@ -32,13 +32,15 @@ public abstract class Measurable
         return Duration.of(end - start, NANOS);
     }
 
+    public abstract Benchmark getBenchmark();
+
     @Override
     public String toString()
     {
         throw new UnsupportedOperationException("Expected to be implemented by inheriting class");
     }
 
-    public static abstract class MeasuredBuilder <T extends Measurable, B extends MeasuredBuilder>
+    public static abstract class MeasuredBuilder<T extends Measurable, B extends MeasuredBuilder>
     {
         protected final T object;
 

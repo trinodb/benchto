@@ -3,13 +3,13 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchmark.driver.domain.Benchmark;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
 import com.teradata.benchmark.driver.domain.Measurable;
 import com.teradata.benchmark.driver.domain.QueryExecution;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult;
-import com.teradata.benchmark.driver.graphite.GraphiteMetricsLoader;
-import com.teradata.benchmark.driver.presto.PrestoClient;
+import com.teradata.benchmark.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.ExecutionStartRequest;
@@ -27,7 +27,6 @@ import java.util.Map;
 import static com.google.common.collect.Iterables.getFirst;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.FAILED;
-import static com.teradata.benchmark.driver.service.Measurement.measurement;
 import static com.teradata.benchmark.driver.utils.ExceptionUtils.stackTraceToString;
 
 @Component
@@ -39,13 +38,10 @@ public class BenchmarkServiceExecutionListener
     private String serviceUrl;
 
     @Autowired
-    private GraphiteMetricsLoader graphiteMetricsLoader;
-
-    @Autowired
-    private PrestoClient prestoClient;
-
-    @Autowired
     private BenchmarkServiceClient benchmarkServiceClient;
+
+    @Autowired
+    private List<PostExecutionMeasurementProvider> measurementProviders;
 
     @Override
     public void benchmarkStarted(Benchmark benchmark)
@@ -70,22 +66,11 @@ public class BenchmarkServiceExecutionListener
     @Override
     public void benchmarkFinished(BenchmarkResult benchmarkResult)
     {
-        FinishRequestBuilder finishRequestBuilder = new FinishRequestBuilder()
-                .withStatus(benchmarkResult.isSuccessful() ? ENDED : FAILED);
+        FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
+                .withStatus(benchmarkResult.isSuccessful() ? ENDED : FAILED)
+                .addMeasurements(getMeasurements(benchmarkResult));
 
-        if (benchmarkResult.getBenchmark().isConcurrent()) {
-            addGraphiteMeasurements(benchmarkResult, finishRequestBuilder);
-            finishRequestBuilder.addMeasurement(measurement("throughput", "QUERY_PER_SECOND", calculateThroughput(benchmarkResult)));
-        }
-        finishRequestBuilder.addMeasurement(measurement("duration", "MILLISECONDS", benchmarkResult.getQueryDuration().toMillis()));
-
-        benchmarkServiceClient.finishBenchmark(benchmarkResult.getBenchmark().getName(), benchmarkResult.getBenchmark().getSequenceId(), finishRequestBuilder.build());
-    }
-
-    private double calculateThroughput(BenchmarkResult benchmarkResult)
-    {
-        long durationInMillis = benchmarkResult.getQueryDuration().toMillis();
-        return (double) benchmarkResult.getExecutions().size() / durationInMillis * 1000;
+        benchmarkServiceClient.finishBenchmark(benchmarkResult.getBenchmark().getName(), benchmarkResult.getBenchmark().getSequenceId(), requestBuilder.build());
     }
 
     @Override
@@ -100,18 +85,12 @@ public class BenchmarkServiceExecutionListener
     @Override
     public void executionFinished(QueryExecutionResult executionResult)
     {
-
         FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
                 .withStatus(executionResult.isSuccessful() ? ENDED : FAILED)
-                .addMeasurement(measurement("duration", "MILLISECONDS", executionResult.getQueryDuration().toMillis()));
-
-        if (executionResult.getBenchmark().isSerial()) {
-            addGraphiteMeasurements(executionResult, requestBuilder);
-        }
+                .addMeasurements(getMeasurements(executionResult));
 
         if (executionResult.getPrestoQueryId().isPresent()) {
             requestBuilder.addAttribute("prestoQueryId", executionResult.getPrestoQueryId().get());
-            requestBuilder.addMeasurements(prestoClient.loadMetrics(executionResult.getPrestoQueryId().get()));
         }
 
         if (!executionResult.isSuccessful()) {
@@ -127,10 +106,13 @@ public class BenchmarkServiceExecutionListener
                 executionSequenceId(executionResult.getQueryExecution()), requestBuilder.build());
     }
 
-    private void addGraphiteMeasurements(Measurable measurable, FinishRequestBuilder requestBuilder)
+    private List<Measurement> getMeasurements(Measurable measurable)
     {
-        List<Measurement> graphiteMeasurements = graphiteMetricsLoader.loadMetrics(measurable.getUtcStart(), measurable.getUtcEnd());
-        requestBuilder.addMeasurements(graphiteMeasurements);
+        ImmutableList.Builder<Measurement> measurementsList = ImmutableList.builder();
+        for (PostExecutionMeasurementProvider measurementProvider : measurementProviders) {
+            measurementsList.addAll(measurementProvider.loadMeasurements(measurable));
+        }
+        return measurementsList.build();
     }
 
     @Override

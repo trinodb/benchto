@@ -50,7 +50,7 @@ public class BenchmarkDescriptorTest
         BenchmarkDescriptor descriptor = descriptorFromString(SIMPLE_BENCHMARK);
         assertThat(descriptor.getQueryNames()).containsExactly("q1", "q2", "1", "2");
         assertThat(descriptor.getDataSource()).isEqualTo("foo");
-        assertThat(descriptor.getRuns()).isEqualTo(1);
+        assertThat(descriptor.getRuns()).isEqualTo(3);
         assertThat(descriptor.getConcurrency()).isEqualTo(1);
     }
 

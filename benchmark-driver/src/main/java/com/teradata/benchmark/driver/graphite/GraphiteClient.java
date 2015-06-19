@@ -7,8 +7,11 @@ import com.facebook.presto.jdbc.internal.guava.base.Joiner;
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -20,16 +23,20 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteRenderResponseItem.DATA_POINT_VALUE_INDEX;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.HttpStatus.OK;
 
 @Component
+@ConditionalOnProperty(prefix = "graphite", value = "url")
 public class GraphiteClient
 {
 
-    @Value("${graphite.url:}")
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphiteClient.class);
+
+    @Value("${graphite.url}")
     private String graphiteURL;
 
     @Autowired
@@ -37,12 +44,17 @@ public class GraphiteClient
 
     public void storeEvent(GraphiteEventRequest request)
     {
+        LOGGER.debug("Storing graphite event: {}", request);
+
         restTemplate.postForObject("{graphiteURL}/events/", request, Object.class, ImmutableMap.of("graphiteURL", graphiteURL));
     }
 
     public Map<String, double[]> loadMetrics(Map<String, String> metrics, ZonedDateTime from, ZonedDateTime to)
     {
         URI uri = buildLoadMetricsURI(metrics, from, to);
+
+        LOGGER.debug("Loading metrics: {}", uri);
+
         ResponseEntity<GraphiteRenderResponseItem[]> response = restTemplate.getForEntity(uri, GraphiteRenderResponseItem[].class);
 
         if (response.getStatusCode() != OK) {
@@ -123,6 +135,16 @@ public class GraphiteClient
             {
                 return request;
             }
+        }
+
+        @Override
+        public String toString()
+        {
+            return toStringHelper(this)
+                    .add("what", what)
+                    .add("tags", tags)
+                    .add("data", data)
+                    .toString();
         }
     }
 

@@ -5,11 +5,11 @@ package com.teradata.benchmark.driver.listeners;
 
 import com.teradata.benchmark.driver.domain.Benchmark;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
+import com.teradata.benchmark.driver.domain.QueryExecution;
+import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 import com.teradata.benchmark.driver.graphite.GraphiteClient;
 import com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteEventRequest;
 import com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteEventRequest.GraphiteEventRequestBuilder;
-import com.teradata.benchmark.driver.domain.QueryExecution;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ import java.util.List;
 import static java.lang.String.format;
 
 @Component
-@ConditionalOnProperty(prefix = "graphite", name = "url")
+@ConditionalOnProperty(prefix = "benchmark.feature.graphite", value = "event.reporting.enabled")
 public class GraphiteEventExecutionListener
         implements BenchmarkExecutionListener
 {

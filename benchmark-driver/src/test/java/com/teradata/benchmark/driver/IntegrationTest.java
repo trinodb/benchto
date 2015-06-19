@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {DriverApp.class, TestConfig.class})
-@org.springframework.boot.test.IntegrationTest({"executionSequenceId=BEN_SEQ_ID", "runs=2"})
+@org.springframework.boot.test.IntegrationTest({"executionSequenceId=BEN_SEQ_ID"})
 public abstract class IntegrationTest
 {
     @Autowired
@@ -26,7 +26,8 @@ public abstract class IntegrationTest
     }
 
     @After
-    public void verifyRestServiceServer() {
+    public void verifyRestServiceServer()
+    {
         restServiceServer.verify();
     }
 }

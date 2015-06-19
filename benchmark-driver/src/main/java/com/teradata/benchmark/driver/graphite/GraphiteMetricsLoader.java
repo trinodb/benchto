@@ -3,7 +3,10 @@
  */
 package com.teradata.benchmark.driver.graphite;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.teradata.benchmark.driver.domain.BenchmarkResult;
+import com.teradata.benchmark.driver.domain.Measurable;
+import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import com.teradata.benchmark.driver.service.Measurement;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
@@ -11,6 +14,7 @@ import org.apache.commons.math3.stat.descriptive.StatisticalSummaryValues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -20,13 +24,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchmark.driver.service.Measurement.measurement;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 
 @Service
+@ConditionalOnProperty(prefix = "benchmark.feature.graphite", value = "metrics.collection.enabled")
 public class GraphiteMetricsLoader
+        implements PostExecutionMeasurementProvider
 {
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteMetricsLoader.class);
 
@@ -41,22 +49,28 @@ public class GraphiteMetricsLoader
     @PostConstruct
     public void initQueryMetrics()
     {
+        checkState(graphiteProperties.getGraphiteResolutionSeconds().isPresent(), "graphite.resolution.seconds property must be present for graphite measurement collection");
+
         queryMetrics = newHashMap();
         graphiteProperties.getCpuGraphiteExpr().ifPresent(value -> queryMetrics.put("cpu", value));
         graphiteProperties.getMemoryGraphiteExpr().ifPresent(value -> queryMetrics.put("memory", value));
         graphiteProperties.getNetworkGraphiteExpr().ifPresent(value -> queryMetrics.put("network", value));
         graphiteProperties.getNetworkGraphiteExpr().ifPresent(value -> queryMetrics.put("network_total", format("integral(%s)", value)));
+
+        checkState(!queryMetrics.isEmpty(), "No graphite metrics (graphite.metrics.*) provided for measurement collection");
     }
 
-    public List<Measurement> loadMetrics(ZonedDateTime from, ZonedDateTime to)
+    @Override
+    public List<Measurement> loadMeasurements(Measurable measurable)
     {
-        Optional<Integer> cutOffThresholdSeconds = graphiteProperties.cutOffThresholdSecondsForMeasurementReporting();
-        if (queryMetrics.isEmpty() || !cutOffThresholdSeconds.isPresent()) {
-            return ImmutableList.of();
+        if (!shouldLoadGraphiteMetrics(measurable)) {
+            return emptyList();
         }
 
-        from = from.minusSeconds(cutOffThresholdSeconds.get());
-        to = to.plusSeconds(cutOffThresholdSeconds.get());
+        long cutOffThresholdSeconds = graphiteProperties.cutOffThresholdSecondsForMeasurementReporting().get();
+
+        ZonedDateTime from = measurable.getUtcStart().minusSeconds(cutOffThresholdSeconds);
+        ZonedDateTime to = measurable.getUtcEnd().plusSeconds(cutOffThresholdSeconds);
 
         LOG.debug("Loading metrics {} - from: {}, to: {}", queryMetrics, from, to);
 
@@ -86,6 +100,17 @@ public class GraphiteMetricsLoader
         }
 
         return measurements;
+    }
+
+    private boolean shouldLoadGraphiteMetrics(Measurable measurable)
+    {
+        if (measurable instanceof QueryExecutionResult && measurable.getBenchmark().isSerial()) {
+            return true;
+        }
+        else if (measurable instanceof BenchmarkResult && measurable.getBenchmark().isConcurrent()) {
+            return true;
+        }
+        return false;
     }
 
     private void addMeanMaxMeasurements(Map<String, double[]> loadedMetrics, List<Measurement> measurements, String metricName, String unit)

@@ -31,7 +31,7 @@ public class BenchmarkDescriptor
     private static final String CONCURRENCY_KEY = "concurrency";
     private static final String VARIABLES_KEY = "variables";
 
-    private static final int DEFAULT_RUNS = 1;
+    private static final int DEFAULT_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
 
     public static BenchmarkDescriptor loadFromFile(Path file)

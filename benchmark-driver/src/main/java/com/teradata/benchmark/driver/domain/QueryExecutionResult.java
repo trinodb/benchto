@@ -35,6 +35,7 @@ public class QueryExecutionResult
         return queryExecution.getQuery();
     }
 
+    @Override
     public Benchmark getBenchmark()
     {
         return queryExecution.getBenchmark();
@@ -60,7 +61,8 @@ public class QueryExecutionResult
         return prestoQueryId;
     }
 
-    public String getQueryName() {
+    public String getQueryName()
+    {
         return getQuery().getName();
     }
 

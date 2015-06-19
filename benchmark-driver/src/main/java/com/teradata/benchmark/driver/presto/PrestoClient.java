@@ -9,6 +9,7 @@ import com.teradata.benchmark.driver.service.Measurement;
 import com.teradata.benchmark.driver.utils.UnitConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -31,7 +32,7 @@ import static javax.measure.unit.SI.MILLI;
 import static javax.measure.unit.SI.SECOND;
 
 @Component
-// TODO: make it optional somehow
+@ConditionalOnProperty(prefix = "presto", value = "url")
 public class PrestoClient
 {
     private static final Map<String, Unit> DEFAULT_METRICS = ImmutableMap.<String, Unit>builder()
@@ -50,7 +51,7 @@ public class PrestoClient
     private static final int VALUE_GROUP_INDEX = 1;
     private static final int UNIT_GROUP_INDEX = 2;
 
-    @Value("${presto.url:}")
+    @Value("${presto.url}")
     private String prestoURL;
 
     @Autowired
@@ -61,7 +62,7 @@ public class PrestoClient
         return loadMetrics(queryId, DEFAULT_METRICS);
     }
 
-    public List<Measurement> loadMetrics(String queryId, Map<String, Unit> requiredStatistics)
+    private List<Measurement> loadMetrics(String queryId, Map<String, Unit> requiredStatistics)
     {
         URI uri = buildQueryInfoURI(queryId);
         ResponseEntity<QueryInfoResponseItem> response = restTemplate.getForEntity(uri, QueryInfoResponseItem.class);

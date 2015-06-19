@@ -30,7 +30,8 @@ public class PrestoClientIntegrationTest
             throws IOException
     {
         String response = Resources.toString(Resources.getResource("json/presto_query_info_response.json"), Charsets.UTF_8);
-        restServiceServer.expect(requestTo("http://presto-test-master:8090/v1/query/test_query_id")).andRespond(withSuccess(response, APPLICATION_JSON));
+        restServiceServer.expect(requestTo("http://presto-test-master:8090/v1/query/test_query_id"))
+                .andRespond(withSuccess(response, APPLICATION_JSON));
 
         List<Measurement> measurements = prestoClient.loadMetrics("test_query_id");
 

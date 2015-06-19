@@ -1,4 +1,5 @@
 datasource: test_datasource
+runs: 1
 query-names: presto/simple_select.sql
 variables:
   1:

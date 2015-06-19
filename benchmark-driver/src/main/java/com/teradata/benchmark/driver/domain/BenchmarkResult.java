@@ -3,7 +3,6 @@
  */
 package com.teradata.benchmark.driver.domain;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.time.Duration;
@@ -23,6 +22,7 @@ public class BenchmarkResult
         this.benchmark = benchmark;
     }
 
+    @Override
     public Benchmark getBenchmark()
     {
         return benchmark;
