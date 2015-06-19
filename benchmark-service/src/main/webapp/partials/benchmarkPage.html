@@ -64,7 +64,8 @@
                     <td>SequenceId</td>
                     <td>Status</td>
                     <td>Started</td>
-                    <td>Ended</td>
+                    <td>Duration</td>
+                    <td>min / mean / max</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in benchmark.runs">
@@ -74,7 +75,12 @@
                         <span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span>
                     </td>
                     <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
-                    <td>{{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}</td>
+                    <td>{{benchmarkRun.ended ? ((benchmarkRun.ended - benchmarkRun.started) | duration) : 'Not finished'}}</td>
+                    <td ng-init="duration=benchmarkRun.aggregatedMeasurements.duration">
+                        <span ng-if="::benchmarkRun.status=='ENDED'">
+                            {{duration.min | duration}} / {{duration.mean | duration}} / {{duration.max | duration}}
+                        </span>
+                    </td>
                 </tr>
             </table>
         </div>

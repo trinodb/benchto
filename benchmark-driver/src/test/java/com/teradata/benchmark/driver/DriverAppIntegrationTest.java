@@ -52,9 +52,9 @@ public class DriverAppIntegrationTest
     public void simpleSelectBenchmark()
     {
         setBenchmark("simple_select_benchmark.yaml");
-        verifyBenchmarkStart("simple_select_benchmark-schema-INFORMATION_SCHEMA", TEST_QUERY);
-        verifySerialExecution("simple_select_benchmark-schema-INFORMATION_SCHEMA", "simple_select", 0);
-        verifyBenchmarkFinish("simple_select_benchmark-schema-INFORMATION_SCHEMA", ImmutableList.of("duration"));
+        verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA", TEST_QUERY);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
+        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of("duration"));
         verifyComplete();
     }
 

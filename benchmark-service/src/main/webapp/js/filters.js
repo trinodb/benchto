@@ -5,27 +5,36 @@
     'use strict';
 
     angular.module('benchmarkServiceUI.filters', [])
-        .filter('unit', ['numberFilter', function (numberFilter) {
+        .filter('duration', function(){
+            return function(mills){
+                var seconds = 0, minutes = 0, hours =0;
+                var seconds = mills/1000;
+                if(seconds > 0){
+                    minutes = Math.floor(seconds/60);
+                    seconds %= 60;
+                }
+                if(minutes > 0){
+                    hours = Math.floor(minutes/60);
+                    minutes %= 60;
+                }
+                var result = "";
+                if(hours > 0){
+                    result += (hours+"h")
+                }
+                if(minutes > 0){
+                    result += (minutes+"m")
+                }
+                result+=(seconds.toFixed(3)+"s")
+                return result;
+            }
+        })
+        .filter('unit', ['numberFilter', 'durationFilter', function (numberFilter, durationFilter) {
             return function (value, unit) {
                 var outputValueText = '';
                 var outputUnitText = '';
 
                 if (unit === 'MILLISECONDS') {
-                    outputUnitText = 'ms';
-                    if ((value / 1000) > 1) {
-                        outputUnitText = 's';
-                        value /= 1000;
-                    }
-                    if ((value / 60) > 1) {
-                        outputUnitText = 'm';
-                        value /= 60;
-                    }
-                    if ((value / 60) > 1) {
-                        outputUnitText = 'h';
-                        value /= 60;
-                    }
-
-                    outputValueText += numberFilter(value, 2);
+                    outputValueText = durationFilter(value)
                 }
                 else if (unit === 'BYTES') {
                     outputUnitText = 'B';

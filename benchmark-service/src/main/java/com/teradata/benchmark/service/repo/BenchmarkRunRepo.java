@@ -54,7 +54,7 @@ public interface BenchmarkRunRepo
             "SELECT s.* " +
             "FROM summary s " +
             "WHERE s.rk = 1 " +
-            "ORDER BY s.name " +
+            "ORDER BY s.started DESC " +
             "LIMIT ?2 OFFSET ?1",
             nativeQuery = true)
     List<BenchmarkRun> findLatest(int page, int size);

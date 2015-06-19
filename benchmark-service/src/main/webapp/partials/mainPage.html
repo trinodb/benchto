@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-sm-12">
-        <h2 class="sub-header">Benchmarks</h2>
+        <h2 class="sub-header">Latest Benchmark Executions</h2>
 
         <div class="table-responsive">
             <table class="table table-striped">
@@ -8,19 +8,26 @@
                 <tr>
                     <td>#</td>
                     <td>Name</td>
-                    <td>Latest execution</td>
-                    <td>Latest status</td>
-                    <td>Last started</td>
-                    <td>Last ended</td>
+                    <td>Status</td>
+                    <td>Started</td>
+                    <td>Duration</td>
+                    <td>min / mean / max </td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in latestBenchmarkRuns">
                     <td>{{::$index + 1}}</td>
-                    <td><strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong></td>
-                    <td><a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
+                    <td>
+                        <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong>
+                        (<a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)
+                    </td>
                     <td><span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span></td>
                     <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
-                    <td>{{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}</td>
+                    <td>{{benchmarkRun.ended ? ((benchmarkRun.ended - benchmarkRun.started) | duration) : 'Not finished'}}</td>
+                    <td ng-init="duration=benchmarkRun.aggregatedMeasurements.duration">
+                        <span ng-if="::benchmarkRun.status=='ENDED'">
+                            {{duration.min | duration}} / {{duration.mean | duration}} / {{duration.max | duration}}
+                        </span>
+                    </td>
                 </tr>
             </table>
             <div>
