@@ -69,6 +69,7 @@
         <dep.spring.boot.version>1.2.3.RELEASE</dep.spring.boot.version>
         <dep.reactor.bus.version>2.0.2.RELEASE</dep.reactor.bus.version>
         <dep.freemarker>2.3.20</dep.freemarker>
+        <dep.mockito.version>1.10.19</dep.mockito.version>
     </properties>
 
     <dependencyManagement>
@@ -122,6 +123,11 @@
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
                 <version>${dep.freemarker}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${dep.mockito.version}</version>
             </dependency>
 
             <!-- Drivers -->

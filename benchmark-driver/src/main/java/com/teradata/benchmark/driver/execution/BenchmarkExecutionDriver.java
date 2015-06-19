@@ -17,6 +17,7 @@ import com.teradata.benchmark.driver.domain.QueryExecution;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 import com.teradata.benchmark.driver.listeners.BenchmarkStatusReporter;
 import com.teradata.benchmark.driver.loader.BenchmarkLoader;
+import com.teradata.benchmark.driver.macro.MacroService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,9 @@ public class BenchmarkExecutionDriver
     @Autowired
     private ExecutorServiceFactory executorServiceFactory;
 
+    @Autowired
+    private MacroService macroService;
+
     /**
      * @return true if all benchmark queries passed
      */
@@ -81,6 +85,8 @@ public class BenchmarkExecutionDriver
 
     private BenchmarkResult executeBenchmark(Benchmark benchmark)
     {
+        executeBeforeBenchmarkMacros();
+
         statusReporter.reportBenchmarkStarted(benchmark);
 
         BenchmarkResultBuilder benchmarkResultBuilder = new BenchmarkResultBuilder(benchmark)
@@ -104,6 +110,17 @@ public class BenchmarkExecutionDriver
         }
         finally {
             executorService.shutdown();
+        }
+    }
+
+    private void executeBeforeBenchmarkMacros()
+    {
+        if (!properties.getBeforeBenchmarkMacros().isPresent()) {
+            return;
+        }
+
+        for(String macro : properties.getBeforeBenchmarkMacros().get()) {
+            macroService.runMacro(macro);
         }
     }
 

@@ -6,6 +6,7 @@ package com.teradata.benchmark.driver;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -26,6 +27,12 @@ public abstract class IntegrationTest
     public void initializeRestServiceServer()
     {
         restServiceServer = MockRestServiceServer.createServer(restTemplate);
+    }
+
+    @Before
+    public void setup()
+    {
+        MockitoAnnotations.initMocks(this);
     }
 
     @After

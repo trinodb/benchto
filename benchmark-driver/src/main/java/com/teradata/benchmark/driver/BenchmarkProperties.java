@@ -4,8 +4,6 @@
 package com.teradata.benchmark.driver;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.graphite.GraphiteProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.teradata.benchmark.driver.utils.PropertiesUtils.splitProperty;
 
 @Component
 public class BenchmarkProperties
@@ -39,6 +37,12 @@ public class BenchmarkProperties
     @Value("${executionSequenceId:#{null}}")
     private String executionSequenceId;
 
+    /**
+     * List of macros to be executed before benchmark.
+     */
+    @Value("${execution.before-benchmark:#{null}}")
+    private String beforeBenchmarkMacros;
+
     @Value("${environment.name}")
     private String environmentName;
 
@@ -60,6 +64,11 @@ public class BenchmarkProperties
         return Optional.ofNullable(executionSequenceId);
     }
 
+    public Optional<List<String>> getBeforeBenchmarkMacros()
+    {
+        return splitProperty(beforeBenchmarkMacros);
+    }
+
     public String getEnvironmentName()
     {
         return environmentName;
@@ -72,11 +81,7 @@ public class BenchmarkProperties
 
     public Optional<List<String>> getActiveBenchmarks()
     {
-        if (isNullOrEmpty(activeBenchmarks)) {
-            return Optional.empty();
-        }
-        Iterable<String> splittedBenchmarks = Splitter.on(",").trimResults().split(activeBenchmarks);
-        return Optional.of(ImmutableList.copyOf(splittedBenchmarks));
+        return splitProperty(activeBenchmarks);
     }
 
     @Override

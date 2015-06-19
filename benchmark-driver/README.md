@@ -75,6 +75,13 @@ environment:        # environment on which benchmarks are run - it should map to
 benchmark-service:
   url: http://example.com:18080       # url on benchmark-service endpoint
 
+execution:
+  before-benchmark: drop-caches       # defines that 'drop-caches' macro should be executed before every benchmark
+
+macors:      # defines list of macros which are executed using 'bash'
+  drop-caches:     # macro running fabric that drop caches on benchmark cluster
+    command: fabric execute_on_cluster “echo 3 > /proc/sys/vm/drop_caches"
+
 presto:
   url: http://example.com:8888        # optional parameter - presto coordinator endpoint
   metrics.collection.enabled: true    # feature toggle which enables presto query metrics collection

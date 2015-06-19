@@ -4,11 +4,18 @@
 
 package com.teradata.benchmark.driver.utils;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.boot.bind.PropertiesConfigurationFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.validation.BindException;
+
+import java.util.List;
+import java.util.Optional;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public final class PropertiesUtils
 {
@@ -31,6 +38,16 @@ public final class PropertiesUtils
         catch (BindException ex) {
             throw new FatalBeanException("Could not bind " + clazz + " properties", ex);
         }
+    }
+
+    public static Optional<List<String>> splitProperty(String value)
+    {
+        if (isNullOrEmpty(value)) {
+            return Optional.empty();
+        }
+
+        Iterable<String> values = Splitter.on(",").trimResults().split(value);
+        return Optional.of(ImmutableList.copyOf(values));
     }
 
     private PropertiesUtils() {}

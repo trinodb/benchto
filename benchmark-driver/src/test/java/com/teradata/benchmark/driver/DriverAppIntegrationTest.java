@@ -5,8 +5,11 @@ package com.teradata.benchmark.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
+import com.teradata.benchmark.driver.macro.MacroService;
 import org.hamcrest.Matcher;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -19,6 +22,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -43,10 +48,14 @@ public class DriverAppIntegrationTest
     private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
     @Autowired
+    @InjectMocks
     private BenchmarkExecutionDriver benchmarkExecutionDriver;
 
     @Autowired
     private BenchmarkProperties benchmarkProperties;
+
+    @Mock
+    private MacroService macroService;
 
     @Test
     public void simpleSelectBenchmark()
@@ -55,7 +64,7 @@ public class DriverAppIntegrationTest
         verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA", TEST_QUERY);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of("duration"));
-        verifyComplete();
+        verifyComplete(1);
     }
 
     @Test
@@ -66,7 +75,7 @@ public class DriverAppIntegrationTest
         verifySerialExecution("test_benchmark", "test_query", 0);
         verifySerialExecution("test_benchmark", "test_query", 1);
         verifyBenchmarkFinish("test_benchmark", ImmutableList.of("duration"));
-        verifyComplete();
+        verifyComplete(1);
     }
 
     @Test
@@ -88,7 +97,7 @@ public class DriverAppIntegrationTest
         verifyExecutionFinished("test_concurrent_benchmark", "test_query", 1, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
         verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
-        verifyComplete();
+        verifyComplete(1);
     }
 
     private void setBenchmark(String s)
@@ -189,10 +198,12 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
     }
 
-    private void verifyComplete()
+    private void verifyComplete(int numberOfBenchmarks)
     {
         boolean successful = benchmarkExecutionDriver.run();
         assertThat(successful).isTrue();
+
+        verify(macroService, times(numberOfBenchmarks)).runMacro("no-op");
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)
