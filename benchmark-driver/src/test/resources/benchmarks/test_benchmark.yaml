@@ -1,3 +1,4 @@
 datasource: test_datasource
 query-names: test_query.sql
+before-benchmark: no-op
 runs: 2

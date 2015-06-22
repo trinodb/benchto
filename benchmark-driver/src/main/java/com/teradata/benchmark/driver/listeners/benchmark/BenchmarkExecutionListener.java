@@ -1,7 +1,7 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.listeners;
+package com.teradata.benchmark.driver.listeners.benchmark;
 
 import com.teradata.benchmark.driver.domain.Benchmark;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
@@ -19,6 +19,4 @@ public interface BenchmarkExecutionListener
     void executionStarted(QueryExecution queryExecution);
 
     void executionFinished(QueryExecutionResult execution);
-
-    void suiteFinished(List<BenchmarkResult> queryResults);
 }

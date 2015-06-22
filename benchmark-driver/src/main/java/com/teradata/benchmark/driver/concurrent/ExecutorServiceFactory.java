@@ -13,8 +13,8 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 @Component
 public class ExecutorServiceFactory
 {
-    public ListeningExecutorService create(int concurrency) {
-
+    public ListeningExecutorService create(int concurrency)
+    {
         return listeningDecorator(newFixedThreadPool(concurrency));
     }
 }

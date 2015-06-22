@@ -26,7 +26,7 @@ public class MacroServiceTest
     public ExpectedException expectedException = ExpectedException.none();
 
     @Autowired
-    private MacroService macroService;
+    private ShellMacroService macroService;
 
     @Test
     public void shouldExecuteMacro()

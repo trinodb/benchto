@@ -5,6 +5,10 @@ package com.teradata.benchmark.driver.utils;
 
 import javax.measure.unit.Unit;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.google.common.base.Preconditions.checkState;
 import static javax.measure.unit.NonSI.BYTE;
 import static javax.measure.unit.NonSI.DAY;
 import static javax.measure.unit.NonSI.HOUR;
@@ -23,9 +27,27 @@ import static javax.measure.unit.SI.SECOND;
 // TODO: use JSR 363 when available
 public final class UnitConverter
 {
-    public static Unit<?> unitFor(String source)
+    private static final Pattern VALUE_WITH_UNIT_PATTERN = Pattern.compile("^([+-]?(?:\\d+|\\d*\\.\\d+))([a-zA-Z]*)$");
+    private static final int VALUE_GROUP_INDEX = 1;
+    private static final int UNIT_GROUP_INDEX = 2;
+
+    public static double parseValueAsUnit(String string, Unit<?> unit)
     {
-        switch (source) {
+        double parsedValue = parseValue(string);
+        Unit<?> parsedUnit = parseUnit(string);
+        return parsedUnit.getConverterTo(unit).convert(parsedValue);
+    }
+
+    public static double parseValue(String string)
+    {
+        Matcher matcher = matchValueWithUnit(string);
+        return Double.parseDouble(matcher.group(VALUE_GROUP_INDEX));
+    }
+
+    public static Unit<?> parseUnit(String string)
+    {
+        Matcher matcher = matchValueWithUnit(string);
+        switch (matcher.group(UNIT_GROUP_INDEX)) {
             case "d":
                 return DAY;
             case "h":
@@ -49,7 +71,7 @@ public final class UnitConverter
             case "GB":
                 return GIGA(BYTE);
             default:
-                throw new IllegalArgumentException(source + " unit is not supported");
+                throw new IllegalArgumentException(string + " unit is not supported");
         }
     }
 
@@ -64,5 +86,12 @@ public final class UnitConverter
         else {
             throw new IllegalArgumentException(unit + " is not supported");
         }
+    }
+
+    private static Matcher matchValueWithUnit(String string)
+    {
+        Matcher matcher = VALUE_WITH_UNIT_PATTERN.matcher(string);
+        checkState(matcher.matches(), "String %s does not match value with unit pattern", string);
+        return matcher;
     }
 }

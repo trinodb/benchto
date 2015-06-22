@@ -20,8 +20,6 @@ import javax.measure.unit.Unit;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.base.Preconditions.checkState;
@@ -44,10 +42,6 @@ public class PrestoClient
             .put("processedInputDataSize", BYTE)
             .put("outputDataSize", BYTE)
             .build();
-
-    private static final Pattern STATISTIC_PATTERN = Pattern.compile("^([+-]?(?:\\d+|\\d*\\.\\d+))([a-zA-Z]*)$");
-    private static final int VALUE_GROUP_INDEX = 1;
-    private static final int UNIT_GROUP_INDEX = 2;
 
     @Value("${presto.url}")
     private String prestoURL;
@@ -86,13 +80,7 @@ public class PrestoClient
 
     private Measurement parseQueryStatistic(String name, String statistic, Unit requiredUnit)
     {
-        Matcher matcher = STATISTIC_PATTERN.matcher(statistic);
-        checkState(matcher.matches());
-
-        double value = Double.parseDouble(matcher.group(VALUE_GROUP_INDEX));
-        Unit<?> unit = UnitConverter.unitFor(matcher.group(UNIT_GROUP_INDEX));
-        value = unit.getConverterTo(requiredUnit).convert(value);
-
+        double value = UnitConverter.parseValueAsUnit(statistic, requiredUnit);
         return measurement("prestoQuery-" + name, UnitConverter.format(requiredUnit), value);
     }
 

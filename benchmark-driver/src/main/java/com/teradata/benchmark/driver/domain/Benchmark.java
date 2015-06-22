@@ -20,9 +20,12 @@ public class Benchmark
     private final List<Query> queries;
     private final int runs;
     private final int concurrency;
+    private final List<String> beforeBenchmarkMacros;
+    private final int prewarmRepeats;
     private final Map<String, String> variables;
 
-    public Benchmark(String name, String sequenceId, String dataSource, String environment, List<Query> queries, int runs, int concurrency, Map<String, String> variables)
+    public Benchmark(String name, String sequenceId, String dataSource, String environment, List<Query> queries, int runs, int concurrency,
+            List<String> beforeBenchmarkMacros, int prewarmRepeats, Map<String, String> variables)
     {
         this.name = name;
         this.sequenceId = sequenceId;
@@ -31,6 +34,8 @@ public class Benchmark
         this.queries = ImmutableList.copyOf(checkNotNull(queries));
         this.runs = runs;
         this.concurrency = concurrency;
+        this.beforeBenchmarkMacros = beforeBenchmarkMacros;
+        this.prewarmRepeats = prewarmRepeats;
         this.variables = variables;
     }
 
@@ -77,6 +82,16 @@ public class Benchmark
     public int getConcurrency()
     {
         return concurrency;
+    }
+
+    public List<String> getBeforeBenchmarkMacros()
+    {
+        return beforeBenchmarkMacros;
+    }
+
+    public int getPrewarmRepeats()
+    {
+        return prewarmRepeats;
     }
 
     public Map<String, String> getVariables()

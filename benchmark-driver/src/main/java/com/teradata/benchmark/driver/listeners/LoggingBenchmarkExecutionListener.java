@@ -7,6 +7,8 @@ import com.teradata.benchmark.driver.domain.Benchmark;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
 import com.teradata.benchmark.driver.domain.QueryExecution;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
+import com.teradata.benchmark.driver.listeners.suite.SuiteExecutionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 
 @Component
 public class LoggingBenchmarkExecutionListener
-        implements BenchmarkExecutionListener
+        implements BenchmarkExecutionListener, SuiteExecutionListener
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(LoggingBenchmarkExecutionListener.class);

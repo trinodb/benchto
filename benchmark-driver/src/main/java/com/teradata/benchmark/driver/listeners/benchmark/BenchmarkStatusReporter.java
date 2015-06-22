@@ -2,40 +2,26 @@
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
 
-package com.teradata.benchmark.driver.listeners;
+package com.teradata.benchmark.driver.listeners.benchmark;
 
-import com.google.common.collect.Ordering;
 import com.teradata.benchmark.driver.domain.Benchmark;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
 import com.teradata.benchmark.driver.domain.QueryExecution;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 import java.util.List;
 
-@Component
 public class BenchmarkStatusReporter
 {
+    private final TaskExecutor taskExecutor;
 
-    @Autowired
-    private List<BenchmarkExecutionListener> executionListeners;
+    private final List<BenchmarkExecutionListener> executionListeners;
 
-    @Qualifier("defaultTaskExecutor")
-    @Autowired
-    private TaskExecutor taskExecutor;
-
-    @PostConstruct
-    private void HACK_sortListenersToGuaranteeDeterminismInTests()
+    public BenchmarkStatusReporter(TaskExecutor taskExecutor, List<BenchmarkExecutionListener> executionListeners)
     {
-        executionListeners = Ordering
-                .natural()
-                .usingToString()
-                .sortedCopy(executionListeners);
+        this.taskExecutor = taskExecutor;
+        this.executionListeners = executionListeners;
     }
 
     public void reportBenchmarkStarted(Benchmark benchmark)
@@ -63,13 +49,6 @@ public class BenchmarkStatusReporter
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
             taskExecutor.execute(() -> listener.executionFinished(execution));
-        }
-    }
-
-    public void reportSuiteFinished(List<BenchmarkResult> benchmarkResults)
-    {
-        for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.suiteFinished(benchmarkResults));
         }
     }
 }

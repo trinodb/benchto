@@ -5,12 +5,12 @@ package com.teradata.benchmark.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
+import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import com.teradata.benchmark.driver.macro.MacroService;
 import org.hamcrest.Matcher;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.RequestMatcher;
@@ -22,8 +22,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -33,7 +35,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class DriverAppIntegrationTest
         extends IntegrationTest
 {
-
     private static final String GRAPHITE_METRICS_RESPONSE = "[" +
             "{\"target\":\"cpu\",\"datapoints\":[[10, 10],[10, 10]]}" +
             ",{\"target\":\"memory\",\"datapoints\":[[10, 10],[10, 10]]}" +
@@ -48,13 +49,16 @@ public class DriverAppIntegrationTest
     private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
     @Autowired
-    @InjectMocks
     private BenchmarkExecutionDriver benchmarkExecutionDriver;
 
     @Autowired
     private BenchmarkProperties benchmarkProperties;
 
-    @Mock
+    @Autowired
+    @Qualifier("prewarmStatusReporter")
+    private BenchmarkStatusReporter prewarmStatusReporter;
+
+    @Autowired
     private MacroService macroService;
 
     @Test
@@ -64,7 +68,14 @@ public class DriverAppIntegrationTest
         verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", TEST_QUERY);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", "simple_select", 0);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", ImmutableList.of());
-        verifyComplete(1);
+        verifyComplete();
+
+        verify(prewarmStatusReporter, times(1)).reportBenchmarkStarted(any());
+        verify(prewarmStatusReporter, times(1)).reportExecutionStarted(any());
+        verify(prewarmStatusReporter, times(1)).reportExecutionFinished(any());
+        verify(prewarmStatusReporter, times(1)).reportBenchmarkFinished(any());
+
+        verifyNoMoreInteractions(prewarmStatusReporter);
     }
 
     @Test
@@ -75,7 +86,7 @@ public class DriverAppIntegrationTest
         verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 0);
         verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 1);
         verifyBenchmarkFinish("test_benchmark_env=TEST_ENV", ImmutableList.of());
-        verifyComplete(1);
+        verifyComplete();
     }
 
     @Test
@@ -91,13 +102,13 @@ public class DriverAppIntegrationTest
         setBenchmark("test_concurrent_benchmark.yaml");
 
         verifyBenchmarkStart("test_concurrent_benchmark_env=TEST_ENV", TEST_QUERY);
-        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV",  0);
+        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", 0);
         verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", 0, concurrentQueryMeasurementName);
         verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", 1);
         verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", 1, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
         verifyBenchmarkFinish("test_concurrent_benchmark_env=TEST_ENV", concurrentBenchmarkMeasurementNames);
-        verifyComplete(1);
+        verifyComplete();
     }
 
     private void setBenchmark(String s)
@@ -208,12 +219,12 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
     }
 
-    private void verifyComplete(int numberOfBenchmarks)
+    private void verifyComplete()
     {
         boolean successful = benchmarkExecutionDriver.run();
         assertThat(successful).isTrue();
 
-        verify(macroService, times(numberOfBenchmarks)).runMacro("no-op");
+        verify(macroService, times(1)).runMacros(ImmutableList.of("no-op"));
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)

@@ -7,7 +7,7 @@ import com.facebook.presto.jdbc.PrestoResultSet;
 import com.teradata.benchmark.driver.domain.QueryExecution;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult.QueryExecutionResultBuilder;
-import com.teradata.benchmark.driver.listeners.BenchmarkStatusReporter;
+import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +29,7 @@ public class QueryExecutionDriver
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired
-    private BenchmarkStatusReporter statusReporter;
-
-    public QueryExecutionResult execute(QueryExecution queryExecution)
+    public QueryExecutionResult execute(QueryExecution queryExecution, BenchmarkStatusReporter statusReporter)
     {
         statusReporter.reportExecutionStarted(queryExecution);
 

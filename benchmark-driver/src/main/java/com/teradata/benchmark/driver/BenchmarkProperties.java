@@ -37,12 +37,6 @@ public class BenchmarkProperties
     @Value("${executionSequenceId:#{null}}")
     private String executionSequenceId;
 
-    /**
-     * List of macros to be executed before benchmark.
-     */
-    @Value("${execution.before-benchmark:#{null}}")
-    private String beforeBenchmarkMacros;
-
     @Value("${environment.name}")
     private String environmentName;
 
@@ -62,11 +56,6 @@ public class BenchmarkProperties
     public Optional<String> getExecutionSequenceId()
     {
         return Optional.ofNullable(executionSequenceId);
-    }
-
-    public Optional<List<String>> getBeforeBenchmarkMacros()
-    {
-        return splitProperty(beforeBenchmarkMacros);
     }
 
     public String getEnvironmentName()

@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver.loader;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
@@ -17,6 +18,8 @@ public class BenchmarkDescriptorTest
 
     private static final String SIMPLE_BENCHMARK = "" +
             "datasource: foo\n" +
+            "before-benchmark: [no-op, no-op2]\n" +
+            "prewarm-repeats: 2\n" +
             "query-names: [q1, q2, 1, 2]";
 
     private static final String BENCHMARK_NO_DATA_SOURCE = "query-names: [q1, q2, 1, 2]";
@@ -52,6 +55,8 @@ public class BenchmarkDescriptorTest
         assertThat(descriptor.getDataSource()).isEqualTo("foo");
         assertThat(descriptor.getRuns()).isEqualTo(3);
         assertThat(descriptor.getConcurrency()).isEqualTo(1);
+        assertThat(descriptor.getBeforeBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op", "no-op2"));
+        assertThat(descriptor.getPrewarmRepeats()).isEqualTo(2);
     }
 
     @Test

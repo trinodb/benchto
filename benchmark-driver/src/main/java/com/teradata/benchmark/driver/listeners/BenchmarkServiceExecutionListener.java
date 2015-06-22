@@ -9,6 +9,7 @@ import com.teradata.benchmark.driver.domain.BenchmarkResult;
 import com.teradata.benchmark.driver.domain.Measurable;
 import com.teradata.benchmark.driver.domain.QueryExecution;
 import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
@@ -113,12 +114,6 @@ public class BenchmarkServiceExecutionListener
             measurementsList.addAll(measurementProvider.loadMeasurements(measurable));
         }
         return measurementsList.build();
-    }
-
-    @Override
-    public void suiteFinished(List<BenchmarkResult> queryResults)
-    {
-        // DO NOTHING
     }
 
     private String executionSequenceId(QueryExecution execution)
