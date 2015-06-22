@@ -162,7 +162,7 @@ public class DriverAppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
-                jsonPath("$.what", is("Execution " + queryName + "-" + executionNumber + " started")),
+                jsonPath("$.what", is("Benchmark " + queryName + ", execution " + executionNumber + " started")),
                 jsonPath("$.tags", is("execution started")),
                 jsonPath("$.data", is(""))
         )).andRespond(withSuccess());
@@ -180,7 +180,7 @@ public class DriverAppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
-                jsonPath("$.what", is("Execution " + queryName + "-" + executionNumber + " ended")),
+                jsonPath("$.what", is("Benchmark " + queryName + ", execution " + executionNumber + " ended")),
                 jsonPath("$.tags", is("execution ended")),
                 jsonPath("$.data", startsWith("duration: "))
         )).andRespond(withSuccess());
