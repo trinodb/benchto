@@ -37,12 +37,10 @@ public class PrestoClient
 {
     private static final Map<String, Unit> DEFAULT_METRICS = ImmutableMap.<String, Unit>builder()
             .put("totalPlanningTime", MILLI(SECOND))
-            .put("totalMemoryReservation", BYTE)
             .put("totalScheduledTime", MILLI(SECOND))
             .put("totalCpuTime", MILLI(SECOND))
             .put("totalUserTime", MILLI(SECOND))
             .put("totalBlockedTime", MILLI(SECOND))
-            .put("rawInputDataSize", BYTE)
             .put("processedInputDataSize", BYTE)
             .put("outputDataSize", BYTE)
             .build();
