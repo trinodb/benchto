@@ -14,6 +14,7 @@
 
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
+        <active.spring.environment>default</active.spring.environment>
     </properties>
 
     <repositories>
@@ -40,31 +41,49 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <id>exec-benchmark</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>com.teradata.benchmark.driver.DriverApp</mainClass>
+                    <arguments>
+                        <!--<argument>-Dspring.profiles.active=${active.spring.environment}</argument>-->
+                        <argument>--spring.config.location=classpath:/application-${active.spring.environment}.yaml</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
-            <id>benchmark</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.4.0</version>
-                        <executions>
-                            <execution>
-                                <id>exec-benchmark</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <mainClass>com.teradata.benchmark.driver.DriverApp</mainClass>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-
+            <id>benchmark-td-hdp</id>
+            <properties>
+                <active.spring.environment>td-hdp</active.spring.environment>
+            </properties>
+        </profile>
+        <profile>
+            <id>benchmark-cdh</id>
+            <properties>
+                <active.spring.environment>cdh</active.spring.environment>
+            </properties>
+        </profile>
+        <profile>
+            <id>benchmark-hdp</id>
+            <properties>
+                <active.spring.environment>hdp</active.spring.environment>
+            </properties>
         </profile>
     </profiles>
 

@@ -1,0 +1,31 @@
+benchmark-service:
+  url: http://hadoop-r3n1.td.teradata.com:18080
+
+data-sources:
+  presto:
+    url: jdbc:presto://10.25.17.45:8080
+    username: hdfs
+    password: na
+    driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+
+environment:
+  name: CDH
+
+presto:
+  url: http://10.25.17.45:8080
+
+graphite:
+  url: http://10.25.17.79:18088
+  resolution.seconds: 10
+  metrics:
+    cpu: asPercent(sumSeries(collectd.hadoop-r1*.cpu.percent-{user,system}.value), sumSeries(collectd.hadoop-r1*.cpu.*.value))
+    memory: collectd.hadoop-r1*.memory
+    network: sumSeries(collectd.hadoop-r1*.interface-*.if_octets.{rx,tx})
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: true
+      metrics.collection.enabled: true
+    presto:
+      metrics.collection.enabled: true

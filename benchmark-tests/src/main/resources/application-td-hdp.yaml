@@ -1,0 +1,36 @@
+benchmark-service:
+  url: http://hadoop-r3n1.td.teradata.com:18080
+
+data-sources:
+  presto:
+    url: jdbc:presto://cloud10hd01-2-2.labs.teradata.com:8888
+    username: hdfs
+    password: na
+    driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+  teradata:
+    url: jdbc:teradata://CLOUD10TD01-3-18.labs.teradata.com
+    username: test_presto_user
+    password: test_presto_password
+    driver-class-name: com.teradata.jdbc.TeraDriver
+
+environment:
+  name: TD-HDP
+
+presto:
+  url: http://cloud10hd01-2-2.labs.teradata.com:8888
+
+graphite:
+  url: http://10.25.17.79:18088
+  resolution.seconds: 10
+  metrics:
+    cpu: asPercent(sumSeries(collectd.CLOUD10HD01-2-*.cpu.percent-{user,system}.value), sumSeries(collectd.CLOUD10HD01-2-*.cpu.*.value))
+    memory: collectd.CLOUD10HD01-2-*.memory
+    network: sumSeries(collectd.CLOUD10HD01-2-*.interface-*.if_octets.{rx,tx})
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: true
+      metrics.collection.enabled: true
+    presto:
+      metrics.collection.enabled: true

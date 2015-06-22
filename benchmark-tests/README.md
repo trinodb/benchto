@@ -2,9 +2,9 @@
 
 Project containing benchmark tests for presto.
 
-## Configuration
+## Configuration (local development)
 
-To run tests create application.yaml properties file. You can use sample:
+To run tests locally from IDE create _application.yaml_ properties file. You can use sample:
 
 ```
 $ cp application.yaml-sample application.yaml
@@ -15,8 +15,11 @@ More information about configuration properties can be found in [https://github-
 
 ## Running benchmarks
 
+You need to provide correct profile: `benchmark-hdp`, `benchmark-cdh`, `benchmark-td-hdp`
+
+For CDH cluster configuration call:
 ```
-$ mvn test -Pbenchmark
+$ mvn -Pbenchmark-cdh package exec:java
 ...
 [INFO] --- exec-maven-plugin:1.4.0:java (exec-benchmark) @ benchmark-tests-presto ---
 ...
