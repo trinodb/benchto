@@ -25,9 +25,6 @@ public class BenchmarkStatusReporter
     @Autowired
     private List<BenchmarkExecutionListener> executionListeners;
 
-    @Autowired
-    private StatusReportSynchronizer statusReportSynchronizer;
-
     @Qualifier("defaultTaskExecutor")
     @Autowired
     private TaskExecutor taskExecutor;
@@ -43,7 +40,6 @@ public class BenchmarkStatusReporter
 
     public void reportBenchmarkStarted(Benchmark benchmark)
     {
-        statusReportSynchronizer.synchronizeBenchmarkStart(benchmark);
         for (BenchmarkExecutionListener listener : executionListeners) {
             taskExecutor.execute(() -> listener.benchmarkStarted(benchmark));
         }
@@ -51,7 +47,6 @@ public class BenchmarkStatusReporter
 
     public void reportBenchmarkFinished(BenchmarkResult result)
     {
-        statusReportSynchronizer.synchronizeBenchmarkFinish(result);
         for (BenchmarkExecutionListener listener : executionListeners) {
             taskExecutor.execute(() -> listener.benchmarkFinished(result));
         }
@@ -59,7 +54,6 @@ public class BenchmarkStatusReporter
 
     public void reportExecutionStarted(QueryExecution queryExecution)
     {
-        statusReportSynchronizer.synchronizeExecutionStart(queryExecution);
         for (BenchmarkExecutionListener listener : executionListeners) {
             taskExecutor.execute(() -> listener.executionStarted(queryExecution));
         }
@@ -67,7 +61,6 @@ public class BenchmarkStatusReporter
 
     public void reportExecutionFinished(QueryExecutionResult execution)
     {
-        statusReportSynchronizer.synchronizeExecutionFinish(execution);
         for (BenchmarkExecutionListener listener : executionListeners) {
             taskExecutor.execute(() -> listener.executionFinished(execution));
         }
@@ -75,7 +68,6 @@ public class BenchmarkStatusReporter
 
     public void reportSuiteFinished(List<BenchmarkResult> benchmarkResults)
     {
-        statusReportSynchronizer.synchronizeSuiteFinish(benchmarkResults);
         for (BenchmarkExecutionListener listener : executionListeners) {
             taskExecutor.execute(() -> listener.suiteFinished(benchmarkResults));
         }

@@ -28,8 +28,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchmark.driver.service.Measurement.measurement;
+import static com.teradata.benchmark.driver.utils.TimeUtils.sleep;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service
 @ConditionalOnProperty(prefix = "benchmark.feature.graphite", value = "metrics.collection.enabled")
@@ -66,6 +68,7 @@ public class GraphiteMetricsLoader
         if (!shouldLoadGraphiteMetrics(measurable)) {
             return emptyList();
         }
+        waitBeforeReportingIfNeeded();
 
         long cutOffThresholdSeconds = graphiteProperties.cutOffThresholdSecondsForMeasurementReporting().get();
 
@@ -111,6 +114,14 @@ public class GraphiteMetricsLoader
             return true;
         }
         return false;
+    }
+
+    private void waitBeforeReportingIfNeeded()
+    {
+        Optional<Integer> waitSecondsBeforeExecutionReporting = graphiteProperties.waitSecondsBeforeExecutionReporting();
+        if (waitSecondsBeforeExecutionReporting.isPresent()) {
+            sleep(waitSecondsBeforeExecutionReporting.get(), SECONDS);
+        }
     }
 
     private void addMeanMaxMeasurements(Map<String, double[]> loadedMetrics, List<Measurement> measurements, String metricName, String unit)
