@@ -63,7 +63,7 @@ public class DriverAppIntegrationTest
         setBenchmark("simple_select_benchmark.yaml");
         verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA", TEST_QUERY);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
-        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of("duration"));
+        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
         verifyComplete(1);
     }
 
@@ -74,7 +74,7 @@ public class DriverAppIntegrationTest
         verifyBenchmarkStart("test_benchmark", TEST_QUERY);
         verifySerialExecution("test_benchmark", "test_query", 0);
         verifySerialExecution("test_benchmark", "test_query", 1);
-        verifyBenchmarkFinish("test_benchmark", ImmutableList.of("duration"));
+        verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
         verifyComplete(1);
     }
 
@@ -84,8 +84,8 @@ public class DriverAppIntegrationTest
         ImmutableList<String> concurrentQueryMeasurementName = ImmutableList.of("duration");
         ImmutableList<String> concurrentBenchmarkMeasurementNames = ImmutableList.<String>builder()
                 .addAll(GRAPHITE_MEASUREMENT_NAMES)
-                .addAll(concurrentQueryMeasurementName)
                 .add("throughput")
+                .add("duration")
                 .build();
 
         setBenchmark("test_concurrent_benchmark.yaml");
