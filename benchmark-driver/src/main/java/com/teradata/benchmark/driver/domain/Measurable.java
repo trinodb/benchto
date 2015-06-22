@@ -1,7 +1,6 @@
 /*
- * Copyright 2015, Teradata, Inc. All rights reserved.
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-
 package com.teradata.benchmark.driver.domain;
 
 import com.teradata.benchmark.driver.utils.TimeUtils;

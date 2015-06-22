@@ -1,3 +1,6 @@
+/*
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ */
 package com.teradata.benchmark.driver.graphite;
 
 import org.springframework.beans.factory.annotation.Value;

@@ -1,7 +1,6 @@
 /*
- * Copyright 2015, Teradata, Inc. All rights reserv.
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-
 package com.teradata.benchmark.driver.listeners;
 
 import com.teradata.benchmark.driver.domain.Benchmark;

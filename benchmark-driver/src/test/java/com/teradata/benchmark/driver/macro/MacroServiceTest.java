@@ -1,3 +1,6 @@
+/*
+ * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ */
 package com.teradata.benchmark.driver.macro;
 
 import com.google.common.collect.ImmutableMap;
