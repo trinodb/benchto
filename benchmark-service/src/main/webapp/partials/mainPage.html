@@ -3,7 +3,7 @@
         <h2 class="sub-header">Latest Benchmark Executions</h2>
 
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-condensed">
                 <thead>
                 <tr>
                     <td>#</td>
@@ -15,7 +15,7 @@
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in latestBenchmarkRuns">
-                    <td>{{::$index + 1}}</td>
+                    <td>{{(1 * page * pageSize) + $index + 1}}</td>
                     <td>
                         <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong>
                         (<a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)

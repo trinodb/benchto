@@ -29,8 +29,12 @@
             </li>
             <li ng-if="::benchmarkRun.environment.attributes.dashboardURL">
                 <strong>Monitoring:</strong>
-                <a target="_blank" ng-if="::benchmarkRun.environment.attributes.dashboardType == 'grafana'"
+                <a ng-if="benchmarkRun.ended" target="_blank" ng-if="::benchmarkRun.environment.attributes.dashboardType == 'grafana'"
                    ng-href="{{::benchmarkRun.environment.attributes.dashboardURL}}?from={{benchmarkFromParam(benchmarkRun)}}&to={{benchmarkToParam(benchmarkRun)}}">
+                    {{::benchmarkRun.environment.attributes.dashboardType}} dashboard
+                </a>
+                <a ng-if="!benchmarkRun.ended" target="_blank" ng-if="::benchmarkRun.environment.attributes.dashboardType == 'grafana'"
+                   ng-href="{{::benchmarkRun.environment.attributes.dashboardURL}}?from={{benchmarkFromParam(benchmarkRun)}}">
                     {{::benchmarkRun.environment.attributes.dashboardType}} dashboard
                 </a>
             </li>
@@ -40,7 +44,7 @@
             <h3 class="sub-header">Measurements</h3>
 
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table table-striped table-condensed">
                     <thead>
                     <tr>
                         <td>Name</td>
@@ -58,7 +62,7 @@
         <h3 class="sub-header">Aggregated measurements</h3>
 
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-condensed">
                 <thead>
                 <tr>
                     <td>Name</td>
@@ -69,7 +73,7 @@
                 </tr>
                 </thead>
                 <tr ng-repeat="(name, aggregatedMeasurement) in benchmarkRun.aggregatedMeasurements">
-                    <td>{{::name}}</td>
+                    <td><strong>{{::name}}</strong></td>
                     <td>{{aggregatedMeasurement.mean | unit : measurementUnit(name)}}</td>
                     <td>{{aggregatedMeasurement.min | unit : measurementUnit(name)}}</td>
                     <td>{{aggregatedMeasurement.max | unit : measurementUnit(name)}}</td>
@@ -81,7 +85,7 @@
         <h3 class="sub-header">Executions</h3>
 
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-condensed">
                 <thead>
                 <tr>
                     <td>#</td>
@@ -99,11 +103,12 @@
                         <span ng-if="execution.status == 'FAILED'"><a href="" ng-click="showFailure(execution)"> - details</a></span>
                     </td>
                     <td>
-                        <span ng-repeat="executionMeasurement in execution.measurements">
-                            <ul>
-                                <li><strong>{{executionMeasurement.name}}:</strong> {{executionMeasurement.value | unit : executionMeasurement.unit}}</li>
-                            </ul>
-                        </span>
+                        <ul>
+                            <li ng-repeat="executionMeasurement in execution.measurements">
+                                <strong>{{executionMeasurement.name}}:</strong>
+                                {{executionMeasurement.value | unit : executionMeasurement.unit}}
+                            </li>
+                        </ul>
                     </td>
                     <td>
                         <a target="_blank" ng-if="execution.attributes.prestoQueryId"

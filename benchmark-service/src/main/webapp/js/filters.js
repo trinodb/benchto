@@ -19,12 +19,12 @@
                 }
                 var result = "";
                 if(hours > 0){
-                    result += (hours+"h")
+                    result += (hours+"h ")
                 }
                 if(minutes > 0){
-                    result += (minutes+"m")
+                    result += (minutes+"m ")
                 }
-                result+=(seconds.toFixed(3)+"s")
+                result+=(seconds.toFixed(3)+"s ")
                 return result;
             }
         })
@@ -56,6 +56,10 @@
                 else if (unit === 'PERCENT') {
                     outputValueText += numberFilter(value, 2);
                     outputUnitText = '%';
+                }
+                else if (unit === 'QUERY_PER_SECOND') {
+                    outputValueText += numberFilter(value, 2);
+                    outputUnitText = 'query/sec';
                 }
                 else {
                     outputValueText += numberFilter(value, 2);

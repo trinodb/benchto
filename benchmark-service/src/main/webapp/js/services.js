@@ -6,9 +6,23 @@
 
     angular.module('benchmarkServiceUI.services', [])
         .factory('BenchmarkService', ['$http', '$q', function ($http, $q) {
+            var sortMeasurements = function (measurements) {
+                return _.sortBy(measurements, function (measurement) {
+                    // we want duration measurement to go first in UI
+                    if (measurement.name == 'duration') {
+                        // special characters are before alphanumeric ascii codes
+                        return '!';
+                    }
+                    return measurement.name;
+                });
+            };
+
             var postProcessBenchmarkRun = function (benchmarkRun) {
                 benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
-                benchmarkRun.measurements = _.sortBy(benchmarkRun.measurements, 'name');
+                benchmarkRun.measurements = sortMeasurements(benchmarkRun.measurements);
+                _.each(benchmarkRun.executions, function (execution) {
+                    execution.measurements = sortMeasurements(execution.measurements);
+                });
 
                 // convert to angular date filter consumable format
                 benchmarkRun.started = benchmarkRun.started * 1000;

@@ -33,25 +33,25 @@
                         return benchmarkRun.status === 'ENDED';
                     });
 
-                    // query measurements graph data
-                    var queryMeasurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
+                    // aggregated executions measurements graph data
+                    var aggregatedExecutionsMeasurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
                         function (benchmarkRun) {
-                            return _.allKeys(benchmarkRun.queryAggregatedMeasurements);
+                            return _.allKeys(benchmarkRun.aggregatedMeasurements);
                         }
                     )));
 
-                    var queryMeasurementUnit = function (measurementKey) {
-                        return benchmarkRuns[0].queryAggregatedMeasurements[measurementKey].unit;
+                    var aggregatedExecutionsMeasurementUnit = function (measurementKey) {
+                        return benchmarkRuns[0].aggregatedMeasurements[measurementKey].unit;
                     };
 
-                    var extractQueryAggregatedMeasurements = function (measurementKey) {
+                    var extractAggregatedExecutionsAggregatedMeasurements = function (measurementKey) {
                         return _.map(benchmarkRuns, function (benchmarkRun) {
-                            return benchmarkRun.queryAggregatedMeasurements[measurementKey];
+                            return benchmarkRun.aggregatedMeasurements[measurementKey];
                         });
                     };
 
                     var dataForQueryMeasurementKey = function (measurementKey) {
-                        var aggregatedMeasurementsForKey = extractQueryAggregatedMeasurements(measurementKey);
+                        var aggregatedMeasurementsForKey = extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
                         return [
                             _.pluck(aggregatedMeasurementsForKey, 'mean'),
                             _.pluck(aggregatedMeasurementsForKey, 'min'),
@@ -60,10 +60,10 @@
                         ];
                     };
 
-                    $scope.queryMeasurementGraphsData = _.map(queryMeasurementKeys, function (measurementKey) {
+                    $scope.aggregatedExecutionsMeasurementGraphsData = _.map(aggregatedExecutionsMeasurementKeys, function (measurementKey) {
                         return {
                             name: measurementKey,
-                            unit: queryMeasurementUnit(measurementKey),
+                            unit: aggregatedExecutionsMeasurementUnit(measurementKey),
                             data: dataForQueryMeasurementKey(measurementKey),
                             labels: _.pluck(benchmarkRuns, 'sequenceId'),
                             series: ['mean', 'min', 'max', 'stdDev']
@@ -79,7 +79,7 @@
 
                     var findBenchmarkMeasurement= function(benchmarkRun, measurementKey) {
                         return _.findWhere(benchmarkRun.measurements, { name: measurementKey });
-                    }
+                    };
 
                     var benchmarkMeasurementUnit = function (measurementKey) {
                         return findBenchmarkMeasurement(benchmarkRuns[0], measurementKey).unit;
@@ -116,18 +116,18 @@
                 });
 
             $scope.benchmarkFromParam = function (benchmarkRun) {
-                return benchmarkRun.started - 60 * 1000; // one minute before start
+                return benchmarkRun.started - 10 * 1000; // 10 seconds before start
             };
 
             $scope.benchmarkToParam = function (benchmarkRun) {
                 if (benchmarkRun.ended) {
-                    return benchmarkRun.ended + 60 * 1000; // one minute after end
+                    return benchmarkRun.ended + 10 * 1000; // 10 seconds after end
                 }
                 return Date.now();
             };
 
             $scope.measurementUnit = function (measurementKey) {
-                return $scope.benchmarkRun.benchmarkMeasurements[measurementKey].unit;
+                return $scope.benchmarkRun.aggregatedMeasurements[measurementKey].unit;
             };
 
             $scope.showFailure = function (execution) {
