@@ -7,8 +7,6 @@ import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.domain.Benchmark;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.teradata.benchmark.driver.utils.FileUtils.pathMatchesTo;
 import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
@@ -32,7 +31,6 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 @Component
 public class BenchmarkLoader
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkLoader.class);
 
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
@@ -137,7 +135,7 @@ public class BenchmarkLoader
 
     /**
      * Leaves in benchmark name only alphanumerics, underscores and dashes
-     * <p>
+     * <p/>
      * TODO: We should better do that where we passing benchmark name into REST URL
      */
     private String sanitizeBenchmarkName(String benchmarkName)
@@ -147,14 +145,10 @@ public class BenchmarkLoader
 
     private Predicate<Path> pathIsListedInBenchmarksListIfProvided()
     {
-        return path -> {
-            Optional<List<String>> benchmarks = properties.getActiveBenchmarks();
-            if (benchmarks.isPresent()) {
-                boolean included = benchmarks.get().contains(path.getFileName().toString());
-                LOGGER.info("Benchmark: '{}' will be {}.", path.toString(), included ? "included" : "EXCLUDED");
-                return included;
-            }
-            return true;
-        };
+        Optional<List<String>> activeBenchmarks = properties.getActiveBenchmarks();
+        if (activeBenchmarks.isPresent()) {
+            return pathMatchesTo(activeBenchmarks.get());
+        }
+        return path -> true;
     }
 }
