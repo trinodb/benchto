@@ -61,9 +61,9 @@ public class DriverAppIntegrationTest
     public void simpleSelectBenchmark()
     {
         setBenchmark("simple_select_benchmark.yaml");
-        verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA", TEST_QUERY);
-        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
-        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
+        verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", TEST_QUERY);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", "simple_select", 0);
+        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", ImmutableList.of());
         verifyComplete(1);
     }
 
@@ -71,10 +71,10 @@ public class DriverAppIntegrationTest
     public void testBenchmark()
     {
         setBenchmark("test_benchmark.yaml");
-        verifyBenchmarkStart("test_benchmark", TEST_QUERY);
-        verifySerialExecution("test_benchmark", "test_query", 0);
-        verifySerialExecution("test_benchmark", "test_query", 1);
-        verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
+        verifyBenchmarkStart("test_benchmark_env=TEST_ENV", TEST_QUERY);
+        verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 0);
+        verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 1);
+        verifyBenchmarkFinish("test_benchmark_env=TEST_ENV", ImmutableList.of());
         verifyComplete(1);
     }
 
@@ -90,13 +90,13 @@ public class DriverAppIntegrationTest
 
         setBenchmark("test_concurrent_benchmark.yaml");
 
-        verifyBenchmarkStart("test_concurrent_benchmark", TEST_QUERY);
-        verifyExecutionStarted("test_concurrent_benchmark", "test_query", 0);
-        verifyExecutionFinished("test_concurrent_benchmark", "test_query", 0, concurrentQueryMeasurementName);
-        verifyExecutionStarted("test_concurrent_benchmark", "test_query", 1);
-        verifyExecutionFinished("test_concurrent_benchmark", "test_query", 1, concurrentQueryMeasurementName);
+        verifyBenchmarkStart("test_concurrent_benchmark_env=TEST_ENV", TEST_QUERY);
+        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", "test_query", 0);
+        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", "test_query", 0, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", "test_query", 1);
+        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", "test_query", 1, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
-        verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
+        verifyBenchmarkFinish("test_concurrent_benchmark_env=TEST_ENV", concurrentBenchmarkMeasurementNames);
         verifyComplete(1);
     }
 

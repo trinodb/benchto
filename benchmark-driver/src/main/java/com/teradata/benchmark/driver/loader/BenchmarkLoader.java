@@ -129,6 +129,9 @@ public class BenchmarkLoader
             benchmarkName.append(variablesEntry.getValue());
         }
 
+        benchmarkName.append("_env=");
+        benchmarkName.append(properties.getEnvironmentName());
+
         return sanitizeBenchmarkName(benchmarkName.toString());
     }
 
