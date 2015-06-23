@@ -11,6 +11,7 @@ import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.concurrent.ExecutorServiceFactory;
 import com.teradata.benchmark.driver.domain.Benchmark;
+import com.teradata.benchmark.driver.domain.BenchmarkExecution;
 import com.teradata.benchmark.driver.domain.BenchmarkResult;
 import com.teradata.benchmark.driver.domain.BenchmarkResult.BenchmarkResultBuilder;
 import com.teradata.benchmark.driver.domain.QueryExecution;
@@ -23,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
@@ -103,14 +103,12 @@ public class BenchmarkExecutionDriver
         try {
             executeBeforeBenchmarkMacros(benchmark);
 
-            for (int i = 0; i < benchmark.getPrewarmRepeats(); ++i) {
-                BenchmarkResult result = executeBenchmark(benchmark, prewarmStatusReporter);
-                if (!result.isSuccessful()) {
-                    return result;
-                }
+            BenchmarkResult prewarmResult = executeBenchmark(new BenchmarkExecution(benchmark, prewarmStatusReporter, benchmark.getConcurrency(), benchmark.getPrewarmRuns()));
+            if (!prewarmResult.isSuccessful()) {
+                return prewarmResult;
             }
 
-            return executeBenchmark(benchmark, benchmarkStatusReporter);
+            return executeBenchmark(new BenchmarkExecution(benchmark, benchmarkStatusReporter, benchmark.getConcurrency(), benchmark.getRuns()));
         }
         catch (InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute benchmark", e);
@@ -122,23 +120,23 @@ public class BenchmarkExecutionDriver
         macroService.runMacros(benchmark.getBeforeBenchmarkMacros());
     }
 
-    private BenchmarkResult executeBenchmark(Benchmark benchmark, BenchmarkStatusReporter statusReporter)
+    private BenchmarkResult executeBenchmark(BenchmarkExecution benchmarkExecution)
             throws InterruptedException
     {
-        ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
+        ListeningExecutorService executorService = executorServiceFactory.create(benchmarkExecution.getConcurrency());
         try {
-            statusReporter.reportBenchmarkStarted(benchmark);
-            BenchmarkResultBuilder benchmarkResultBuilder = new BenchmarkResultBuilder(benchmark);
+            benchmarkExecution.getStatusReporter().reportBenchmarkStarted(benchmarkExecution.getBenchmark());
+            BenchmarkResultBuilder benchmarkResultBuilder = new BenchmarkResultBuilder(benchmarkExecution.getBenchmark());
             benchmarkResultBuilder.startTimer();
 
-            List<QueryExecutionResult> executionResults = runQueries(benchmark, executorService, statusReporter);
+            List<QueryExecutionResult> executionResults = runQueries(benchmarkExecution, executorService);
 
             BenchmarkResult benchmarkResult = benchmarkResultBuilder
                     .endTimer()
                     .setExecutions(executionResults)
                     .build();
 
-            statusReporter.reportBenchmarkFinished(benchmarkResult);
+            benchmarkExecution.getStatusReporter().reportBenchmarkFinished(benchmarkResult);
 
             return benchmarkResult;
         }
@@ -147,12 +145,12 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<QueryExecutionResult> runQueries(Benchmark benchmark, ListeningExecutorService executorService, BenchmarkStatusReporter statusReporter)
+    private List<QueryExecutionResult> runQueries(BenchmarkExecution benchmarkExecution, ListeningExecutorService executorService)
             throws InterruptedException
     {
         try {
             @SuppressWarnings("unchecked")
-            List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(buildQueryExecutionCallables(benchmark, statusReporter));
+            List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(buildQueryExecutionCallables(benchmarkExecution));
             return Futures.allAsList(executionFutures).get();
         }
         catch (ExecutionException e) {
@@ -161,13 +159,13 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, BenchmarkStatusReporter statusReporter)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(BenchmarkExecution benchmarkExecution)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
-        for (Query query : benchmark.getQueries()) {
-            for (int run = 0; run < benchmark.getRuns(); ++run) {
-                QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
-                executionCallables.add(() -> queryExecutionDriver.execute(queryExecution, statusReporter));
+        for (Query query : benchmarkExecution.getBenchmark().getQueries()) {
+            for (int run = 0; run < benchmarkExecution.getRuns(); ++run) {
+                QueryExecution queryExecution = new QueryExecution(benchmarkExecution.getBenchmark(), query, run, benchmarkExecution.getStatusReporter());
+                executionCallables.add(() -> queryExecutionDriver.execute(queryExecution));
             }
         }
         return executionCallables;

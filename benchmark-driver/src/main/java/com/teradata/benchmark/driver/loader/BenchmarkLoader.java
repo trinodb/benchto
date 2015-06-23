@@ -79,8 +79,8 @@ public class BenchmarkLoader
         String benchmarkName = benchmarkName(descriptor, variables);
         List<Query> queries = loadQueries(descriptor.getQueryNames(), variables);
         return new Benchmark(benchmarkName, sequenceId, descriptor.getDataSource(), properties.getEnvironmentName(), queries,
-                descriptor.getRuns(), descriptor.getConcurrency(),
-                descriptor.getBeforeBenchmarkMacros(), descriptor.getPrewarmRepeats(), variables);
+                descriptor.getRuns(), descriptor.getPrewarmRepeats(), descriptor.getConcurrency(),
+                descriptor.getBeforeBenchmarkMacros(), variables);
     }
 
     private List<Query> loadQueries(List<String> queryNames, Map<String, String> variables)

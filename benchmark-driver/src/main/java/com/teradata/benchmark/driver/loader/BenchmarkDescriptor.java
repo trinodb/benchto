@@ -29,15 +29,15 @@ public class BenchmarkDescriptor
     private static final String DATA_SOURCE_KEY = "datasource";
     private static final String QUERY_NAMES_KEY = "query-names";
     private static final String RUNS_KEY = "runs";
+    private static final String PREWARM_RUNS_KEY = "prewarm-runs";
     private static final String CONCURRENCY_KEY = "concurrency";
     private static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
-    private static final String PREWARM_REPEATS_KEY = "prewarm-repeats";
     private static final String VARIABLES_KEY = "variables";
 
     private static final int DEFAULT_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
     private static final List<String> DEFAULT_BEFORE_BENCHMARK_MACROS = ImmutableList.of();
-    private static final int DEFAULT_PREWARM_REPEATS = 0;
+    private static final int DEFAULT_PREWARM_RUNS = 0;
 
     public static BenchmarkDescriptor loadFromFile(Path file)
             throws IOException
@@ -51,8 +51,8 @@ public class BenchmarkDescriptor
 
         int concurrency = (int) yaml.getOrDefault(CONCURRENCY_KEY, DEFAULT_CONCURRENCY);
         int runs = (int) yaml.getOrDefault(RUNS_KEY, yaml.containsKey(CONCURRENCY_KEY) ? concurrency : DEFAULT_RUNS);
+        int prewarmRuns = (int) yaml.getOrDefault(PREWARM_RUNS_KEY, DEFAULT_PREWARM_RUNS);
         List<String> beforeBenchmarkMacros = stringifyList(asList(yaml.getOrDefault(BEFORE_BENCHMARK_MACROS_KEY, DEFAULT_BEFORE_BENCHMARK_MACROS)));
-        int prewarmRepeats = (int) yaml.getOrDefault(PREWARM_REPEATS_KEY, DEFAULT_PREWARM_REPEATS);
 
         checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Benchmark yaml must contain '%s' key", DATA_SOURCE_KEY);
 
@@ -60,8 +60,8 @@ public class BenchmarkDescriptor
                 file,
                 yaml.get(DATA_SOURCE_KEY).toString(),
                 stringifyList(asList(yaml.get(QUERY_NAMES_KEY))),
-                runs, concurrency,
-                beforeBenchmarkMacros, prewarmRepeats,
+                runs, prewarmRuns, concurrency,
+                beforeBenchmarkMacros,
                 extractVariableMaps(yaml));
     }
 
@@ -79,21 +79,21 @@ public class BenchmarkDescriptor
     private final String dataSource;
     private final List<String> queryNames;
     private final int runs;
+    private final int prewarmRepeats;
     private final int concurrency;
     private final List<String> beforeBenchmarkMacros;
-    private final int prewarmRepeats;
     private final List<Map<String, String>> variableMapList;
 
-    public BenchmarkDescriptor(Path descriptorPath, String dataSource, List<String> queryNames, int runs, int concurrency,
-            List<String> beforeBenchmarkMacros, int prewarmRepeats, List<Map<String, String>> variableMapList)
+    public BenchmarkDescriptor(Path descriptorPath, String dataSource, List<String> queryNames, int runs, int prewarmRepeats, int concurrency,
+            List<String> beforeBenchmarkMacros, List<Map<String, String>> variableMapList)
     {
         this.descriptorPath = descriptorPath;
         this.dataSource = dataSource;
         this.queryNames = queryNames;
         this.runs = runs;
+        this.prewarmRepeats = prewarmRepeats;
         this.concurrency = concurrency;
         this.beforeBenchmarkMacros = beforeBenchmarkMacros;
-        this.prewarmRepeats = prewarmRepeats;
         this.variableMapList = variableMapList;
     }
 
@@ -117,6 +117,11 @@ public class BenchmarkDescriptor
         return runs;
     }
 
+    public int getPrewarmRepeats()
+    {
+        return prewarmRepeats;
+    }
+
     public int getConcurrency()
     {
         return concurrency;
@@ -125,11 +130,6 @@ public class BenchmarkDescriptor
     public List<String> getBeforeBenchmarkMacros()
     {
         return beforeBenchmarkMacros;
-    }
-
-    public int getPrewarmRepeats()
-    {
-        return prewarmRepeats;
     }
 
     public List<Map<String, String>> getVariableMapList()

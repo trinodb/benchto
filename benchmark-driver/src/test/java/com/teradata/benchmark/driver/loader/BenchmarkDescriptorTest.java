@@ -19,7 +19,7 @@ public class BenchmarkDescriptorTest
     private static final String SIMPLE_BENCHMARK = "" +
             "datasource: foo\n" +
             "before-benchmark: [no-op, no-op2]\n" +
-            "prewarm-repeats: 2\n" +
+            "prewarm-runs: 2\n" +
             "query-names: [q1, q2, 1, 2]";
 
     private static final String BENCHMARK_NO_DATA_SOURCE = "query-names: [q1, q2, 1, 2]";

@@ -19,7 +19,7 @@ public class BenchmarkResultTest
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        BenchmarkResultBuilder builder = new BenchmarkResultBuilder(new Benchmark("name", "sequenceId", "datasource", "environment", ImmutableList.of(), 1, 1, ImmutableList.of(), 0, emptyMap()));
+        BenchmarkResultBuilder builder = new BenchmarkResultBuilder(new Benchmark("name", "sequenceId", "datasource", "environment", ImmutableList.of(), 1, 0, 1, ImmutableList.of(), emptyMap()));
 
         builder.startTimer();
         sleep(500, MILLISECONDS);

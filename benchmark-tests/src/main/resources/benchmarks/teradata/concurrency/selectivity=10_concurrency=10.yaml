@@ -6,4 +6,4 @@ variables:
   1:
     schema: tpch_100gb
 before-benchmark: drop-caches
-prewarm-repeats: 3
+prewarm-runs: 3

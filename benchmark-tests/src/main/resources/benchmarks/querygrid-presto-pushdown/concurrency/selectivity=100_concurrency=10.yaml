@@ -7,4 +7,4 @@ variables:
     schema: tpch_100gb_orc
     database: hive
 before-benchmark: drop-caches
-prewarm-repeats: 3
+prewarm-runs: 3

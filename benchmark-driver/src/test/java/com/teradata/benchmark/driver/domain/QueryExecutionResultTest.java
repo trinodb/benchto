@@ -4,7 +4,6 @@
 package com.teradata.benchmark.driver.domain;
 
 import com.teradata.benchmark.driver.domain.QueryExecutionResult.QueryExecutionResultBuilder;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -18,7 +17,7 @@ public class QueryExecutionResultTest
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0))
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0, null))
                 .setRowsCount(100);
 
         queryExecutionResultBuilder.startTimer();
@@ -36,7 +35,7 @@ public class QueryExecutionResultTest
     public void testBuilder_failed_run()
             throws InterruptedException
     {
-        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0));
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0, null));
 
         queryExecutionResultBuilder.startTimer();
         TimeUnit.MILLISECONDS.sleep(500L);
