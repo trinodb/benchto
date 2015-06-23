@@ -4,8 +4,12 @@
 package com.teradata.benchmark.driver.macro;
 
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -18,6 +22,8 @@ import static com.google.common.base.Preconditions.checkState;
 public class ShellMacroService
         implements MacroService
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShellMacroService.class);
+
     private static final String SHELL = "bash";
 
     @Autowired
@@ -27,11 +33,22 @@ public class ShellMacroService
     public void runMacro(String macroName, Map<String, String> environment)
     {
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(SHELL, "-c", getMacroCommand(macroName));
+            String macroCommand = getMacroCommand(macroName);
+            ProcessBuilder processBuilder = new ProcessBuilder(SHELL, "-c", macroCommand);
             processBuilder.environment().putAll(environment);
             Process macroProcess = processBuilder.start();
             macroProcess.waitFor();
-            checkState(macroProcess.exitValue() == 0, "Macro %s exited with code %s", macroName, macroProcess.exitValue());
+            LOGGER.debug("Executed macro: '{}'", macroCommand);
+            if (macroProcess.exitValue() != 0) {
+                LOGGER.error("Executed macro: '{}' failed with: '{}', out: '{}', err: '{}'",
+                        macroCommand,
+                        macroProcess.exitValue(),
+                        IOUtils.toString(macroProcess.getInputStream()),
+                        IOUtils.toString(macroProcess.getErrorStream())
+                );
+                throw new IllegalStateException(String.format("Macro %s exited with code %s", macroName, macroProcess.exitValue()));
+            }
+
         }
         catch (IOException | InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute macro " + macroName, e);
