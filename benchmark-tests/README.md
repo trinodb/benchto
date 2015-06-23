@@ -24,3 +24,8 @@ $ mvn -Pbenchmark-cdh package exec:java
 [INFO] --- exec-maven-plugin:1.4.0:java (exec-benchmark) @ benchmark-tests-presto ---
 ...
 ```
+
+In case you select particular benchmark to run you can:
+```
+$ mvn -Pbenchmark-hdp package exec:java -DactiveBenchmarks=presto/linear-scan/selectivity=10.yaml 
+```
