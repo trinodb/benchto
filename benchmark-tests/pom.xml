@@ -58,8 +58,8 @@
                 <configuration>
                     <mainClass>com.teradata.benchmark.driver.DriverApp</mainClass>
                     <arguments>
-                        <!--<argument>-Dspring.profiles.active=${active.spring.environment}</argument>-->
                         <argument>--spring.config.location=classpath:/application-${active.spring.environment}.yaml</argument>
+                        <argument>--activeBenchmarks=presto/linear-scan</argument>
                     </arguments>
                 </configuration>
             </plugin>

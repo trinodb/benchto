@@ -78,7 +78,7 @@ benchmark-service:
 execution:
   before-benchmark: drop-caches       # defines that 'drop-caches' macro should be executed before every benchmark
 
-macors:      # defines list of macros which are executed using 'bash'
+macros:            # defines list of macros which are executed using 'bash'
   drop-caches:     # macro running fabric that drop caches on benchmark cluster
     command: fabric execute_on_cluster “echo 3 > /proc/sys/vm/drop_caches"
 

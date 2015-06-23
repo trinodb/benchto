@@ -22,6 +22,10 @@ graphite:
     memory: collectd.hadoop-r1*.memory
     network: sumSeries(collectd.hadoop-r1*.interface-*.if_octets.{rx,tx})
 
+macros:
+  drop-caches:
+    command: hfab -R all other:presto_cdh_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches"
+
 benchmark:
   feature:
     graphite:
