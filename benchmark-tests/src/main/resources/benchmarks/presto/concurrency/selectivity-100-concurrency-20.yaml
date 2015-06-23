@@ -1,0 +1,8 @@
+datasource: presto
+query-names: presto/linear-scan/selectivity-100.sql
+runs: 20
+concurrency: 20
+variables:
+  1:
+    schema: tpch_100gb_orc
+    database: hive
