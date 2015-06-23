@@ -1,5 +1,5 @@
 benchmark-service:
-  url: http://hadoop-r3n1.td.teradata.com:18080
+  url: http://10.25.17.79:18080
 
 data-sources:
   presto:

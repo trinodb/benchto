@@ -1,9 +1,9 @@
 benchmark-service:
-  url: http://hadoop-r3n1.td.teradata.com:18080
+  url: http://10.25.17.79:18080
 
 data-sources:
   presto:
-    url: jdbc:presto://cloud10hd01-2-2.labs.teradata.com:8888
+    url: jdbc:presto://10.25.22.84:8888
     username: hdfs
     password: na
     driver-class-name: com.facebook.presto.jdbc.PrestoDriver
@@ -17,7 +17,7 @@ environment:
   name: TD-HDP
 
 presto:
-  url: http://cloud10hd01-2-2.labs.teradata.com:8888
+  url: http://10.25.22.84:8888
 
 graphite:
   url: http://10.25.17.79:18088
