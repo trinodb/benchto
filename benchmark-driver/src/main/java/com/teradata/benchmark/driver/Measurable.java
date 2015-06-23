@@ -1,8 +1,9 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.domain;
+package com.teradata.benchmark.driver;
 
+import com.teradata.benchmark.driver.execution.BenchmarkExecution;
 import com.teradata.benchmark.driver.utils.TimeUtils;
 
 import java.time.Duration;
@@ -31,7 +32,7 @@ public abstract class Measurable
         return Duration.of(end - start, NANOS);
     }
 
-    public abstract Benchmark getBenchmark();
+    public abstract BenchmarkExecution getBenchmarkExecution();
 
     @Override
     public String toString()

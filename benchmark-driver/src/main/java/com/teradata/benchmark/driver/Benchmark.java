@@ -1,7 +1,7 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.domain;
+package com.teradata.benchmark.driver;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchmark.driver.Query;
@@ -37,16 +37,6 @@ public class Benchmark
         this.concurrency = concurrency;
         this.beforeBenchmarkMacros = beforeBenchmarkMacros;
         this.variables = variables;
-    }
-
-    public boolean isSerial()
-    {
-        return !isConcurrent();
-    }
-
-    public boolean isConcurrent()
-    {
-        return concurrency > 1;
     }
 
     public String getName()

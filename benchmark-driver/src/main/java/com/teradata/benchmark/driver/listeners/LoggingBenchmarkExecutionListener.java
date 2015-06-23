@@ -3,10 +3,10 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
-import com.teradata.benchmark.driver.domain.Benchmark;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.QueryExecution;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.execution.QueryExecution;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.suite.SuiteExecutionListener;
 import org.slf4j.Logger;
@@ -28,21 +28,21 @@ public class LoggingBenchmarkExecutionListener
     private static final Logger LOG = LoggerFactory.getLogger(LoggingBenchmarkExecutionListener.class);
 
     @Override
-    public void benchmarkStarted(Benchmark benchmark)
+    public void benchmarkStarted(BenchmarkExecution benchmarkExecution)
     {
-        LOG.info("Executing benchmark: {}", benchmark.getName());
+        LOG.info("Executing benchmark: {}", benchmarkExecution.getBenchmarkName());
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkResult result)
+    public void benchmarkFinished(BenchmarkExecutionResult result)
     {
-        LOG.trace("Finished benchmark: {}", result.getBenchmark().getName());
+        LOG.trace("Finished benchmark: {}", result.getBenchmarkExecution().getBenchmarkName());
     }
 
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        LOG.trace("Query started: {} ({})", execution.getQuery().getName(), execution.getRun());
+        LOG.trace("Query started: {} ({})", execution.getQueryName(), execution.getRun());
     }
 
     @Override
@@ -57,12 +57,12 @@ public class LoggingBenchmarkExecutionListener
     }
 
     @Override
-    public void suiteFinished(List<BenchmarkResult> benchmarkResults)
+    public void suiteFinished(List<BenchmarkExecutionResult> benchmarkExecutionResults)
     {
-        List<BenchmarkResult> successful = benchmarkResults.stream()
-                .filter(BenchmarkResult::isSuccessful)
+        List<BenchmarkExecutionResult> successful = benchmarkExecutionResults.stream()
+                .filter(BenchmarkExecutionResult::isSuccessful)
                 .collect(toList());
-        List<BenchmarkResult> failed = newArrayList(benchmarkResults);
+        List<BenchmarkExecutionResult> failed = newArrayList(benchmarkExecutionResults);
         failed.removeAll(successful);
 
         if (!failed.isEmpty()) {
@@ -70,19 +70,19 @@ public class LoggingBenchmarkExecutionListener
             failed.stream()
                     .map(benchmarkResult -> benchmarkResult.getExecutions())
                     .flatMap(Collection::stream)
-                    .forEach(queryExecution -> failedQueriesMessage.append(queryExecution.getBenchmark().getName())
+                    .forEach(queryExecution -> failedQueriesMessage.append(queryExecution.getBenchmarkExecution().getBenchmarkName())
                             .append(" - \n")
-                            .append(queryExecution.getQuery().getSql())
+                            .append(queryExecution.getSql())
                             .append("\n-----------------------------\n"));
             failedQueriesMessage.append('\n');
             System.err.println(failedQueriesMessage.toString());
         }
 
-        System.out.println(format("\nTests run: %d, Failures: %d\n", benchmarkResults.size(), failed.size()));
+        System.out.println(format("\nTests run: %d, Failures: %d\n", benchmarkExecutionResults.size(), failed.size()));
 
-        for (BenchmarkResult result : successful) {
+        for (BenchmarkExecutionResult result : successful) {
             System.out.println(format("Benchmark query duration times for %s - min: %f, max: %f, mean: %f, std-dev: %f",
-                    result.getBenchmark().getName(),
+                    result.getBenchmarkExecution().getBenchmarkName(),
                     result.getDurationStatistics().getMin(),
                     result.getDurationStatistics().getMax(),
                     result.getDurationStatistics().getMean(),

@@ -1,8 +1,9 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.domain;
+package com.teradata.benchmark.driver.execution;
 
+import com.teradata.benchmark.driver.Measurable;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.time.Duration;
@@ -10,22 +11,22 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class BenchmarkResult
+public class BenchmarkExecutionResult
         extends Measurable
 {
-    private final Benchmark benchmark;
+    private final BenchmarkExecution benchmarkExecution;
     private List<QueryExecutionResult> executions;
     private DescriptiveStatistics durationStatistics;
 
-    private BenchmarkResult(Benchmark benchmark)
+    private BenchmarkExecutionResult(BenchmarkExecution benchmarkExecution)
     {
-        this.benchmark = benchmark;
+        this.benchmarkExecution = benchmarkExecution;
     }
 
     @Override
-    public Benchmark getBenchmark()
+    public BenchmarkExecution getBenchmarkExecution()
     {
-        return benchmark;
+        return benchmarkExecution;
     }
 
     public List<QueryExecutionResult> getExecutions()
@@ -44,16 +45,16 @@ public class BenchmarkResult
         return executions.stream().allMatch(QueryExecutionResult::isSuccessful);
     }
 
-    public static class BenchmarkResultBuilder
-            extends Measurable.MeasuredBuilder<BenchmarkResult, BenchmarkResultBuilder>
+    public static class BenchmarkExecutionResultBuilder
+            extends Measurable.MeasuredBuilder<BenchmarkExecutionResult, BenchmarkExecutionResultBuilder>
     {
 
-        public BenchmarkResultBuilder(Benchmark benchmark)
+        public BenchmarkExecutionResultBuilder(BenchmarkExecution benchmarkExecution)
         {
-            super(new BenchmarkResult(benchmark));
+            super(new BenchmarkExecutionResult(benchmarkExecution));
         }
 
-        public BenchmarkResultBuilder setExecutions(List<QueryExecutionResult> executions)
+        public BenchmarkExecutionResultBuilder setExecutions(List<QueryExecutionResult> executions)
         {
             object.executions = executions;
             object.durationStatistics = new DescriptiveStatistics(
@@ -66,7 +67,7 @@ public class BenchmarkResult
         }
 
         @Override
-        public BenchmarkResult build()
+        public BenchmarkExecutionResult build()
         {
             checkNotNull(object.executions, "Executions are not set");
             return super.build();

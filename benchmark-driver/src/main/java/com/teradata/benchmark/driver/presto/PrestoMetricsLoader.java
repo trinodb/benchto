@@ -3,8 +3,8 @@
  */
 package com.teradata.benchmark.driver.presto;
 
-import com.teradata.benchmark.driver.domain.Measurable;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.Measurable;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import com.teradata.benchmark.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import com.teradata.benchmark.driver.service.Measurement;
 import org.springframework.beans.factory.annotation.Autowired;

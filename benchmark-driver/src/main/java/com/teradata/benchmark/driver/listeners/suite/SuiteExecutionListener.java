@@ -3,11 +3,11 @@
  */
 package com.teradata.benchmark.driver.listeners.suite;
 
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 
 import java.util.List;
 
 public interface SuiteExecutionListener
 {
-    void suiteFinished(List<BenchmarkResult> queryResults);
+    void suiteFinished(List<BenchmarkExecutionResult> queryResults);
 }

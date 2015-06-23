@@ -4,11 +4,11 @@
 package com.teradata.benchmark.driver.listeners;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
-import com.teradata.benchmark.driver.domain.Benchmark;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.Measurable;
-import com.teradata.benchmark.driver.domain.QueryExecution;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.Measurable;
+import com.teradata.benchmark.driver.execution.QueryExecution;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
@@ -45,33 +45,33 @@ public class BenchmarkServiceExecutionListener
     private List<PostExecutionMeasurementProvider> measurementProviders;
 
     @Override
-    public void benchmarkStarted(Benchmark benchmark)
+    public void benchmarkStarted(BenchmarkExecution benchmarkExecution)
     {
         BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder()
-                .environmentName(benchmark.getEnvironment());
+                .environmentName(benchmarkExecution.getEnvironment());
 
-        requestBuilder.addAttribute("dataSource", benchmark.getDataSource())
-                .addAttribute("runs", "" + benchmark.getRuns())
-                .addAttribute("concurrency", "" + benchmark.getConcurrency());
-        for (Map.Entry<String, String> variableEntry : benchmark.getVariables().entrySet()) {
+        requestBuilder.addAttribute("dataSource", benchmarkExecution.getDataSource())
+                .addAttribute("runs", "" + benchmarkExecution.getRuns())
+                .addAttribute("concurrency", "" + benchmarkExecution.getConcurrency());
+        for (Map.Entry<String, String> variableEntry : benchmarkExecution.getVariables().entrySet()) {
             requestBuilder.addAttribute(variableEntry.getKey(), variableEntry.getValue());
         }
 
-        if (benchmark.getQueries().size() == 1) {
-            requestBuilder.addAttribute("sqlStatement", getFirst(benchmark.getQueries(), null).getSql());
+        if (benchmarkExecution.getQueries().size() == 1) {
+            requestBuilder.addAttribute("sqlStatement", getFirst(benchmarkExecution.getQueries(), null).getSql());
         }
 
-        benchmarkServiceClient.startBenchmark(benchmark.getName(), benchmark.getSequenceId(), requestBuilder.build());
+        benchmarkServiceClient.startBenchmark(benchmarkExecution.getBenchmarkName(), benchmarkExecution.getSequenceId(), requestBuilder.build());
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkResult benchmarkResult)
+    public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
         FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
-                .withStatus(benchmarkResult.isSuccessful() ? ENDED : FAILED)
-                .addMeasurements(getMeasurements(benchmarkResult));
+                .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                .addMeasurements(getMeasurements(benchmarkExecutionResult));
 
-        benchmarkServiceClient.finishBenchmark(benchmarkResult.getBenchmark().getName(), benchmarkResult.getBenchmark().getSequenceId(), requestBuilder.build());
+        benchmarkServiceClient.finishBenchmark(benchmarkExecutionResult.getBenchmarkExecution().getBenchmarkName(), benchmarkExecutionResult.getBenchmarkExecution().getSequenceId(), requestBuilder.build());
     }
 
     @Override
@@ -80,7 +80,7 @@ public class BenchmarkServiceExecutionListener
         ExecutionStartRequest request = new ExecutionStartRequestBuilder()
                 .build();
 
-        benchmarkServiceClient.startExecution(execution.getBenchmark().getName(), execution.getBenchmark().getSequenceId(), executionSequenceId(execution), request);
+        benchmarkServiceClient.startExecution(execution.getBenchmarkExecution().getBenchmarkName(), execution.getBenchmarkExecution().getSequenceId(), executionSequenceId(execution), request);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class BenchmarkServiceExecutionListener
             }
         }
 
-        benchmarkServiceClient.finishExecution(executionResult.getBenchmark().getName(), executionResult.getBenchmark().getSequenceId(),
+        benchmarkServiceClient.finishExecution(executionResult.getBenchmarkExecution().getBenchmarkName(), executionResult.getBenchmarkExecution().getSequenceId(),
                 executionSequenceId(executionResult.getQueryExecution()), requestBuilder.build());
     }
 

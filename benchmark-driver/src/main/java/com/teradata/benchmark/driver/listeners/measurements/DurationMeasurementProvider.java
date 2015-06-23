@@ -4,9 +4,9 @@
 package com.teradata.benchmark.driver.listeners.measurements;
 
 import com.google.common.collect.ImmutableList;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.Measurable;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.Measurable;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import com.teradata.benchmark.driver.service.Measurement;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +34,7 @@ public class DurationMeasurementProvider
         if (measurable instanceof QueryExecutionResult) {
             return true;
         }
-        else if (measurable instanceof BenchmarkResult && measurable.getBenchmark().isConcurrent()) {
+        else if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmarkExecution().isConcurrent()) {
             return true;
         }
         return false;

@@ -3,18 +3,16 @@
  */
 package com.teradata.benchmark.driver.listeners.benchmark;
 
-import com.teradata.benchmark.driver.domain.Benchmark;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.QueryExecution;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
-
-import java.util.List;
+import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.execution.QueryExecution;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 
 public interface BenchmarkExecutionListener
 {
-    void benchmarkStarted(Benchmark benchmark);
+    void benchmarkStarted(BenchmarkExecution benchmarkExecution);
 
-    void benchmarkFinished(BenchmarkResult benchmarkResult);
+    void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult);
 
     void executionStarted(QueryExecution queryExecution);
 

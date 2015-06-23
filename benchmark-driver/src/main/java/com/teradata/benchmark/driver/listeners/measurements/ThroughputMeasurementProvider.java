@@ -4,8 +4,8 @@
 package com.teradata.benchmark.driver.listeners.measurements;
 
 import com.google.common.collect.ImmutableList;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.Measurable;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.Measurable;
 import com.teradata.benchmark.driver.service.Measurement;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +21,15 @@ public class ThroughputMeasurementProvider
     @Override
     public List<Measurement> loadMeasurements(Measurable measurable)
     {
-        if (measurable instanceof BenchmarkResult && measurable.getBenchmark().isConcurrent()) {
-            return ImmutableList.of(measurement("throughput", "QUERY_PER_SECOND", calculateThroughput((BenchmarkResult) measurable)));
+        if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmarkExecution().isConcurrent()) {
+            return ImmutableList.of(measurement("throughput", "QUERY_PER_SECOND", calculateThroughput((BenchmarkExecutionResult) measurable)));
         }
         return emptyList();
     }
 
-    private double calculateThroughput(BenchmarkResult benchmarkResult)
+    private double calculateThroughput(BenchmarkExecutionResult benchmarkExecutionResult)
     {
-        long durationInMillis = benchmarkResult.getQueryDuration().toMillis();
-        return (double) benchmarkResult.getExecutions().size() / durationInMillis * 1000;
+        long durationInMillis = benchmarkExecutionResult.getQueryDuration().toMillis();
+        return (double) benchmarkExecutionResult.getExecutions().size() / durationInMillis * 1000;
     }
 }

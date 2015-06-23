@@ -3,10 +3,10 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
-import com.teradata.benchmark.driver.domain.Benchmark;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.QueryExecution;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.execution.QueryExecution;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import com.teradata.benchmark.driver.graphite.GraphiteClient;
 import com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteEventRequest;
 import com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteEventRequest.GraphiteEventRequestBuilder;
@@ -27,10 +27,10 @@ public class GraphiteEventExecutionListener
     private GraphiteClient graphiteClient;
 
     @Override
-    public void benchmarkStarted(Benchmark benchmark)
+    public void benchmarkStarted(BenchmarkExecution benchmarkExecution)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s started", benchmark.getName()))
+                .what(format("Benchmark %s started", benchmarkExecution.getBenchmarkName()))
                 .tags("benchmark", "started")
                 .build();
 
@@ -38,14 +38,14 @@ public class GraphiteEventExecutionListener
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkResult benchmarkResult)
+    public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s ended", benchmarkResult.getBenchmark().getName()))
+                .what(format("Benchmark %s ended", benchmarkExecutionResult.getBenchmarkExecution().getBenchmarkName()))
                 .tags("benchmark ended")
-                .data(format("successful %b, mean: %f.2, stdDev: %f.2", benchmarkResult.isSuccessful(),
-                        benchmarkResult.getDurationStatistics().getMean(),
-                        benchmarkResult.getDurationStatistics().getStandardDeviation()))
+                .data(format("successful %b, mean: %f.2, stdDev: %f.2", benchmarkExecutionResult.isSuccessful(),
+                        benchmarkExecutionResult.getDurationStatistics().getMean(),
+                        benchmarkExecutionResult.getDurationStatistics().getStandardDeviation()))
                 .build();
 
         graphiteClient.storeEvent(request);
@@ -54,12 +54,12 @@ public class GraphiteEventExecutionListener
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        if (execution.getBenchmark().isConcurrent()) {
+        if (execution.getBenchmarkExecution().isConcurrent()) {
             return;
         }
 
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s, execution %d started", execution.getQuery().getName(), execution.getRun()))
+                .what(format("Benchmark %s, execution %d started", execution.getQueryName(), execution.getRun()))
                 .tags("execution", "started")
                 .build();
 
@@ -69,12 +69,12 @@ public class GraphiteEventExecutionListener
     @Override
     public void executionFinished(QueryExecutionResult executionResult)
     {
-        if (executionResult.getBenchmark().isConcurrent()) {
+        if (executionResult.getBenchmarkExecution().isConcurrent()) {
             return;
         }
 
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s, execution %d ended", executionResult.getQuery().getName(), executionResult.getQueryExecution().getRun()))
+                .what(format("Benchmark %s, execution %d ended", executionResult.getQueryName(), executionResult.getQueryExecution().getRun()))
                 .tags("execution", "ended")
                 .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
                 .build();

@@ -1,10 +1,10 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.domain;
+package com.teradata.benchmark.driver.execution;
 
 import com.google.common.base.MoreObjects;
-import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.Measurable;
 
 import java.util.Optional;
 
@@ -30,15 +30,10 @@ public class QueryExecutionResult
         return queryExecution;
     }
 
-    public Query getQuery()
-    {
-        return queryExecution.getQuery();
-    }
-
     @Override
-    public Benchmark getBenchmark()
+    public BenchmarkExecution getBenchmarkExecution()
     {
-        return queryExecution.getBenchmark();
+        return queryExecution.getBenchmarkExecution();
     }
 
     public boolean isSuccessful()
@@ -63,7 +58,12 @@ public class QueryExecutionResult
 
     public String getQueryName()
     {
-        return getQuery().getName();
+        return queryExecution.getQueryName();
+    }
+
+    public String getSql()
+    {
+        return queryExecution.getSql();
     }
 
     @Override

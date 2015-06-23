@@ -6,7 +6,7 @@ package com.teradata.benchmark.driver.loader;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
-import com.teradata.benchmark.driver.domain.Benchmark;
+import com.teradata.benchmark.driver.Benchmark;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

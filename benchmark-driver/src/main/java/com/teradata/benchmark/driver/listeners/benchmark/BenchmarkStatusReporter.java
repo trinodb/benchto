@@ -4,10 +4,10 @@
 
 package com.teradata.benchmark.driver.listeners.benchmark;
 
-import com.teradata.benchmark.driver.domain.Benchmark;
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
-import com.teradata.benchmark.driver.domain.QueryExecution;
-import com.teradata.benchmark.driver.domain.QueryExecutionResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.execution.QueryExecution;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import org.springframework.core.task.TaskExecutor;
 
 import java.util.List;
@@ -24,17 +24,17 @@ public class BenchmarkStatusReporter
         this.executionListeners = executionListeners;
     }
 
-    public void reportBenchmarkStarted(Benchmark benchmark)
+    public void reportBenchmarkStarted(BenchmarkExecution benchmarkExecution)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.benchmarkStarted(benchmark));
+            taskExecutor.execute(() -> listener.benchmarkStarted(benchmarkExecution));
         }
     }
 
-    public void reportBenchmarkFinished(BenchmarkResult result)
+    public void reportBenchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.benchmarkFinished(result));
+            taskExecutor.execute(() -> listener.benchmarkFinished(benchmarkExecutionResult));
         }
     }
 
@@ -45,10 +45,10 @@ public class BenchmarkStatusReporter
         }
     }
 
-    public void reportExecutionFinished(QueryExecutionResult execution)
+    public void reportExecutionFinished(QueryExecutionResult queryExecutionResult)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.executionFinished(execution));
+            taskExecutor.execute(() -> listener.executionFinished(queryExecutionResult));
         }
     }
 }

@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver.listeners.suite;
 
-import com.teradata.benchmark.driver.domain.BenchmarkResult;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
@@ -21,10 +21,10 @@ public class SuiteStatusReporter
     @Autowired
     private TaskExecutor taskExecutor;
 
-    public void reportSuiteFinished(List<BenchmarkResult> benchmarkResults)
+    public void reportSuiteFinished(List<BenchmarkExecutionResult> benchmarkExecutionResults)
     {
         for (SuiteExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.suiteFinished(benchmarkResults));
+            taskExecutor.execute(() -> listener.suiteFinished(benchmarkExecutionResults));
         }
     }
 }

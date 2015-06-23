@@ -1,14 +1,17 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.domain;
+package com.teradata.benchmark.driver.execution;
 
-import com.teradata.benchmark.driver.domain.QueryExecutionResult.QueryExecutionResultBuilder;
+import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
+import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class QueryExecutionResultTest
 {
@@ -17,7 +20,7 @@ public class QueryExecutionResultTest
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0, null))
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution())
                 .setRowsCount(100);
 
         queryExecutionResultBuilder.startTimer();
@@ -35,7 +38,7 @@ public class QueryExecutionResultTest
     public void testBuilder_failed_run()
             throws InterruptedException
     {
-        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(new QueryExecution(null, null, 0, null));
+        QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution());
 
         queryExecutionResultBuilder.startTimer();
         TimeUnit.MILLISECONDS.sleep(500L);
@@ -48,5 +51,10 @@ public class QueryExecutionResultTest
         assertThat(execution.getRowsCount()).isEqualTo(0);
         assertThat(execution.getFailureCause().getClass()).isEqualTo(NullPointerException.class);
         assertThat(execution.getQueryDuration().toMillis()).isBetween(500L, 600L);
+    }
+
+    private QueryExecution queryExecution()
+    {
+        return new QueryExecution(mock(BenchmarkExecution.class), mock(Query.class), 0, mock(BenchmarkStatusReporter.class));
     }
 }

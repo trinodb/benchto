@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver.listeners.measurements;
 
-import com.teradata.benchmark.driver.domain.Measurable;
+import com.teradata.benchmark.driver.Measurable;
 import com.teradata.benchmark.driver.service.Measurement;
 
 import java.util.List;

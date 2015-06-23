@@ -1,9 +1,14 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.domain;
+package com.teradata.benchmark.driver.execution;
 
+import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -22,9 +27,44 @@ public class BenchmarkExecution
         this.runs = runs;
     }
 
-    public Benchmark getBenchmark()
+    public boolean isSerial()
     {
-        return benchmark;
+        return !isConcurrent();
+    }
+
+    public boolean isConcurrent()
+    {
+        return concurrency > 1;
+    }
+
+    public String getBenchmarkName()
+    {
+        return benchmark.getName();
+    }
+
+    public String getSequenceId()
+    {
+        return benchmark.getSequenceId();
+    }
+
+    public String getDataSource()
+    {
+        return benchmark.getDataSource();
+    }
+
+    public String getEnvironment()
+    {
+        return benchmark.getEnvironment();
+    }
+
+    public List<Query> getQueries()
+    {
+        return benchmark.getQueries();
+    }
+
+    public Map<String, String> getVariables()
+    {
+        return benchmark.getVariables();
     }
 
     public BenchmarkStatusReporter getStatusReporter()
