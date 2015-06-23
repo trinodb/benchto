@@ -22,7 +22,30 @@
             <id>querygrid</id>
             <url>http://phabricator.td.teradata.com:8081/nexus/content/repositories/querygrid</url>
         </repository>
+        <repository>
+            <id>jenkins</id>
+            <url>${env.Jenkins.Repository}</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jenkins</id>
+            <url>${env.Jenkins.Repository}</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <dependency>
