@@ -55,6 +55,10 @@ public class GraphiteEventExecutionListener
     @Override
     public void executionStarted(QueryExecution execution)
     {
+        if (execution.getBenchmark().isConcurrent()) {
+            return;
+        }
+
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s, execution %d started", execution.getQuery().getName(), execution.getRun()))
                 .tags("execution", "started")
@@ -66,6 +70,10 @@ public class GraphiteEventExecutionListener
     @Override
     public void executionFinished(QueryExecutionResult executionResult)
     {
+        if (executionResult.getBenchmark().isConcurrent()) {
+            return;
+        }
+
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s, execution %d ended", executionResult.getQuery().getName(), executionResult.getQueryExecution().getRun()))
                 .tags("execution", "ended")

@@ -91,10 +91,10 @@ public class DriverAppIntegrationTest
         setBenchmark("test_concurrent_benchmark.yaml");
 
         verifyBenchmarkStart("test_concurrent_benchmark_env=TEST_ENV", TEST_QUERY);
-        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", "test_query", 0);
-        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", "test_query", 0, concurrentQueryMeasurementName);
-        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", "test_query", 1);
-        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", "test_query", 1, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV",  0);
+        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", 0, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", 1);
+        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", 1, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
         verifyBenchmarkFinish("test_concurrent_benchmark_env=TEST_ENV", concurrentBenchmarkMeasurementNames);
         verifyComplete(1);
@@ -147,17 +147,14 @@ public class DriverAppIntegrationTest
                 .addAll(GRAPHITE_MEASUREMENT_NAMES)
                 .add("duration")
                 .build();
-        verifyExecutionStarted(benchmarkName, queryName, executionNumber);
+        verifySerialExecutionStarted(benchmarkName, queryName, executionNumber);
         verifyGetGraphiteMeasurements();
-        verifyExecutionFinished(benchmarkName, queryName, executionNumber, serialQueryMeasurementNames);
+        verifySerialExecutionFinished(benchmarkName, queryName, executionNumber, serialQueryMeasurementNames);
     }
 
-    private void verifyExecutionStarted(String benchmarkName, String queryName, int executionNumber)
+    private void verifySerialExecutionStarted(String benchmarkName, String queryName, int executionNumber)
     {
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/start"),
-                method(HttpMethod.POST)
-        )).andRespond(withSuccess());
+        verifyExecutionStarted(benchmarkName, executionNumber);
 
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
@@ -168,14 +165,17 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifyExecutionFinished(String benchmarkName, String queryName, int executionNumber, List<String> measurementNames)
+    private void verifyExecutionStarted(String benchmarkName, int executionNumber)
     {
         restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
-                method(HttpMethod.POST),
-                jsonPath("$.status", ENDED_STATUS_MATCHER),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/start"),
+                method(HttpMethod.POST)
         )).andRespond(withSuccess());
+    }
+
+    private void verifySerialExecutionFinished(String benchmarkName, String queryName, int executionNumber, List<String> measurementNames)
+    {
+        verifyExecutionFinished(benchmarkName, executionNumber, measurementNames);
 
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
@@ -183,6 +183,16 @@ public class DriverAppIntegrationTest
                 jsonPath("$.what", is("Benchmark " + queryName + ", execution " + executionNumber + " ended")),
                 jsonPath("$.tags", is("execution ended")),
                 jsonPath("$.data", startsWith("duration: "))
+        )).andRespond(withSuccess());
+    }
+
+    private void verifyExecutionFinished(String benchmarkName, int executionNumber, List<String> measurementNames)
+    {
+        restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
+                method(HttpMethod.POST),
+                jsonPath("$.status", ENDED_STATUS_MATCHER),
+                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
         )).andRespond(withSuccess());
     }
 
