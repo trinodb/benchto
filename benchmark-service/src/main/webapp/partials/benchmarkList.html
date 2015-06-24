@@ -1,7 +1,16 @@
 <div class="row">
     <div class="col-sm-12">
         <h2 class="sub-header">List of Benchmarks</h2>
-
+    </div>
+</div>
+<form class="form-inline">
+    <div class="form-group">
+        <label for="query">Search:</label>
+        <input type="text" class="form-control" id="query" ng-model="query"/>
+    </div>
+</form>
+<div class="row">
+    <div class="col-sm-12">
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
                 <thead>
@@ -11,10 +20,10 @@
                     <td>Status</td>
                     <td>Started</td>
                     <td>Duration</td>
-                    <td>min / mean / max </td>
+                    <td>min / mean / max</td>
                 </tr>
                 </thead>
-                <tr ng-repeat="benchmarkRun in latestBenchmarkRuns">
+                <tr ng-repeat="benchmarkRun in latestBenchmarkRuns | filter:query">
                     <td>{{$index + 1}}</td>
                     <td>
                         <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong>
