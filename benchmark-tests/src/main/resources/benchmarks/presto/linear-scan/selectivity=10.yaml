@@ -10,6 +10,15 @@ variables:
   3:
     schema: tpch_100gb_text
     database: hive
+  4:
+    schema: sf1000
+    database: tpch
+  5:
+    schema: tpch_1tb_orc
+    database: hive
+  6:
+    schema: tpch_1tb_text
+    database: hive
 before-benchmark: drop-caches
 runs: 5
 prewarm-runs: 3

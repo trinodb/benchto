@@ -3,6 +3,8 @@ query-names: teradata/linear-scan/selectivity-2.sql
 variables:
   1:
     schema: tpch_100gb
+  2:
+    schema: tpch_1tb
 before-benchmark: drop-caches
 runs: 5
 prewarm-runs: 3
