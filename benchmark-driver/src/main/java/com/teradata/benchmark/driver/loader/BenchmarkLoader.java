@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchmark.driver.utils.FileUtils.pathMatchesTo;
 import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toList;
@@ -66,9 +65,6 @@ public class BenchmarkLoader
         try {
             BenchmarkDescriptor descriptor = BenchmarkDescriptor.loadFromFile(benchmarkFile);
             List<Map<String, String>> variableMapList = descriptor.getVariableMapList();
-            if (variableMapList.isEmpty()) {
-                variableMapList.add(newHashMap());
-            }
 
             return variableMapList
                     .stream()
