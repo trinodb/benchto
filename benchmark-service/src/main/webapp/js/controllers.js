@@ -5,19 +5,14 @@
     'use strict';
 
     angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services'])
-        .controller('MainPageCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
-            $scope.pageSize = $routeParams.size ? $routeParams.size : 20;
-            $scope.page = $routeParams.page ? $routeParams.page : 0;
+        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
 
-            BenchmarkService.loadLatestBenchmarkRuns($scope.page, $scope.pageSize)
+            BenchmarkService.loadLatestBenchmarkRuns()
                 .then(function (latestBenchmarkRuns) {
                     $scope.latestBenchmarkRuns = latestBenchmarkRuns;
                 });
         }])
-        .controller('BenchmarkRunsCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', function ($scope, $routeParams, $location, BenchmarkService) {
-            $scope.pageSize = $routeParams.size ? $routeParams.size : 20;
-            $scope.page = $routeParams.page ? $routeParams.page : 0;
-
+        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', function ($scope, $routeParams, $location, BenchmarkService) {
             $scope.onBenchmarkClick = function (points, evt) {
                 if (points) {
                     var benchmarkRunSequenceId = points[0].label;
@@ -25,7 +20,7 @@
                 }
             };
 
-            BenchmarkService.loadBenchmark($routeParams.benchmarkName, $scope.page, $scope.pageSize)
+            BenchmarkService.loadBenchmark($routeParams.benchmarkName)
                 .then(function (benchmark) {
                     $scope.benchmark = benchmark;
                     // filter out benchmark runs which have not finished
@@ -109,7 +104,7 @@
                     });
                 });
         }])
-        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', function ($scope, $routeParams, $modal, BenchmarkService) {
+        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', function ($scope, $routeParams, $modal, BenchmarkService) {
             BenchmarkService.loadBenchmarkRun($routeParams.benchmarkName, $routeParams.benchmarkSequenceId)
                 .then(function (benchmarkRun) {
                     $scope.benchmarkRun = benchmarkRun;

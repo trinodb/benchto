@@ -10,17 +10,12 @@ import com.teradata.benchmark.service.rest.requests.BenchmarkStartRequest;
 import com.teradata.benchmark.service.rest.requests.ExecutionStartRequest;
 import com.teradata.benchmark.service.rest.requests.FinishRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static com.teradata.benchmark.service.utils.CollectionUtils.failSafeEmpty;
 import static java.util.Optional.ofNullable;
@@ -97,17 +92,14 @@ public class BenchmarkController
 
     @RequestMapping(value = "/v1/benchmark/{benchmarkName}", method = GET)
     public Benchmark findBenchmarks(
-            @PathVariable("benchmarkName") String benchmarkName,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam(value = "from") Optional<ZonedDateTime> from,
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam(value = "to") Optional<ZonedDateTime> to,
-            Pageable pageable)
+            @PathVariable("benchmarkName") String benchmarkName)
     {
-        return benchmarkService.findBenchmark(benchmarkName, from, to, pageable);
+        return benchmarkService.findBenchmark(benchmarkName);
     }
 
     @RequestMapping(value = "/v1/benchmark/latest", method = GET)
-    public List<BenchmarkRun> findLatestBenchmarkRuns(Pageable pageable)
+    public List<BenchmarkRun> findLatestBenchmarkRuns()
     {
-        return benchmarkService.findLatest(pageable);
+        return benchmarkService.findLatest();
     }
 }

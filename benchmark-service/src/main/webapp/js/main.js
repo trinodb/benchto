@@ -9,19 +9,19 @@
         .config(['$routeProvider', function ($routeProvider) {
             $routeProvider
                 .when('/', {
-                    templateUrl: 'partials/mainPage.html',
-                    controller: 'MainPageCtrl'
-                })
-                .when('/benchmark/:benchmarkName/:benchmarkSequenceId', {
-                    templateUrl: 'partials/benchmarkRunPage.html',
-                    controller: 'BenchmarkCtrl'
+                    templateUrl: 'partials/benchmarkList.html',
+                    controller: 'BenchmarkListCtrl'
                 })
                 .when('/benchmark/:benchmarkName', {
-                    templateUrl: 'partials/benchmarkPage.html',
-                    controller: 'BenchmarkRunsCtrl'
+                    templateUrl: 'partials/benchmark.html',
+                    controller: 'BenchmarkCtrl'
+                })
+                .when('/benchmark/:benchmarkName/:benchmarkSequenceId', {
+                    templateUrl: 'partials/benchmarkRun.html',
+                    controller: 'BenchmarkRunCtrl'
                 })
                 .when('/environment/:environmentName', {
-                    templateUrl: 'partials/environmentPage.html',
+                    templateUrl: 'partials/environment.html',
                     controller: 'EnvironmentCtrl'
                 })
                 .otherwise({

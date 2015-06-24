@@ -13,17 +13,13 @@ import com.teradata.benchmark.service.repo.BenchmarkRunRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.teradata.benchmark.service.model.Environment.DEFAULT_ENVIRONMENT_NAME;
 import static com.teradata.benchmark.service.model.Status.STARTED;
 import static com.teradata.benchmark.service.utils.TimeUtils.currentDateTime;
@@ -118,25 +114,14 @@ public class BenchmarkService
     }
 
     @Transactional(readOnly = true)
-    public Benchmark findBenchmark(String benchmarkName, Optional<ZonedDateTime> from, Optional<ZonedDateTime> to, Pageable pageable)
+    public Benchmark findBenchmark(String benchmarkName)
     {
-        checkArgument(!(from.isPresent() ^ to.isPresent()), "from ({}) and to ({}) params should be either both set or not set", from, to);
-        List<BenchmarkRun> benchmarkRuns;
-        if (from.isPresent()) {
-            benchmarkRuns = benchmarkRunRepo.findByNameAndStartedInRange(benchmarkName,
-                    Date.from(from.get().toInstant()),
-                    Date.from(to.get().toInstant()),
-                    pageable.getPageNumber() * pageable.getPageSize(), pageable.getPageSize());
-        }
-        else {
-            benchmarkRuns = benchmarkRunRepo.findByName(benchmarkName, pageable);
-        }
-        return new Benchmark(benchmarkName, benchmarkRuns);
+        return new Benchmark(benchmarkName, benchmarkRunRepo.findByName(benchmarkName));
     }
 
     @Transactional(readOnly = true)
-    public List<BenchmarkRun> findLatest(Pageable pageable)
+    public List<BenchmarkRun> findLatest()
     {
-        return benchmarkRunRepo.findLatest(pageable.getPageNumber() * pageable.getPageSize(), pageable.getPageSize());
+        return benchmarkRunRepo.findLatest();
     }
 }

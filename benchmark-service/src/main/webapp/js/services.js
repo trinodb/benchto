@@ -18,7 +18,19 @@
             };
 
             var postProcessBenchmarkRun = function (benchmarkRun) {
-                benchmarkRun.executions = _.sortBy(benchmarkRun.executions, 'sequenceId');
+                benchmarkRun.executions = _.sortBy(benchmarkRun.executions, function (execution) {
+                    var sequenceId = execution.sequenceId;
+                    var length = sequenceId.length;
+                    if (length == 1) {
+                        return '00' + sequenceId
+                    } else if (length == 2) {
+                        return '0' + sequenceId
+                    } else if (length == 3) {
+                        return sequenceId;
+                    } else {
+                        throw 'Too long sequence to be well sorted: ' + sequenceId;
+                    }
+                });
                 benchmarkRun.measurements = sortMeasurements(benchmarkRun.measurements);
                 _.each(benchmarkRun.executions, function (execution) {
                     execution.measurements = sortMeasurements(execution.measurements);
@@ -44,16 +56,11 @@
                     });
                     return deferredBenchmark.promise;
                 },
-                loadBenchmark: function (benchmarkName, page, size) {
+                loadBenchmark: function (benchmarkName) {
                     var deferredBenchmark = $q.defer();
                     $http({
                         method: 'GET',
-                        url: '/v1/benchmark/' + benchmarkName,
-                        params: {
-                            page: page,
-                            size: size,
-                            sort: 'sequenceId,desc'
-                        }
+                        url: '/v1/benchmark/' + benchmarkName
                     }).then(function (response) {
                         var benchmark = response.data;
                         benchmark.runs.forEach(function (benchmarkRun) {
@@ -66,15 +73,11 @@
                     });
                     return deferredBenchmark.promise;
                 },
-                loadLatestBenchmarkRuns: function (page, size) {
+                loadLatestBenchmarkRuns: function () {
                     var deferredBenchmark = $q.defer();
                     $http({
                         method: 'GET',
-                        url: '/v1/benchmark/latest',
-                        params: {
-                            page: page,
-                            size: size
-                        }
+                        url: '/v1/benchmark/latest'
                     }).then(function (response) {
                         var benchmarkRuns = response.data;
                         benchmarkRuns.forEach(function (benchmarkRun) {

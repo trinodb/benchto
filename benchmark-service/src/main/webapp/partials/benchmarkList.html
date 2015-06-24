@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-sm-12">
-        <h2 class="sub-header">Latest Benchmark Executions</h2>
+        <h2 class="sub-header">List of Benchmarks</h2>
 
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
@@ -15,7 +15,7 @@
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in latestBenchmarkRuns">
-                    <td>{{(1 * page * pageSize) + $index + 1}}</td>
+                    <td>{{$index + 1}}</td>
                     <td>
                         <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong>
                         (<a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)
@@ -30,18 +30,6 @@
                     </td>
                 </tr>
             </table>
-            <div>
-                <div class="btn-group btn-group-sm" role="group">
-                    <a ng-if="page > 0" role="button" class="btn btn-primary"
-                       ng-href="#/?page={{ (1 * page - 1) | number:0 }}&size={{pageSize}}">
-                        << Previous
-                    </a>
-                    <a ng-if="latestBenchmarkRuns.length > 0" role="button" class="btn btn-primary"
-                       ng-href="#/?page={{ (1 * page + 1) | number:0 }}&size={{pageSize}}">
-                        Next >>
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
 </div>

@@ -119,9 +119,7 @@ public class BenchmarkControllerTest
 
         ZonedDateTime testEnd = currentDateTime();
 
-        // get benchmark runs in given time range - measurements, single execution with measurements
-        mvc.perform(get("/v1/benchmark/{benchmarkName}?from={from}&to={to}",
-                benchmarkName, testStart.format(ISO_DATE_TIME), currentDateTime().format(ISO_DATE_TIME)))
+        mvc.perform(get("/v1/benchmark/{benchmarkName}", benchmarkName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is(benchmarkName)))
                 .andExpect(jsonPath("$.runs[0].sequenceId", is(benchmarkSequenceId)))
@@ -139,13 +137,6 @@ public class BenchmarkControllerTest
                 .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].name", containsInAnyOrder("duration", "bytes")))
                 .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
                 .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")));
-
-        // check no benchmarks stored before starting test
-        mvc.perform(get("/v1/benchmark/{benchmarkName}?from={from}&to={to}",
-                benchmarkName, testStart.minusHours(1).format(ISO_DATE_TIME), testStart.format(ISO_DATE_TIME)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is(benchmarkName)))
-                .andExpect(jsonPath("$.runs", hasSize(0)));
 
         // assert database state
         withinTransaction(() -> {
