@@ -3,10 +3,11 @@
  */
 package com.teradata.benchmark.driver.loader;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
-import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.utils.NaturalOrderComparator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,7 @@ public class BenchmarkLoader
         try {
             return Files.walk(benchmarksFilesPath())
                     .filter(file -> isRegularFile(file) && file.toString().endsWith(BENCHMARK_FILE_SUFFIX))
-                    .sorted((p1, p2) -> p1.toString().compareTo(p2.toString()))
+                    .sorted(NaturalOrderComparator.forPaths())
                     .filter(pathIsListedInBenchmarksListIfProvided())
                     .flatMap(file -> loadBenchmarks(sequenceId, file).stream())
                     .collect(toList());
