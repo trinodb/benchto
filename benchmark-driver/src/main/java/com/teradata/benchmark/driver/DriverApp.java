@@ -63,7 +63,7 @@ public class DriverApp
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setMaxPoolSize(5);
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        taskExecutor.setAwaitTerminationSeconds(Integer.MAX_VALUE);
+        taskExecutor.setAwaitTerminationSeconds(300);
 
         return taskExecutor;
     }
