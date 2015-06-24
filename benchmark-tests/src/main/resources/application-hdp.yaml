@@ -9,7 +9,7 @@ data-sources:
     driver-class-name: com.facebook.presto.jdbc.PrestoDriver
 
 environment:
-  name: CDH
+  name: HDP
 
 presto:
   url: http://10.25.17.79:8090
