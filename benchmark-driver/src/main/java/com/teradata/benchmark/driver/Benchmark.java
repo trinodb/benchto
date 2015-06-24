@@ -4,7 +4,6 @@
 package com.teradata.benchmark.driver;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
-import com.teradata.benchmark.driver.Query;
 
 import java.util.List;
 import java.util.Map;

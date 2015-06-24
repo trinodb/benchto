@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver.loader;
 
+import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
@@ -32,8 +33,12 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 @Component
 public class BenchmarkLoader
 {
-
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
+
+    private static final int DEFAULT_RUNS = 3;
+    private static final int DEFAULT_CONCURRENCY = 1;
+    private static final List<String> DEFAULT_BEFORE_BENCHMARK_MACROS = ImmutableList.of();
+    private static final int DEFAULT_PREWARM_RUNS = 0;
 
     @Autowired
     private BenchmarkProperties properties;
@@ -79,9 +84,13 @@ public class BenchmarkLoader
     {
         String benchmarkName = benchmarkName(descriptor, variables);
         List<Query> queries = loadQueries(descriptor.getQueryNames(), variables);
-        return new Benchmark(benchmarkName, sequenceId, descriptor.getDataSource(), properties.getEnvironmentName(), queries,
-                descriptor.getRuns(), descriptor.getPrewarmRepeats(), descriptor.getConcurrency(),
-                descriptor.getBeforeBenchmarkMacros(), variables);
+        return new Benchmark(
+                benchmarkName, sequenceId, descriptor.getDataSource(), properties.getEnvironmentName(), queries,
+                descriptor.getRuns().orElse(DEFAULT_RUNS),
+                descriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS),
+                descriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY),
+                descriptor.getBeforeBenchmarkMacros().orElse(DEFAULT_BEFORE_BENCHMARK_MACROS),
+                variables);
     }
 
     private List<Query> loadQueries(List<String> queryNames, Map<String, String> variables)

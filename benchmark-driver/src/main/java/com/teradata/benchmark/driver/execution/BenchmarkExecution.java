@@ -3,8 +3,8 @@
  */
 package com.teradata.benchmark.driver.execution;
 
-import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 
 import java.util.List;

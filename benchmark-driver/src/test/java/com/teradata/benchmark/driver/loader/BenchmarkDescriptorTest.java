@@ -8,14 +8,13 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.loadFromString;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BenchmarkDescriptorTest
 {
-    private static final String DEFAULT_NAME = "xyz";
-
     private static final String SIMPLE_BENCHMARK = "" +
             "datasource: foo\n" +
             "before-benchmark: [no-op, no-op2]\n" +
@@ -53,10 +52,10 @@ public class BenchmarkDescriptorTest
         BenchmarkDescriptor descriptor = descriptorFromString(SIMPLE_BENCHMARK);
         assertThat(descriptor.getQueryNames()).containsExactly("q1", "q2", "1", "2");
         assertThat(descriptor.getDataSource()).isEqualTo("foo");
-        assertThat(descriptor.getRuns()).isEqualTo(3);
-        assertThat(descriptor.getConcurrency()).isEqualTo(1);
-        assertThat(descriptor.getBeforeBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op", "no-op2"));
-        assertThat(descriptor.getPrewarmRepeats()).isEqualTo(2);
+        assertThat(descriptor.getRuns()).isEqualTo(Optional.empty());
+        assertThat(descriptor.getConcurrency()).isEqualTo(Optional.empty());
+        assertThat(descriptor.getBeforeBenchmarkMacros()).isEqualTo(Optional.of(ImmutableList.of("no-op", "no-op2")));
+        assertThat(descriptor.getPrewarmRepeats()).isEqualTo(Optional.of(2));
     }
 
     @Test
@@ -66,8 +65,8 @@ public class BenchmarkDescriptorTest
         BenchmarkDescriptor descriptor = descriptorFromString(CONCURRENT_BENCHMARK);
         assertThat(descriptor.getDataSource()).isEqualTo("foo");
         assertThat(descriptor.getQueryNames()).containsExactly("q1", "q2", "1", "2");
-        assertThat(descriptor.getRuns()).isEqualTo(10);
-        assertThat(descriptor.getConcurrency()).isEqualTo(20);
+        assertThat(descriptor.getRuns()).isEqualTo(Optional.of(10));
+        assertThat(descriptor.getConcurrency()).isEqualTo(Optional.of(20));
     }
 
     @Test
@@ -75,7 +74,7 @@ public class BenchmarkDescriptorTest
             throws IOException
     {
         BenchmarkDescriptor descriptor = descriptorFromString(CONCURRENT_BENCHMARK_NO_RUNS);
-        assertThat(descriptor.getConcurrency()).isEqualTo(20);
+        assertThat(descriptor.getConcurrency()).isEqualTo(Optional.of(20));
         assertThat(descriptor.getRuns()).isEqualTo(descriptor.getConcurrency());
     }
 
