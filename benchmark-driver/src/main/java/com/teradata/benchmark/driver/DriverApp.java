@@ -3,8 +3,8 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Ordering;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;

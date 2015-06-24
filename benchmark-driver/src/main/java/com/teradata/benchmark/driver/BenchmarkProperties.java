@@ -63,11 +63,6 @@ public class BenchmarkProperties
         return environmentName;
     }
 
-    public GraphiteProperties getGraphiteProperties()
-    {
-        return graphiteProperties;
-    }
-
     public Optional<List<String>> getActiveBenchmarks()
     {
         return splitProperty(activeBenchmarks);

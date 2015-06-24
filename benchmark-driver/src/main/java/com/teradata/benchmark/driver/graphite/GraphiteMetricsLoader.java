@@ -3,8 +3,9 @@
  */
 package com.teradata.benchmark.driver.graphite;
 
-import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchmark.driver.Measurable;
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchmark.driver.execution.ExecutionSynchronizer;
 import com.teradata.benchmark.driver.execution.QueryExecutionResult;
 import com.teradata.benchmark.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import com.teradata.benchmark.driver.service.Measurement;
@@ -28,10 +29,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchmark.driver.service.Measurement.measurement;
-import static com.teradata.benchmark.driver.utils.TimeUtils.sleep;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Service
 @ConditionalOnProperty(prefix = "benchmark.feature.graphite", value = "metrics.collection.enabled")
@@ -45,6 +44,9 @@ public class GraphiteMetricsLoader
 
     @Autowired
     private GraphiteProperties graphiteProperties;
+
+    @Autowired
+    private ExecutionSynchronizer executionSynchronizer;
 
     private Map<String, String> queryMetrics;
 
@@ -68,9 +70,9 @@ public class GraphiteMetricsLoader
         if (!shouldLoadGraphiteMetrics(measurable)) {
             return emptyList();
         }
-        waitBeforeReportingIfNeeded();
+        executionSynchronizer.awaitGraphiteMeasurementLoading(measurable);
 
-        long cutOffThresholdSeconds = graphiteProperties.cutOffThresholdSecondsForMeasurementReporting().get();
+        long cutOffThresholdSeconds = executionSynchronizer.cutOffThresholdSecondsForMeasurementReporting();
 
         ZonedDateTime from = measurable.getUtcStart().minusSeconds(cutOffThresholdSeconds);
         ZonedDateTime to = measurable.getUtcEnd().plusSeconds(cutOffThresholdSeconds);
@@ -114,14 +116,6 @@ public class GraphiteMetricsLoader
             return true;
         }
         return false;
-    }
-
-    private void waitBeforeReportingIfNeeded()
-    {
-        Optional<Integer> waitSecondsBeforeExecutionReporting = graphiteProperties.waitSecondsBeforeExecutionReporting();
-        if (waitSecondsBeforeExecutionReporting.isPresent()) {
-            sleep(waitSecondsBeforeExecutionReporting.get(), SECONDS);
-        }
     }
 
     private void addMeanMaxMeasurements(Map<String, double[]> loadedMetrics, List<Measurement> measurements, String metricName, String unit)

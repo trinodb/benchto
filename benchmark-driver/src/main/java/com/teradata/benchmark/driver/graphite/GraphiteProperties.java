@@ -13,9 +13,6 @@ import static com.facebook.presto.jdbc.internal.guava.base.MoreObjects.toStringH
 @Component
 public class GraphiteProperties
 {
-    private static final int GRAPHITE_WAIT_BETWEEN_REPORTING_RESOLUTION_COUNT = 3;
-    private static final int GRAPHITE_CUT_OFF_THRESHOLD_RESOLUTION_COUNT = 2;
-
     @Value("${graphite.metrics.cpu:#{null}}")
     private String cpuGraphiteExpr;
 
@@ -25,8 +22,11 @@ public class GraphiteProperties
     @Value("${graphite.metrics.network:#{null}}")
     private String networkGraphiteExpr;
 
-    @Value("${graphite.resolution.seconds:0}")
+    @Value("${graphite.resolution.seconds:#{null}}")
     private int graphiteResolutionSeconds;
+
+    @Value("${benchmark.feature.graphite.metrics.collection.enabled:#{false}}")
+    private boolean graphiteMetricsCollectionEnabled;
 
     public Optional<String> getCpuGraphiteExpr()
     {
@@ -45,26 +45,12 @@ public class GraphiteProperties
 
     public Optional<Integer> getGraphiteResolutionSeconds()
     {
-        if (graphiteResolutionSeconds <= 0) {
-            return Optional.empty();
-        }
-        return Optional.of(graphiteResolutionSeconds);
+        return Optional.ofNullable(graphiteResolutionSeconds);
     }
 
-    public Optional<Integer> waitSecondsBeforeExecutionReporting()
+    public boolean isGraphiteMetricsCollectionEnabled()
     {
-        if (getGraphiteResolutionSeconds().isPresent()) {
-            return Optional.of(getGraphiteResolutionSeconds().get() * GRAPHITE_WAIT_BETWEEN_REPORTING_RESOLUTION_COUNT);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<Integer> cutOffThresholdSecondsForMeasurementReporting()
-    {
-        if (getGraphiteResolutionSeconds().isPresent()) {
-            return Optional.of(getGraphiteResolutionSeconds().get() * GRAPHITE_CUT_OFF_THRESHOLD_RESOLUTION_COUNT);
-        }
-        return Optional.empty();
+        return graphiteMetricsCollectionEnabled;
     }
 
     @Override
@@ -75,6 +61,7 @@ public class GraphiteProperties
                 .add("memoryGraphiteExpr", memoryGraphiteExpr)
                 .add("networkGraphiteExpr", networkGraphiteExpr)
                 .add("graphiteResolutionSeconds", graphiteResolutionSeconds)
+                .add("graphiteMetricsCollectionEnabled", graphiteMetricsCollectionEnabled)
                 .toString();
     }
 }

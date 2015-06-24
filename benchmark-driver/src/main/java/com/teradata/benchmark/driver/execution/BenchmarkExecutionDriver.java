@@ -6,11 +6,11 @@ package com.teradata.benchmark.driver.execution;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.concurrent.ExecutorServiceFactory;
-import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import com.teradata.benchmark.driver.listeners.suite.SuiteStatusReporter;
@@ -62,6 +62,9 @@ public class BenchmarkExecutionDriver
 
     @Autowired
     private MacroService macroService;
+
+    @Autowired
+    private ExecutionSynchronizer executionSynchronizer;
 
     /**
      * @return true if all benchmark queries passed
@@ -134,6 +137,8 @@ public class BenchmarkExecutionDriver
 
             benchmarkExecution.getStatusReporter().reportBenchmarkFinished(benchmarkExecutionResult);
 
+            executionSynchronizer.awaitAfterBenchmarkExecution(benchmarkExecutionResult);
+
             return benchmarkExecutionResult;
         }
         finally {
@@ -161,7 +166,13 @@ public class BenchmarkExecutionDriver
         for (Query query : benchmarkExecution.getQueries()) {
             for (int run = 0; run < benchmarkExecution.getRuns(); ++run) {
                 QueryExecution queryExecution = new QueryExecution(benchmarkExecution, query, run, benchmarkExecution.getStatusReporter());
-                executionCallables.add(() -> queryExecutionDriver.execute(queryExecution));
+                executionCallables.add(() -> {
+                    QueryExecutionResult result = queryExecutionDriver.execute(queryExecution);
+
+                    executionSynchronizer.awaitAfterQueryExecution(result);
+
+                    return result;
+                });
             }
         }
         return executionCallables;
