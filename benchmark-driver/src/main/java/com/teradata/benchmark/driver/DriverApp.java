@@ -6,13 +6,9 @@ package com.teradata.benchmark.driver;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
-import com.teradata.benchmark.driver.listeners.BenchmarkServiceExecutionListener;
-import com.teradata.benchmark.driver.listeners.GraphiteEventExecutionListener;
-import com.teradata.benchmark.driver.listeners.LoggingBenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import freemarker.template.TemplateException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
@@ -61,7 +57,7 @@ public class DriverApp
         return restTemplate;
     }
 
-    @Bean(name = "defaultTaskExecutor")
+    @Bean
     public ThreadPoolTaskExecutor defaultTaskExecutor()
     {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
@@ -72,33 +68,21 @@ public class DriverApp
         return taskExecutor;
     }
 
-    @Bean(name = "queryTaskExecutor")
-    public ThreadPoolTaskExecutor queryTaskExecutor()
-    {
-        // make it parallel
-        ThreadPoolTaskExecutor queryExecutor = new ThreadPoolTaskExecutor();
-        queryExecutor.setMaxPoolSize(1);
-        queryExecutor.setCorePoolSize(1);
-        queryExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        return queryExecutor;
-    }
-
     @Bean(name = "prewarmStatusReporter")
-    public BenchmarkStatusReporter prewarmStatusReporter(
-            @Qualifier("defaultTaskExecutor") TaskExecutor taskExecutor)
+    public BenchmarkStatusReporter prewarmStatusReporter(TaskExecutor taskExecutor)
     {
         return new BenchmarkStatusReporter(taskExecutor, ImmutableList.of());
     }
 
     @Bean(name = "benchmarkStatusReporter")
     public BenchmarkStatusReporter benchmarkStatusReporter(
-            @Qualifier("defaultTaskExecutor") TaskExecutor taskExecutor,
-            BenchmarkServiceExecutionListener benchmarkServiceExecutionListener,
-            GraphiteEventExecutionListener graphiteEventExecutionListener,
-            LoggingBenchmarkExecutionListener loggingBenchmarkExecutionListener)
+            TaskExecutor taskExecutor,
+            List<BenchmarkExecutionListener> benchmarkExecutionListeners)
     {
-        return new BenchmarkStatusReporter(taskExecutor,
-                ImmutableList.of(benchmarkServiceExecutionListener, graphiteEventExecutionListener, loggingBenchmarkExecutionListener));
+        // HACK: listeners have to be sorted to provide tests determinism
+        ImmutableList<BenchmarkExecutionListener> sortedExecutionListeners
+                = ImmutableList.copyOf(Ordering.natural().usingToString().sortedCopy(benchmarkExecutionListeners));
+        return new BenchmarkStatusReporter(taskExecutor, sortedExecutionListeners);
     }
 
     @Bean

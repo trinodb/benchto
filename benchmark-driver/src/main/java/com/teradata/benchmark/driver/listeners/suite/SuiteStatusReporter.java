@@ -5,7 +5,6 @@ package com.teradata.benchmark.driver.listeners.suite;
 
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,6 @@ public class SuiteStatusReporter
     @Autowired
     private List<SuiteExecutionListener> executionListeners;
 
-    @Qualifier("defaultTaskExecutor")
     @Autowired
     private TaskExecutor taskExecutor;
 
