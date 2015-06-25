@@ -15,7 +15,7 @@
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
         <active.spring.environment>default</active.spring.environment>
-        <activeBenchmarks>presto/linear-scan</activeBenchmarks>
+        <activeBenchmarks>presto/smoke</activeBenchmarks>
     </properties>
 
     <repositories>
