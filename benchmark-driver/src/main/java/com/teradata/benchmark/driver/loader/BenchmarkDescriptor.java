@@ -15,9 +15,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchmark.driver.utils.CartesianProductUtils.cartesianProduct;
-import static com.teradata.benchmark.driver.utils.YamlUtils.asList;
+import static com.teradata.benchmark.driver.utils.YamlUtils.asStringList;
 import static com.teradata.benchmark.driver.utils.YamlUtils.loadYamlFromString;
-import static com.teradata.benchmark.driver.utils.YamlUtils.stringifyList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllBytes;
 import static java.util.stream.Collectors.toList;
@@ -51,7 +50,7 @@ public class BenchmarkDescriptor
 
         Optional<List<String>> beforeBenchmarkMacros;
         if (yaml.containsKey(BEFORE_BENCHMARK_MACROS_KEY)) {
-            beforeBenchmarkMacros = Optional.of(stringifyList(asList(yaml.get(BEFORE_BENCHMARK_MACROS_KEY))));
+            beforeBenchmarkMacros = Optional.of(asStringList(yaml.get(BEFORE_BENCHMARK_MACROS_KEY)));
         }
         else {
             beforeBenchmarkMacros = Optional.empty();
@@ -62,7 +61,7 @@ public class BenchmarkDescriptor
         return new BenchmarkDescriptor(
                 file,
                 checkNotNull(yaml.get(DATA_SOURCE_KEY)).toString(),
-                stringifyList(asList(checkNotNull(yaml.get(QUERY_NAMES_KEY)))),
+                asStringList(checkNotNull(yaml.get(QUERY_NAMES_KEY))),
                 runs, prewarmRuns, concurrency,
                 beforeBenchmarkMacros,
                 extractVariableMapList(yaml));

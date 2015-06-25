@@ -3,12 +3,14 @@
  */
 package com.teradata.benchmark.driver.utils;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
-import static com.facebook.presto.jdbc.internal.guava.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -23,21 +25,24 @@ public final class YamlUtils
         return yaml.load(string);
     }
 
-    public static List<String> stringifyList(List<Object> collection)
-    {
-        return collection.stream().map(Object::toString).collect(toList());
-    }
-
     public static Map<String, List<String>> stringifyMultimap(Map<String, Object> variableMap)
     {
         return variableMap.entrySet()
                 .stream()
-                .collect(toMap(Map.Entry::getKey, e -> stringifyList(asList(e.getValue()))));
+                .collect(toMap(Map.Entry::getKey, e -> asStringList(e.getValue())));
     }
 
-    public static <T> List<T> asList(T object)
+    public static List<String> asStringList(Object object)
     {
-        return object instanceof Iterable ? newArrayList((Iterable) object) : newArrayList(object);
+        if (!(object instanceof Iterable<?>)) {
+            return ImmutableList.copyOf(Splitter.on(",").trimResults().split(object.toString()));
+        }
+        else {
+            Iterable<?> iterable = (Iterable<?>) object;
+            return StreamSupport.stream(iterable.spliterator(), false)
+                    .map(Object::toString)
+                    .collect(toList());
+        }
     }
 
     private YamlUtils()

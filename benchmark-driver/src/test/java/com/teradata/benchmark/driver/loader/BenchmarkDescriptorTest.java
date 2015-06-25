@@ -17,15 +17,15 @@ public class BenchmarkDescriptorTest
 {
     private static final String SIMPLE_BENCHMARK = "" +
             "datasource: foo\n" +
-            "before-benchmark: [no-op, no-op2]\n" +
+            "before-benchmark: no-op, no-op2\n" +
             "prewarm-runs: 2\n" +
-            "query-names: [q1, q2, 1, 2]";
+            "query-names: q1, q2, 1, 2";
 
-    private static final String BENCHMARK_NO_DATA_SOURCE = "query-names: [q1, q2, 1, 2]";
+    private static final String BENCHMARK_NO_DATA_SOURCE = "query-names: q1, q2, 1, 2";
 
     private static final String BENCHMARK_WITH_VARIABLES = "" +
             "datasource: foo\n" +
-            "query-names: [q1, q2, 1, 2]\n" +
+            "query-names: q1, q2, 1, 2\n" +
             "variables:\n" +
             "  combinations1:\n" +
             "    size: [1GB, 2GB]\n" +
@@ -36,13 +36,13 @@ public class BenchmarkDescriptorTest
 
     private static final String CONCURRENT_BENCHMARK = "" +
             "datasource: foo\n" +
-            "query-names: [q1, q2, 1, 2]\n" +
+            "query-names: q1, q2, 1, 2\n" +
             "runs: 10\n" +
             "concurrency: 20";
 
     private static final String CONCURRENT_BENCHMARK_NO_RUNS = "" +
             "datasource: foo\n" +
-            "query-names: [q1, q2, 1, 2]\n" +
+            "query-names: 1, 2\n" +
             "concurrency: 20";
 
     @Test
@@ -76,6 +76,7 @@ public class BenchmarkDescriptorTest
         BenchmarkDescriptor descriptor = descriptorFromString(CONCURRENT_BENCHMARK_NO_RUNS);
         assertThat(descriptor.getConcurrency()).isEqualTo(Optional.of(20));
         assertThat(descriptor.getRuns()).isEqualTo(descriptor.getConcurrency());
+        assertThat(descriptor.getQueryNames()).isEqualTo(ImmutableList.of("1", "2"));
     }
 
     @Test
