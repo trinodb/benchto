@@ -141,7 +141,7 @@ public class GraphiteClient
 
             public GraphiteEventRequestBuilder when(ZonedDateTime zonedDateTime)
             {
-                request.when = new BigDecimal(format("%ld.%d", zonedDateTime.toEpochSecond(), zonedDateTime.getNano() / 1000));
+                request.when = new BigDecimal(format("%d.%d", zonedDateTime.toEpochSecond(), zonedDateTime.getNano() / 1000));
                 return this;
             }
 
