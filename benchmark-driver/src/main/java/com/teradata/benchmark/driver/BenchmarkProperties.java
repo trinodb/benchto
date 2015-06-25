@@ -108,6 +108,10 @@ public class BenchmarkProperties
         if (benchmarks.isPresent()) {
             toStringHelper.add("activeBenchmarks", benchmarks.get());
         }
+        Optional<Map<String, String>> variables = getActiveVariables();
+        if (variables.isPresent()) {
+            toStringHelper.add("activeVariables", variables.get());
+        }
         return toStringHelper.toString();
     }
 }

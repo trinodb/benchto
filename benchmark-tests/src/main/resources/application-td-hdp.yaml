@@ -28,10 +28,8 @@ graphite:
     network: sumSeries(collectd.CLOUD10HD01-2-*.interface-*.if_octets.{rx,tx})
 
 macros:
-  drop-caches-hdp:
-    command: hfab -R all other:querygrid_hdp_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches"
-  drop-caches-td:
-      command: hfab -R all other:querygrid_td_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches"
+  drop-caches:
+    command: hfab -R all other:querygrid_hdp_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches" && hfab -R all other:querygrid_td_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches"
 
 benchmark:
   feature:
