@@ -4,16 +4,21 @@
 package com.teradata.benchmark.driver;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.graphite.GraphiteProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkState;
 import static com.teradata.benchmark.driver.utils.PropertiesUtils.splitProperty;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 public class BenchmarkProperties
@@ -30,6 +35,12 @@ public class BenchmarkProperties
      */
     @Value("${activeBenchmarks:#{null}}")
     private String activeBenchmarks;
+
+    /**
+     * Active variables. If this property is set benchmarks will be filtered by their variable content.
+     */
+    @Value("${activeVariables:#{null}}")
+    private String activeVariables;
 
     /**
      * Execution identifier. Should be unique between runs. If not set, it will be automatically set based on timestamp.
@@ -66,6 +77,22 @@ public class BenchmarkProperties
     public Optional<List<String>> getActiveBenchmarks()
     {
         return splitProperty(activeBenchmarks);
+    }
+
+    public Optional<Map<String, String>> getActiveVariables()
+    {
+        Optional<List<String>> variables = splitProperty(activeVariables);
+        if (!variables.isPresent()) {
+            return Optional.empty();
+        }
+        Map<String, String> variablesMap = variables.get().stream()
+                .map(variable -> {
+                    List<String> variablePairList = ImmutableList.copyOf(Splitter.on("=").trimResults().split(variable));
+                    checkState(variablePairList.size() == 2,
+                            "Incorrect format of variable: '%s', while proper format is 'key=value'", variable);
+                    return variablePairList;
+                }).collect(toMap(variableList -> variableList.get(0), variableList -> variableList.get(1)));
+        return Optional.of(variablesMap);
     }
 
     @Override

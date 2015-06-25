@@ -22,7 +22,7 @@ public class GraphiteProperties
     @Value("${graphite.metrics.network:#{null}}")
     private String networkGraphiteExpr;
 
-    @Value("${graphite.resolution.seconds:#{null}}")
+    @Value("${graphite.resolution.seconds:0}")
     private int graphiteResolutionSeconds;
 
     @Value("${benchmark.feature.graphite.metrics.collection.enabled:#{false}}")
@@ -43,9 +43,9 @@ public class GraphiteProperties
         return Optional.ofNullable(networkGraphiteExpr);
     }
 
-    public Optional<Integer> getGraphiteResolutionSeconds()
+    public int getGraphiteResolutionSeconds()
     {
-        return Optional.ofNullable(graphiteResolutionSeconds);
+        return graphiteResolutionSeconds;
     }
 
     public boolean isGraphiteMetricsCollectionEnabled()

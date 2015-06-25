@@ -53,8 +53,6 @@ public class GraphiteMetricsLoader
     @PostConstruct
     public void initQueryMetrics()
     {
-        checkState(graphiteProperties.getGraphiteResolutionSeconds().isPresent(), "graphite.resolution.seconds property must be present for graphite measurement collection");
-
         queryMetrics = newHashMap();
         graphiteProperties.getCpuGraphiteExpr().ifPresent(value -> queryMetrics.put("cpu", value));
         graphiteProperties.getMemoryGraphiteExpr().ifPresent(value -> queryMetrics.put("memory", value));

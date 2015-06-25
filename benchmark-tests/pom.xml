@@ -16,6 +16,7 @@
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
         <active.spring.environment>default</active.spring.environment>
         <activeBenchmarks>presto/smoke</activeBenchmarks>
+        <activeVariables></activeVariables>
     </properties>
 
     <repositories>
@@ -84,6 +85,7 @@
                     <arguments>
                         <argument>--spring.config.location=classpath:/application-${active.spring.environment}.yaml</argument>
                         <argument>--activeBenchmarks=${activeBenchmarks}</argument>
+                        <argument>--activeVariables=${activeVariables}</argument>
                     </arguments>
                 </configuration>
             </plugin>

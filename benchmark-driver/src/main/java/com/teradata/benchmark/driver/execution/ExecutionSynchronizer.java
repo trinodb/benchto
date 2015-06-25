@@ -68,12 +68,12 @@ public class ExecutionSynchronizer
      */
     public long cutOffThresholdSecondsForMeasurementReporting()
     {
-        return (long) (properties.getGraphiteResolutionSeconds().get() * GRAPHITE_CUT_OFF_THRESHOLD_RESOLUTION_COUNT);
+        return (long) (properties.getGraphiteResolutionSeconds() * GRAPHITE_CUT_OFF_THRESHOLD_RESOLUTION_COUNT);
     }
 
     private int waitSecondsBetweenRuns()
     {
-        return (int) (properties.getGraphiteResolutionSeconds().get() * GRAPHITE_WAIT_BETWEEN_REPORTING_RESOLUTION_COUNT);
+        return (int) (properties.getGraphiteResolutionSeconds() * GRAPHITE_WAIT_BETWEEN_REPORTING_RESOLUTION_COUNT);
     }
 
     private String currThreadName()

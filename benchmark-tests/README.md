@@ -25,7 +25,12 @@ $ mvn -Pbenchmark-cdh package exec:java
 ...
 ```
 
-In case you select particular benchmark to run you can:
+In case you would like to select particular benchmark to run you can:
 ```
 $ mvn -Pbenchmark-hdp package exec:java -DactiveBenchmarks=presto/linear-scan/selectivity=10.yaml 
+```
+
+If you want to run benchmarks with particular variables set then you can:
+```
+$ mvn -Pbenchmark-hdp package exec:java -DactiveVariables=database=presto,schema=default
 ```

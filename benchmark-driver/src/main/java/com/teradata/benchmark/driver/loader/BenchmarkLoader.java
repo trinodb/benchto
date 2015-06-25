@@ -9,6 +9,8 @@ import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.utils.NaturalOrderComparator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +34,8 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 @Component
 public class BenchmarkLoader
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkLoader.class);
+
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
     private static final int DEFAULT_RUNS = 3;
@@ -51,8 +55,9 @@ public class BenchmarkLoader
             return Files.walk(benchmarksFilesPath())
                     .filter(file -> isRegularFile(file) && file.toString().endsWith(BENCHMARK_FILE_SUFFIX))
                     .sorted(NaturalOrderComparator.forPaths())
-                    .filter(pathIsListedInBenchmarksListIfProvided())
+                    .filter(pathIsListedInActiveBenchmarksIfProvided())
                     .flatMap(file -> loadBenchmarks(sequenceId, file).stream())
+                    .filter(new BenchmarkByActiveVariablesFilter(properties))
                     .collect(toList());
         }
         catch (IOException e) {
@@ -150,7 +155,7 @@ public class BenchmarkLoader
         return benchmarkName.replaceAll("[^A-Za-z0-9_=-]", "_");
     }
 
-    private Predicate<Path> pathIsListedInBenchmarksListIfProvided()
+    private Predicate<Path> pathIsListedInActiveBenchmarksIfProvided()
     {
         Optional<List<String>> activeBenchmarks = properties.getActiveBenchmarks();
         if (activeBenchmarks.isPresent()) {
