@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static com.teradata.benchmark.driver.utils.FileUtils.pathMatchesTo;
+import static com.teradata.benchmark.driver.utils.FilterUtils.benchmarkNameMatchesTo;
 import static java.nio.file.Files.isRegularFile;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
@@ -53,11 +53,16 @@ public class BenchmarkLoader
     {
         try {
             return Files.walk(benchmarksFilesPath())
+                    // select files with *.yaml extension withing benchmarks directory
                     .filter(file -> isRegularFile(file) && file.toString().endsWith(BENCHMARK_FILE_SUFFIX))
-                    .sorted(NaturalOrderComparator.forPaths())
-                    .filter(pathIsListedInActiveBenchmarksIfProvided())
+                    // create benchmark descriptors to the each file
                     .flatMap(file -> loadBenchmarks(sequenceId, file).stream())
+                    // remove all the benchmarks that don't match to provided benchmark selectors
+                    .filter(pathIsListedInActiveBenchmarksIfProvided())
+                    // remove all the benchmarks that don't match to provided properties selectors
                     .filter(new BenchmarkByActiveVariablesFilter(properties))
+                    // sort all the selected benchmarks by name using natural order comparator
+                    .sorted((left, right) -> NaturalOrderComparator.forStrings().compare(left.getName(), right.getName()))
                     .collect(toList());
         }
         catch (IOException e) {
@@ -155,11 +160,11 @@ public class BenchmarkLoader
         return benchmarkName.replaceAll("[^A-Za-z0-9_=-]", "_");
     }
 
-    private Predicate<Path> pathIsListedInActiveBenchmarksIfProvided()
+    private Predicate<Benchmark> pathIsListedInActiveBenchmarksIfProvided()
     {
         Optional<List<String>> activeBenchmarks = properties.getActiveBenchmarks();
         if (activeBenchmarks.isPresent()) {
-            return pathMatchesTo(activeBenchmarks.get());
+            return benchmarkNameMatchesTo(activeBenchmarks.get());
         }
         return path -> true;
     }

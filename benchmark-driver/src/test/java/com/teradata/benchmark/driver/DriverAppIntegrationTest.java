@@ -64,7 +64,7 @@ public class DriverAppIntegrationTest
     @Test
     public void simpleSelectBenchmark()
     {
-        setBenchmark("simple_select_benchmark.yaml");
+        setBenchmark("simple_select_benchmark");
         verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", TEST_QUERY);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", "simple_select", 0);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", ImmutableList.of());
@@ -81,7 +81,7 @@ public class DriverAppIntegrationTest
     @Test
     public void testBenchmark()
     {
-        setBenchmark("test_benchmark.yaml");
+        setBenchmark("test_benchmark");
         verifyBenchmarkStart("test_benchmark_env=TEST_ENV", TEST_QUERY);
         verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 0);
         verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 1);
@@ -99,7 +99,7 @@ public class DriverAppIntegrationTest
                 .add("duration")
                 .build();
 
-        setBenchmark("test_concurrent_benchmark.yaml");
+        setBenchmark("test_concurrent_benchmark");
 
         verifyBenchmarkStart("test_concurrent_benchmark_env=TEST_ENV", TEST_QUERY);
         verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", 0);
