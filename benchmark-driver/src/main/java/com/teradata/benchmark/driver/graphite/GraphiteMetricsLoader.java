@@ -70,7 +70,6 @@ public class GraphiteMetricsLoader
         if (!shouldLoadGraphiteMetrics(measurable)) {
             return emptyList();
         }
-        executionSynchronizer.awaitGraphiteMeasurementLoading(measurable);
 
         long cutOffThresholdSeconds = executionSynchronizer.cutOffThresholdSecondsForMeasurementReporting();
 

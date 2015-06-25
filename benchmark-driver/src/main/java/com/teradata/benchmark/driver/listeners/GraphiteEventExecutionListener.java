@@ -46,6 +46,7 @@ public class GraphiteEventExecutionListener
                 .data(format("successful %b, mean: %f.2, stdDev: %f.2", benchmarkExecutionResult.isSuccessful(),
                         benchmarkExecutionResult.getDurationStatistics().getMean(),
                         benchmarkExecutionResult.getDurationStatistics().getStandardDeviation()))
+                .when(benchmarkExecutionResult.getUtcEnd())
                 .build();
 
         graphiteClient.storeEvent(request);
@@ -77,6 +78,7 @@ public class GraphiteEventExecutionListener
                 .what(format("Benchmark %s, execution %d ended", executionResult.getQueryName(), executionResult.getQueryExecution().getRun()))
                 .tags("execution", "ended")
                 .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
+                .when(executionResult.getUtcEnd())
                 .build();
 
         graphiteClient.storeEvent(request);

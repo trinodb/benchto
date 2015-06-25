@@ -15,14 +15,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class BenchmarkExecution
 {
     private final Benchmark benchmark;
-    private final BenchmarkStatusReporter statusReporter;
     private final int concurrency;
     private final int runs;
 
-    public BenchmarkExecution(Benchmark benchmark, BenchmarkStatusReporter statusReporter, int concurrency, int runs)
+    public BenchmarkExecution(Benchmark benchmark, int concurrency, int runs)
     {
         this.benchmark = checkNotNull(benchmark);
-        this.statusReporter = checkNotNull(statusReporter);
         this.concurrency = concurrency;
         this.runs = runs;
     }
@@ -65,11 +63,6 @@ public class BenchmarkExecution
     public Map<String, String> getVariables()
     {
         return benchmark.getVariables();
-    }
-
-    public BenchmarkStatusReporter getStatusReporter()
-    {
-        return statusReporter;
     }
 
     public int getRuns()

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.Map;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.teradata.benchmark.driver.graphite.GraphiteClient.GraphiteRenderResponseItem.DATA_POINT_VALUE_INDEX;
+import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.HttpStatus.OK;
@@ -104,6 +106,7 @@ public class GraphiteClient
         private String what;
         private String tags;
         private String data = "";
+        private BigDecimal when;
 
         private GraphiteEventRequest()
         {
@@ -112,6 +115,11 @@ public class GraphiteClient
         public static class GraphiteEventRequestBuilder
         {
             private GraphiteEventRequest request = new GraphiteEventRequest();
+
+            public GraphiteEventRequestBuilder()
+            {
+                when(nowUtc());
+            }
 
             public GraphiteEventRequestBuilder what(String what)
             {
@@ -131,6 +139,12 @@ public class GraphiteClient
                 return this;
             }
 
+            public GraphiteEventRequestBuilder when(ZonedDateTime zonedDateTime)
+            {
+                request.when = new BigDecimal(format("%ld.%d", zonedDateTime.toEpochSecond(), zonedDateTime.getNano() / 1000));
+                return this;
+            }
+
             public GraphiteEventRequest build()
             {
                 return request;
@@ -144,6 +158,7 @@ public class GraphiteClient
                     .add("what", what)
                     .add("tags", tags)
                     .add("data", data)
+                    .add("when", when)
                     .toString();
         }
     }

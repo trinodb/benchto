@@ -3,28 +3,22 @@
  */
 package com.teradata.benchmark.driver.execution;
 
-import com.teradata.benchmark.driver.Measurable;
 import com.teradata.benchmark.driver.graphite.GraphiteProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-
-import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
 import static com.teradata.benchmark.driver.utils.TimeUtils.sleep;
-import static java.lang.Math.max;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * This class is responsible for synchronizing threads in driver if graphite metrics collection
  * is enabled. Graphite collects metrics with predefined resolution, ex. 10 s.
- * <p>
+ * <p/>
  * After query/benchmark is finished we should wait at least 2 resolutions before we execute
  * next query/benchmark, so runs does not interfere with each other.
- * <p>
+ * <p/>
  * Graphite metrics loading should be delayed at least 1 resolution to make sure that last
  * probe was stored in graphite.
  */
@@ -43,7 +37,7 @@ public class ExecutionSynchronizer
      * If metrics collection is enabled and we are doing serial benchmark, we should wait
      * between queries, so measurements are accurate.
      */
-    public void awaitAfterQueryExecution(QueryExecutionResult queryExecutionResult)
+    public void awaitAfterQueryExecutionAndBeforeResultReport(QueryExecutionResult queryExecutionResult)
     {
         if (properties.isGraphiteMetricsCollectionEnabled() && queryExecutionResult.getBenchmarkExecution().isSerial()) {
             int waitSecondsBetweenRuns = waitSecondsBetweenRuns();
@@ -56,26 +50,12 @@ public class ExecutionSynchronizer
      * If metrics collection is enabled and we are doing concurrent benchmark, we should wait
      * between benchmarks, so measurements are accurate.
      */
-    public void awaitAfterBenchmarkExecution(BenchmarkExecutionResult benchmarkResult)
+    public void awaitAfterBenchmarkExecutionAndBeforeResultReport(BenchmarkExecutionResult benchmarkResult)
     {
         if (properties.isGraphiteMetricsCollectionEnabled() && benchmarkResult.getBenchmarkExecution().isConcurrent()) {
             int waitSecondsBetweenRuns = waitSecondsBetweenRuns();
             LOGGER.debug("Waiting {}s between benchmarks - thread ({})", waitSecondsBetweenRuns, currThreadName());
             sleep(waitSecondsBetweenRuns, SECONDS);
-        }
-    }
-
-    /**
-     * We need to wait at least one graphite resolution time to collect metrics from graphite.
-     */
-    public void awaitGraphiteMeasurementLoading(Measurable measurable)
-    {
-        long cutOffThresholdMillis = cutOffThresholdSecondsForMeasurementReporting() * 1000;
-        long alreadyElapsedAfterMeasurableEndedMillis = Duration.between(measurable.getUtcEnd(), nowUtc()).toMillis();
-        long waitMillisBeforeGraphiteMeasurementLoading = max(cutOffThresholdMillis - alreadyElapsedAfterMeasurableEndedMillis, 0);
-        LOGGER.debug("Waiting {}ms before graphite measurement loading - thread ({})", waitMillisBeforeGraphiteMeasurementLoading, currThreadName());
-        if (waitMillisBeforeGraphiteMeasurementLoading > 0) {
-            sleep(waitMillisBeforeGraphiteMeasurementLoading, MILLISECONDS);
         }
     }
 

@@ -23,7 +23,7 @@ public class BenchmarkExecutionResultTest
             throws InterruptedException
     {
         Benchmark benchmark = new Benchmark("name", "sequenceId", "datasource", "environment", ImmutableList.of(), 1, 0, 1, ImmutableList.of(), emptyMap());
-        BenchmarkExecutionResultBuilder builder = new BenchmarkExecutionResultBuilder(new BenchmarkExecution(benchmark, mock(BenchmarkStatusReporter.class), 1, 0));
+        BenchmarkExecutionResultBuilder builder = new BenchmarkExecutionResultBuilder(new BenchmarkExecution(benchmark, 1, 0));
 
         builder.startTimer();
         sleep(500, MILLISECONDS);

@@ -14,14 +14,12 @@ public class QueryExecution
     private final BenchmarkExecution benchmarkExecution;
     private final Query query;
     private final int run;
-    private final BenchmarkStatusReporter statusReporter;
 
-    public QueryExecution(BenchmarkExecution benchmarkExecution, Query query, int run, BenchmarkStatusReporter statusReporter)
+    public QueryExecution(BenchmarkExecution benchmarkExecution, Query query, int run)
     {
         this.benchmarkExecution = checkNotNull(benchmarkExecution);
         this.query = checkNotNull(query);
         this.run = run;
-        this.statusReporter = checkNotNull(statusReporter);
     }
 
     public BenchmarkExecution getBenchmarkExecution()
@@ -42,11 +40,6 @@ public class QueryExecution
     public int getRun()
     {
         return run;
-    }
-
-    public BenchmarkStatusReporter getStatusReporter()
-    {
-        return statusReporter;
     }
 
     @Override
