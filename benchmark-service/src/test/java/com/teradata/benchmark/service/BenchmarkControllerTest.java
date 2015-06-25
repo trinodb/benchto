@@ -9,12 +9,10 @@ import com.teradata.benchmark.service.model.BenchmarkRunExecution;
 import com.teradata.benchmark.service.model.Environment;
 import com.teradata.benchmark.service.repo.BenchmarkRunRepo;
 import com.teradata.benchmark.service.repo.EnvironmentRepo;
-import com.teradata.benchmark.service.utils.TimeUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static com.teradata.benchmark.service.model.MeasurementUnit.BYTES;
@@ -22,7 +20,6 @@ import static com.teradata.benchmark.service.model.MeasurementUnit.MILLISECONDS;
 import static com.teradata.benchmark.service.model.Status.ENDED;
 import static com.teradata.benchmark.service.model.Status.FAILED;
 import static com.teradata.benchmark.service.utils.TimeUtils.currentDateTime;
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -178,5 +175,29 @@ public class BenchmarkControllerTest
                     .isAfter(testStart)
                     .isBefore(testEnd);
         });
+    }
+
+    @Test
+    public void testJsr303Validation()
+            throws Exception
+    {
+        String environmentName = generateStringOfLength('T', 100);
+        String benchmarkName = "benchmarkName";
+        String benchmarkSequenceId = "benchmarkSequenceId";
+
+        // environment name larger than max 64 bytes - we should get bad request response - 4XX
+        mvc.perform(post("//v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", benchmarkName, benchmarkSequenceId)
+                .contentType(APPLICATION_JSON)
+                .content("{\"environmentName\": \"" + environmentName + "\"}"))
+                .andExpect(status().is4xxClientError());
+    }
+
+    public String generateStringOfLength(char ch, int length)
+    {
+        StringBuffer str = new StringBuffer(length);
+        for (int i = 0; i < length; i++) {
+            str.append(ch);
+        }
+        return str.toString();
     }
 }

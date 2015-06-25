@@ -8,6 +8,9 @@ import com.teradata.benchmark.service.repo.EnvironmentRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.TransientDataAccessException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,7 @@ public class EnvironmentService
     @Autowired
     private EnvironmentRepo environmentRepo;
 
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void storeEnvironment(String name, Map<String, String> attributes)
     {

@@ -30,6 +30,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -58,9 +60,11 @@ public class BenchmarkRun
     @JsonIgnore
     private long id;
 
+    @Size(min = 1, max = 255)
     @Column(name = "name")
     private String name;
 
+    @Size(min = 1, max = 54)
     @Column(name = "sequence_id")
     private String sequenceId;
 
@@ -69,6 +73,7 @@ public class BenchmarkRun
     @Version
     private Long version;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;
@@ -92,6 +97,7 @@ public class BenchmarkRun
     @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime ended;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "environment_id")
     private Environment environment;

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 import java.util.List;
 
 import static com.teradata.benchmark.service.utils.CollectionUtils.failSafeEmpty;
@@ -33,7 +35,7 @@ public class BenchmarkController
     public void startBenchmark(
             @PathVariable("benchmarkName") String benchmarkName,
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId,
-            @RequestBody BenchmarkStartRequest startRequest)
+            @RequestBody @Valid BenchmarkStartRequest startRequest)
     {
         benchmarkService.startBenchmarkRun(benchmarkName,
                 benchmarkSequenceId,
@@ -45,7 +47,7 @@ public class BenchmarkController
     public void finishBenchmark(
             @PathVariable("benchmarkName") String benchmarkName,
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId,
-            @RequestBody FinishRequest finishRequest)
+            @RequestBody @Valid FinishRequest finishRequest)
     {
         benchmarkService.finishBenchmarkRun(benchmarkName,
                 benchmarkSequenceId,
@@ -59,7 +61,7 @@ public class BenchmarkController
             @PathVariable("benchmarkName") String benchmarkName,
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId,
             @PathVariable("executionSequenceId") String executionSequenceId,
-            @RequestBody ExecutionStartRequest startRequest)
+            @RequestBody @Valid ExecutionStartRequest startRequest)
     {
         benchmarkService.startExecution(benchmarkName,
                 benchmarkSequenceId,
@@ -72,7 +74,7 @@ public class BenchmarkController
             @PathVariable("benchmarkName") String benchmarkName,
             @PathVariable("benchmarkSequenceId") String benchmarkSequenceId,
             @PathVariable("executionSequenceId") String executionSequenceId,
-            @RequestBody FinishRequest finishRequest)
+            @RequestBody @Valid FinishRequest finishRequest)
     {
         benchmarkService.finishExecution(benchmarkName,
                 benchmarkSequenceId,

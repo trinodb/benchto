@@ -20,6 +20,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Configuration
+@EnableRetry
 @EnableAutoConfiguration(exclude = {
         FreeMarkerAutoConfiguration.class,
         DataSourceAutoConfiguration.class,

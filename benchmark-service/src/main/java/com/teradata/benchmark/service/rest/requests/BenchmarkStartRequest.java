@@ -6,10 +6,15 @@ package com.teradata.benchmark.service.rest.requests;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 import java.util.Map;
 
 public class BenchmarkStartRequest
 {
+    @NotNull
+    @Size(min = 1, max = 64)
     private final String environmentName;
     private final Map<String, String> attributes;
 

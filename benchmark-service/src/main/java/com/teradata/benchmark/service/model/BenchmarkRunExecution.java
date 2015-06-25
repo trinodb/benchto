@@ -27,6 +27,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -53,6 +55,7 @@ public class BenchmarkRunExecution
     @JsonIgnore
     private long id;
 
+    @Size(min = 1, max = 64)
     @Column(name = "sequence_id")
     private String sequenceId;
 
@@ -65,6 +68,7 @@ public class BenchmarkRunExecution
     @Column(name = "status")
     private Status status;
 
+    @NotNull
     @JsonIgnore
     @ManyToOne
     private BenchmarkRun benchmarkRun;
@@ -210,6 +214,7 @@ public class BenchmarkRunExecution
                 .add("status", status)
                 .add("version", version)
                 .add("measurements", measurements)
+                .add("attributes", attributes)
                 .add("started", started)
                 .add("ended", ended)
                 .toString();

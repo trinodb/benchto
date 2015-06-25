@@ -13,7 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -44,6 +47,7 @@ public class GraphiteClient
     @Autowired
     private RestTemplate restTemplate;
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public void storeEvent(GraphiteEventRequest request)
     {
         LOGGER.debug("Storing graphite event: {}", request);
@@ -51,6 +55,7 @@ public class GraphiteClient
         restTemplate.postForObject("{graphiteURL}/events/", request, Object.class, ImmutableMap.of("graphiteURL", graphiteURL));
     }
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public Map<String, double[]> loadMetrics(Map<String, String> metrics, ZonedDateTime from, ZonedDateTime to)
     {
         URI uri = buildLoadMetricsURI(metrics, from, to);

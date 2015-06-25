@@ -13,6 +13,9 @@ import com.teradata.benchmark.service.repo.BenchmarkRunRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.TransientDataAccessException;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +38,7 @@ public class BenchmarkService
     @Autowired
     private EnvironmentService environmentService;
 
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void startBenchmarkRun(String benchmarkName, String sequenceId, Optional<String> environmentName, Map<String, String> attributes)
     {
@@ -53,6 +57,7 @@ public class BenchmarkService
         LOG.debug("Starting benchmark - {}", benchmarkRun);
     }
 
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void finishBenchmarkRun(String benchmarkName, String sequenceId, Status status, List<Measurement> measurements, Map<String, String> attributes)
     {
@@ -64,6 +69,7 @@ public class BenchmarkService
         LOG.debug("Finishing benchmark - {}", benchmarkRun);
     }
 
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void startExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, Map<String, String> attributes)
     {
@@ -88,6 +94,7 @@ public class BenchmarkService
         benchmarkRun.getExecutions().add(execution);
     }
 
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void finishExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, Status status,
             List<Measurement> measurements, Map<String, String> attributes)

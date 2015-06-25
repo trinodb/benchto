@@ -9,7 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 
@@ -32,6 +35,7 @@ public class BenchmarkServiceClient
     @Autowired
     private RestTemplate restTemplate;
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public void startBenchmark(String benchmarkName, String benchmarkSequenceId, BenchmarkStartRequest request)
     {
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
@@ -39,6 +43,7 @@ public class BenchmarkServiceClient
         postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", request, requestParams);
     }
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public void finishBenchmark(String benchmarkName, String benchmarkSequenceId, FinishRequest request)
     {
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
@@ -46,6 +51,7 @@ public class BenchmarkServiceClient
         postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", request, requestParams);
     }
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public void startExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, ExecutionStartRequest request)
     {
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
@@ -54,6 +60,7 @@ public class BenchmarkServiceClient
         postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, requestParams);
     }
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public void finishExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, FinishRequest request)
     {
         Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);

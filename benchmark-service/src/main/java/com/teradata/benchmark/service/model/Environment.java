@@ -22,6 +22,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
+import javax.validation.constraints.Size;
 
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -49,6 +50,7 @@ public class Environment
     @JsonIgnore
     private long id;
 
+    @Size(min = 1, max = 64)
     @Column(name = "name")
     private String name;
 

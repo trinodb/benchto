@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -49,6 +52,7 @@ public class PrestoClient
     @Autowired
     private RestTemplate restTemplate;
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<Measurement> loadMetrics(String queryId)
     {
         return loadMetrics(queryId, DEFAULT_METRICS);

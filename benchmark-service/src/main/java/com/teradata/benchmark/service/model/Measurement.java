@@ -14,6 +14,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import java.util.Objects;
 
@@ -34,12 +36,14 @@ public class Measurement
     @JsonIgnore
     private long id;
 
+    @Size(min = 1, max = 64)
     @Column(name = "name")
     private String name;
 
     @Column(name = "value")
     private double value;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "unit")
     private MeasurementUnit unit;

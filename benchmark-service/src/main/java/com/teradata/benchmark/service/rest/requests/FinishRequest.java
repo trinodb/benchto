@@ -8,11 +8,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.teradata.benchmark.service.model.Measurement;
 import com.teradata.benchmark.service.model.Status;
 
+import javax.validation.constraints.NotNull;
+
 import java.util.List;
 import java.util.Map;
 
 public class FinishRequest
 {
+    @NotNull
     private final Status status;
     private final List<Measurement> measurements;
     private final Map<String, String> attributes;
