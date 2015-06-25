@@ -4,19 +4,18 @@
 package com.teradata.benchmark.driver.macro;
 
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 @Component
 public class ShellMacroService
@@ -37,18 +36,12 @@ public class ShellMacroService
             ProcessBuilder processBuilder = new ProcessBuilder(SHELL, "-c", macroCommand);
             processBuilder.environment().putAll(environment);
             Process macroProcess = processBuilder.start();
+            printOutput(macroProcess);
             macroProcess.waitFor();
             LOGGER.debug("Executed macro: '{}'", macroCommand);
             if (macroProcess.exitValue() != 0) {
-                LOGGER.error("Executed macro: '{}' failed with: '{}', out: '{}', err: '{}'",
-                        macroCommand,
-                        macroProcess.exitValue(),
-                        IOUtils.toString(macroProcess.getInputStream()),
-                        IOUtils.toString(macroProcess.getErrorStream())
-                );
                 throw new IllegalStateException(String.format("Macro %s exited with code %s", macroName, macroProcess.exitValue()));
             }
-
         }
         catch (IOException | InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute macro " + macroName, e);
@@ -59,5 +52,25 @@ public class ShellMacroService
     {
         checkArgument(macros.getMacros().containsKey(macroName), "Macro %s is not defined", macroName);
         return checkNotNull(macros.getMacros().get(macroName).getCommand(), "Macro %s has no command defined", macroName);
+    }
+
+    private void printOutput(Process process)
+            throws IOException
+    {
+        String line;
+
+        LOGGER.info("std output:");
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            while ((line = input.readLine()) != null) {
+                LOGGER.info(line);
+            }
+        }
+
+        LOGGER.info("std error:");
+        try (BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            while ((line = error.readLine()) != null) {
+                LOGGER.error(line);
+            }
+        }
     }
 }
