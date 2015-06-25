@@ -6,6 +6,7 @@ package com.teradata.benchmark.driver;
 import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
+import com.teradata.benchmark.driver.listeners.LoggingBenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import freemarker.template.TemplateException;
@@ -71,9 +72,9 @@ public class DriverApp
     }
 
     @Bean(name = "prewarmStatusReporter")
-    public BenchmarkStatusReporter prewarmStatusReporter(TaskExecutor taskExecutor)
+    public BenchmarkStatusReporter prewarmStatusReporter(TaskExecutor taskExecutor, LoggingBenchmarkExecutionListener loggingListener)
     {
-        return new BenchmarkStatusReporter(taskExecutor, ImmutableList.of());
+        return new BenchmarkStatusReporter(taskExecutor, ImmutableList.of(loggingListener));
     }
 
     @Bean(name = "benchmarkStatusReporter")
@@ -83,7 +84,7 @@ public class DriverApp
     {
         // HACK: listeners have to be sorted to provide tests determinism
         ImmutableList<BenchmarkExecutionListener> sortedExecutionListeners
-                = ImmutableList.copyOf(Ordering.natural().usingToString().sortedCopy(benchmarkExecutionListeners));
+                = ImmutableList.copyOf(Ordering.usingToString().sortedCopy(benchmarkExecutionListeners));
         return new BenchmarkStatusReporter(taskExecutor, sortedExecutionListeners);
     }
 
