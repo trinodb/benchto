@@ -28,6 +28,7 @@
         <module>benchmark-service</module>
         <module>benchmark-driver</module>
         <module>benchmark-tests</module>
+        <module>presto-monitor-service</module>
     </modules>
 
     <properties>
