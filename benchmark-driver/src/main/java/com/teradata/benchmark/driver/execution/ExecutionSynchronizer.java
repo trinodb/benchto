@@ -41,7 +41,7 @@ public class ExecutionSynchronizer
     {
         if (properties.isGraphiteMetricsCollectionEnabled() && queryExecutionResult.getBenchmarkExecution().isSerial()) {
             int waitSecondsBetweenRuns = waitSecondsBetweenRuns();
-            LOGGER.debug("Waiting {}s between queries - thread ({})", waitSecondsBetweenRuns, currThreadName());
+            LOGGER.info("Waiting {}s between queries - thread ({})", waitSecondsBetweenRuns, currThreadName());
             sleep(waitSecondsBetweenRuns, SECONDS);
         }
     }
@@ -54,7 +54,7 @@ public class ExecutionSynchronizer
     {
         if (properties.isGraphiteMetricsCollectionEnabled() && benchmarkResult.getBenchmarkExecution().isConcurrent()) {
             int waitSecondsBetweenRuns = waitSecondsBetweenRuns();
-            LOGGER.debug("Waiting {}s between benchmarks - thread ({})", waitSecondsBetweenRuns, currThreadName());
+            LOGGER.info("Waiting {}s between benchmarks - thread ({})", waitSecondsBetweenRuns, currThreadName());
             sleep(waitSecondsBetweenRuns, SECONDS);
         }
     }

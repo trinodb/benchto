@@ -91,6 +91,6 @@ public class MultipleDataSourcesConfiguration
         // we must use here 1ms instead 0ms, because 0 means wait forever.
         tomcatDataSource.setMaxWait(1);
 
-        LOGGER.info("DataSource connection pool properties have been successfully set.");
+        LOGGER.debug("DataSource connection pool properties have been successfully set.");
     }
 }

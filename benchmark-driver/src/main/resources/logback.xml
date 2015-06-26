@@ -7,7 +7,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.teradata.benchmark.driver" level="TRACE"/>
+    <logger name="com.teradata.benchmark.driver" level="INFO"/>
     <logger name="org.springframework" level="WARN"/>
 
     <!-- Logs messages related to template execution -->

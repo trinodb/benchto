@@ -36,9 +36,9 @@ public class ShellMacroService
             ProcessBuilder processBuilder = new ProcessBuilder(SHELL, "-c", macroCommand);
             processBuilder.environment().putAll(environment);
             Process macroProcess = processBuilder.start();
+            LOGGER.info("Executing macro: '{}'", macroCommand);
             printOutput(macroProcess);
             macroProcess.waitFor();
-            LOGGER.debug("Executed macro: '{}'", macroCommand);
             if (macroProcess.exitValue() != 0) {
                 throw new IllegalStateException(String.format("Macro %s exited with code %s", macroName, macroProcess.exitValue()));
             }

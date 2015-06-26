@@ -4,6 +4,8 @@
 package com.teradata.benchmark.driver;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 
 import java.util.List;
 import java.util.Map;
@@ -86,5 +88,39 @@ public class Benchmark
     public Map<String, String> getVariables()
     {
         return variables;
+    }
+
+    @Override
+    public String toString()
+    {
+        return MoreObjects.toStringHelper(this)
+                .add("name", name)
+                .add("sequenceId", sequenceId)
+                .add("environment", environment)
+                .toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Benchmark that = (Benchmark) o;
+
+        return Objects.equal(this.name, that.name) &&
+                Objects.equal(this.sequenceId, that.sequenceId) &&
+                Objects.equal(this.environment, that.environment);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(name, sequenceId, dataSource, environment, queries, runs,
+                prewarmRuns, concurrency, beforeBenchmarkMacros, variables);
     }
 }

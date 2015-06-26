@@ -29,6 +29,10 @@ public class NaturalOrderComparatorTest
         assertStringsNaturalSort(asList("value1", "value100", "value2"), asList("value1", "value2", "value100"));
         assertStringsNaturalSort(asList("qwerty_100500_qwerty", "qwerty_10050_qwerty", "qwerty_1005_qwerty"),
                 asList("qwerty_1005_qwerty", "qwerty_10050_qwerty", "qwerty_100500_qwerty"));
+        assertStringsNaturalSort(
+                asList("selectivity=50", "selectivity=100", "selectivity=0", "selectivity=2", "selectivity=10"),
+                asList("selectivity=0", "selectivity=2", "selectivity=10", "selectivity=50", "selectivity=100")
+        );
     }
 
     @Test

@@ -36,20 +36,20 @@ public class LoggingBenchmarkExecutionListener
     @Override
     public void benchmarkFinished(BenchmarkExecutionResult result)
     {
-        LOG.trace("Finished benchmark: {}", result.getBenchmarkExecution().getBenchmarkName());
+        LOG.info("Finished benchmark: {}", result.getBenchmarkExecution().getBenchmarkName());
     }
 
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        LOG.trace("Query started: {} ({})", execution.getQueryName(), execution.getRun());
+        LOG.info("Query started: {} ({})", execution.getQueryName(), execution.getRun());
     }
 
     @Override
     public void executionFinished(QueryExecutionResult result)
     {
         if (result.isSuccessful()) {
-            LOG.trace("Query finished: {} ({}), rows count: {}, duration: {}", result.getQueryName(), result.getQueryExecution().getRun(), result.getRowsCount(), result.getQueryDuration());
+            LOG.info("Query finished: {} ({}), rows count: {}, duration: {}", result.getQueryName(), result.getQueryExecution().getRun(), result.getRowsCount(), result.getQueryDuration());
         }
         else {
             LOG.error("Query failed: {} ({}), execution error: {}", result.getQueryName(), result.getQueryExecution().getRun(), result.getFailureCause().getMessage());
@@ -68,7 +68,7 @@ public class LoggingBenchmarkExecutionListener
         if (!failed.isEmpty()) {
             StringBuilder failedQueriesMessage = new StringBuilder("\nFailed benchmark queries:\n");
             failed.stream()
-                    .map(benchmarkResult -> benchmarkResult.getExecutions())
+                    .map(BenchmarkExecutionResult::getExecutions)
                     .flatMap(Collection::stream)
                     .forEach(queryExecution -> failedQueriesMessage.append(queryExecution.getBenchmarkExecution().getBenchmarkName())
                             .append(" - \n")

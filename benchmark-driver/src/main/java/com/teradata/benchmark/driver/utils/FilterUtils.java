@@ -23,7 +23,7 @@ public class FilterUtils
         return benchmark -> {
             boolean included = strings.stream()
                     .anyMatch(wildcardMatcher -> benchmark.getName().contains(wildcardMatcher));
-            LOGGER.info("Benchmark: '{}' will be {}.", benchmark.toString(), included ? "included" : "EXCLUDED");
+            LOGGER.debug("Benchmark: '{}' will be {}.", benchmark.getName(), included ? "included" : "excluded");
             return included;
         };
     }
