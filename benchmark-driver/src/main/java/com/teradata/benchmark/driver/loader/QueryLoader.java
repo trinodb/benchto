@@ -4,6 +4,7 @@
 package com.teradata.benchmark.driver.loader;
 
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
+import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -19,27 +20,35 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.io.Files.getNameWithoutExtension;
+import static com.teradata.benchmark.driver.utils.ResourceUtils.asPath;
 import static java.lang.String.format;
 import static java.nio.file.Files.newInputStream;
 
 @Component
-public class QueryLoader {
+public class QueryLoader
+{
     @Autowired
     private Configuration freemarkerConfiguration;
+
+    @Autowired
+    private BenchmarkProperties properties;
 
     /**
      * Loads query from given {@link Path}
      *
-     * @param queryPath  - path to SQL query file
+     * @param queryName - path to SQL query file
      * @param attributes - query attributes (eg. schema, database)
      * @return {@link Query} with the SQL query which can be executed on the destination database
      */
-    public Query loadFromFile(Path queryPath, Map<String, ?> attributes) {
+    public Query loadFromFile(String queryName, Map<String, ?> attributes)
+    {
+        Path queryPath = sqlFilesPath().resolve(queryName);
         try {
             Template queryTemplate = getQueryTemplate(queryPath);
-            String queryName = getNameWithoutExtension(queryPath.toString());
-            return new Query(queryName, FreeMarkerTemplateUtils.processTemplateIntoString(queryTemplate, attributes));
-        } catch (IOException | TemplateException e) {
+            String queryNameWithoutExtension = getNameWithoutExtension(queryPath.toString());
+            return new Query(queryNameWithoutExtension, FreeMarkerTemplateUtils.processTemplateIntoString(queryTemplate, attributes));
+        }
+        catch (IOException | TemplateException e) {
             throw new BenchmarkExecutionException(format(
                     "Error during loading query from path [%s]. Attributes=[%s].",
                     queryPath, Objects.toString(attributes)
@@ -47,8 +56,14 @@ public class QueryLoader {
         }
     }
 
+    private Path sqlFilesPath()
+    {
+        return asPath(properties.getSqlDir());
+    }
+
     private Template getQueryTemplate(Path templatePath)
-            throws IOException {
+            throws IOException
+    {
         // template name must be unique to ensure correct templates caching
         String templateName = templatePath.toString();
         return new Template(templateName, new InputStreamReader(newInputStream(templatePath)), freemarkerConfiguration);

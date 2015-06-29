@@ -1,10 +1,11 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.macro;
+package com.teradata.benchmark.driver.macro.shell;
 
 import com.google.common.collect.ImmutableMap;
 import com.teradata.benchmark.driver.IntegrationTest;
+import com.teradata.benchmark.driver.macro.shell.ShellMacroExecutionDriver;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,14 +20,14 @@ import static java.nio.file.Files.delete;
 import static java.nio.file.Files.exists;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MacroServiceTest
+public class ShellMacroExecutionDriverTest
         extends IntegrationTest
 {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Autowired
-    private ShellMacroService macroService;
+    private ShellMacroExecutionDriver macroService;
 
     @Test
     public void shouldExecuteMacro()
@@ -35,7 +36,7 @@ public class MacroServiceTest
         String filename = "/tmp/" + UUID.randomUUID().toString();
         String suffix = System.getenv("USER");
 
-        macroService.runMacro("create-file", ImmutableMap.of("FILENAME", filename));
+        macroService.runBenchmarkMacro("create-file", ImmutableMap.of("FILENAME", filename), null);
 
         Path path = Paths.get(filename + suffix);
         assertThat(exists(path)).isTrue();
@@ -46,7 +47,7 @@ public class MacroServiceTest
     public void shouldFailWhenMacroFails()
     {
         expectedException.expectMessage("Macro error-macro exited with code 1");
-        macroService.runMacro("error-macro");
+        macroService.runBenchmarkMacro("error-macro", null);
     }
 
     @Test
@@ -54,7 +55,7 @@ public class MacroServiceTest
 
     {
         expectedException.expectMessage("Macro no-command-macro has no command defined");
-        macroService.runMacro("no-command-macro");
+        macroService.runBenchmarkMacro("no-command-macro", null);
     }
 
     @Test
@@ -62,6 +63,6 @@ public class MacroServiceTest
 
     {
         expectedException.expectMessage("Macro non-existing-macro is not defined");
-        macroService.runMacro("non-existing-macro");
+        macroService.runBenchmarkMacro("non-existing-macro", null);
     }
 }

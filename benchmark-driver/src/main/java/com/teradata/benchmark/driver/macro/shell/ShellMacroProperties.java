@@ -1,9 +1,9 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.macro;
+package com.teradata.benchmark.driver.macro.shell;
 
-public class MacroProperties
+public class ShellMacroProperties
 {
     private String command;
 

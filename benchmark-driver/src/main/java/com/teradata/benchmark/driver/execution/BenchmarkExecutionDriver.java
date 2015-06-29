@@ -118,7 +118,7 @@ public class BenchmarkExecutionDriver
 
     private void executeBeforeBenchmarkMacros(Benchmark benchmark)
     {
-        macroService.runMacros(benchmark.getBeforeBenchmarkMacros());
+        macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
     }
 
     private BenchmarkExecutionResult executeBenchmark(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter)

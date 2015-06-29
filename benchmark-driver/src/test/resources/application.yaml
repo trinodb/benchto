@@ -28,9 +28,6 @@ graphite:
     memory: TARGET_MEMORY
     network: TARGET_NETWORK
 
-execution:
-  before-benchmark: no-op
-
 macros:
   no-op:
     command:

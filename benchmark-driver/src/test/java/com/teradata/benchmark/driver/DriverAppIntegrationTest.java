@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -224,7 +225,7 @@ public class DriverAppIntegrationTest
         boolean successful = benchmarkExecutionDriver.run();
         assertThat(successful).isTrue();
 
-        verify(macroService, times(1)).runMacros(ImmutableList.of("no-op"));
+        verify(macroService, times(1)).runBenchmarkMacros(eq(ImmutableList.of("no-op", "test_query.sql")), any(Benchmark.class));
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)

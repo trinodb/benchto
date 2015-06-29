@@ -3,26 +3,18 @@
  */
 package com.teradata.benchmark.driver.macro;
 
-import com.google.common.collect.ImmutableMap;
+import com.teradata.benchmark.driver.Benchmark;
 
 import java.util.List;
-import java.util.Map;
 
-/**
- * Executes macros defined in application yaml file.
- */
 public interface MacroService
 {
-    default void runMacro(String macroName)
+    default void runBenchmarkMacros(List<String> macroNames, Benchmark benchmark)
     {
-        runMacro(macroName, ImmutableMap.of());
+        for (String macroName : macroNames) {
+            runBenchmarkMacro(macroName, benchmark);
+        }
     }
 
-    default void runMacros(List<String> macros)
-    {
-        macros.forEach(this::runMacro);
-    }
-
-    void runMacro(String macroName, Map<String, String> environment);
+    void runBenchmarkMacro(String macroName, Benchmark benchmark);
 }
-

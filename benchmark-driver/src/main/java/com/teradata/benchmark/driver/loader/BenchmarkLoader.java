@@ -148,18 +148,13 @@ public class BenchmarkLoader
     {
         return queryNames
                 .stream()
-                .map(queryName -> queryLoader.loadFromFile(sqlFilesPath().resolve(queryName), variables))
+                .map(queryName -> queryLoader.loadFromFile(queryName, variables))
                 .collect(toList());
     }
 
     private Path benchmarksFilesPath()
     {
         return asPath(properties.getBenchmarksDir());
-    }
-
-    private Path sqlFilesPath()
-    {
-        return asPath(properties.getSqlDir());
     }
 
     private String generateBenchmarkName(BenchmarkDescriptor descriptor, Map<String, String> variables)

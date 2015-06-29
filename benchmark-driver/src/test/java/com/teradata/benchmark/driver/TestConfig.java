@@ -35,8 +35,9 @@ public class TestConfig
         return mock(BenchmarkStatusReporter.class);
     }
 
+    @Primary
     @Bean
-    public MacroService macroService(MacroService macroService)
+    public MacroService macroExecutionDriver(MacroService macroService)
     {
         return spy(macroService);
     }

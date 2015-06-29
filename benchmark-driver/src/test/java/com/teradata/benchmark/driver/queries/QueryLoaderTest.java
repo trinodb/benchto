@@ -4,7 +4,6 @@
 package com.teradata.benchmark.driver.queries;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
-import com.google.common.io.Resources;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.IntegrationTest;
 import com.teradata.benchmark.driver.Query;
@@ -15,7 +14,6 @@ import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
@@ -35,7 +33,7 @@ public class QueryLoaderTest
     public void shouldLoadPrestoQuery()
             throws Exception
     {
-        Query query = loadQuery("sql/presto/simple_select.sql", "database", "schema");
+        Query query = loadQuery("presto/simple_select.sql", "database", "schema");
         assertThat(query.getName()).isEqualTo("simple_select");
         assertThat(trimSpaces(query.getSql().trim())).isEqualTo("SELECT 1 FROM \"schema\".SYSTEM_USERS");
         assertThat(query.getSql()).doesNotContain("comment");
@@ -46,13 +44,13 @@ public class QueryLoaderTest
             throws URISyntaxException
     {
         expectedException.expect(BenchmarkExecutionException.class);
-        queryLoader.loadFromFile(Paths.get(Resources.getResource("sql/presto/simple_select.sql").toURI()), emptyMap());
+        queryLoader.loadFromFile("presto/simple_select.sql", emptyMap());
     }
 
     private Query loadQuery(String path, String database, String schema)
             throws URISyntaxException
     {
-        return queryLoader.loadFromFile(Paths.get(Resources.getResource(path).toURI()), createAttributes(database, schema));
+        return queryLoader.loadFromFile(path, createAttributes(database, schema));
     }
 
     private Map<String, String> createAttributes(String database, String schema)

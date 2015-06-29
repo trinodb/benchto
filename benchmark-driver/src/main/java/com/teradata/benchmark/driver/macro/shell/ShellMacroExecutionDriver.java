@@ -1,9 +1,12 @@
 /*
  * Copyright 2013-2015, Teradata, Inc. All rights reserved.
  */
-package com.teradata.benchmark.driver.macro;
+package com.teradata.benchmark.driver.macro.shell;
 
+import com.google.common.collect.ImmutableMap;
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
+import com.teradata.benchmark.driver.macro.MacroExecutionDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,19 +20,32 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Executes macros using bash defined in application yaml file.
+ */
 @Component
-public class ShellMacroService
-        implements MacroService
+public class ShellMacroExecutionDriver
+        implements MacroExecutionDriver
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ShellMacroService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShellMacroExecutionDriver.class);
 
     private static final String SHELL = "bash";
 
     @Autowired
-    private MacrosProperties macros;
+    private ShellMacrosProperties macros;
+
+    public boolean canExecuteBenchmarkMacro(String macroName)
+    {
+        return macros.getMacros().containsKey(macroName);
+    }
 
     @Override
-    public void runMacro(String macroName, Map<String, String> environment)
+    public void runBenchmarkMacro(String macroName, Benchmark benchmark)
+    {
+        runBenchmarkMacro(macroName, ImmutableMap.of(), benchmark);
+    }
+
+    public void runBenchmarkMacro(String macroName, Map<String, String> environment, Benchmark benchmark)
     {
         try {
             String macroCommand = getMacroCommand(macroName);
