@@ -5,3 +5,5 @@ CREATE DATABASE tpch_10gb_orc;
 CREATE DATABASE tpch_10gb_text;
 CREATE DATABASE tpch_1tb_orc;
 CREATE DATABASE tpch_1tb_text;
+CREATE DATABASE tpch_10tb_orc;
+CREATE DATABASE tpch_10tb_text;

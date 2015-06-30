@@ -1,9 +1,0 @@
-datasource: teradata
-query-names: teradata/linear-scan/selectivity-10.sql
-runs: 50
-concurrency: 50
-variables:
-  1:
-    schema: tpch_100gb
-before-benchmark: drop-caches
-prewarm-runs: 3
