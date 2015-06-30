@@ -99,9 +99,9 @@ public class BenchmarkExecutionDriver
 
     private BenchmarkExecutionResult executePrewarmAndBenchmark(Benchmark benchmark)
     {
-        try {
-            executeBeforeBenchmarkMacros(benchmark);
+        macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
 
+        try {
             BenchmarkExecution prewarmBenchmarkExecution = new BenchmarkExecution(benchmark, benchmark.getConcurrency(), benchmark.getPrewarmRuns());
             BenchmarkExecutionResult prewarmResult = executeBenchmark(prewarmBenchmarkExecution, prewarmStatusReporter);
             if (!prewarmResult.isSuccessful()) {
@@ -114,11 +114,9 @@ public class BenchmarkExecutionDriver
         catch (InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute benchmark", e);
         }
-    }
-
-    private void executeBeforeBenchmarkMacros(Benchmark benchmark)
-    {
-        macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
+        finally {
+            macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
+        }
     }
 
     private BenchmarkExecutionResult executeBenchmark(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter)

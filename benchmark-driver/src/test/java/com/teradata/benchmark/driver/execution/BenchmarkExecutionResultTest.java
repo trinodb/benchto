@@ -6,14 +6,13 @@ package com.teradata.benchmark.driver.execution;
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
-import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import org.junit.Test;
 
 import static com.teradata.benchmark.driver.utils.TimeUtils.sleep;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 public class BenchmarkExecutionResultTest
 
@@ -22,7 +21,7 @@ public class BenchmarkExecutionResultTest
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        Benchmark benchmark = new Benchmark("name", "sequenceId", "datasource", "environment", ImmutableList.of(), 1, 0, 1, ImmutableList.of(), emptyMap());
+        Benchmark benchmark = new Benchmark("name", "sequenceId", "datasource", "environment", emptyList(), 1, 0, 1, emptyList(), emptyList(), emptyMap());
         BenchmarkExecutionResultBuilder builder = new BenchmarkExecutionResultBuilder(new BenchmarkExecution(benchmark, 1, 0));
 
         builder.startTimer();

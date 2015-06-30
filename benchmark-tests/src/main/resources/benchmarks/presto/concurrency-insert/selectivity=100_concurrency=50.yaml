@@ -1,0 +1,12 @@
+datasource: presto
+query-names: presto/linear-scan-insert/selectivity-100.sql
+runs: 50
+concurrency: 50
+variables:
+  1:
+    schema: tpch_100gb_orc
+    database: hive
+    table: tmp_insert_selectivity_100_concurrency_50
+before-benchmark: presto/linear-scan-insert/create-insert-table.sql, drop-caches
+after-benchmark: presto/linear-scan-insert/drop-insert-table.sql
+prewarm-runs: 3

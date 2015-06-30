@@ -2,6 +2,7 @@ datasource: test_datasource
 runs: 1
 query-names: presto/simple_select.sql
 before-benchmark: no-op, test_query.sql
+after-benchmark: no-op-after
 prewarm-runs: 1
 variables:
   1:

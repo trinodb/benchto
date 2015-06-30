@@ -9,6 +9,7 @@ import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter
 import com.teradata.benchmark.driver.macro.MacroService;
 import org.hamcrest.Matcher;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
@@ -23,7 +24,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -225,7 +225,12 @@ public class DriverAppIntegrationTest
         boolean successful = benchmarkExecutionDriver.run();
         assertThat(successful).isTrue();
 
-        verify(macroService, times(1)).runBenchmarkMacros(eq(ImmutableList.of("no-op", "test_query.sql")), any(Benchmark.class));
+        ArgumentCaptor<List> macroArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        verify(macroService, times(2)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Benchmark.class));
+
+        assertThat(macroArgumentCaptor.getAllValues()).isEqualTo(ImmutableList.of(
+                ImmutableList.of("no-op", "test_query.sql"),
+                ImmutableList.of("no-op-after")));
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)

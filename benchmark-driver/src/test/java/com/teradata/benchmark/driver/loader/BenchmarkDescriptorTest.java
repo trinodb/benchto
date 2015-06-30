@@ -18,6 +18,7 @@ public class BenchmarkDescriptorTest
     private static final String SIMPLE_BENCHMARK = "" +
             "datasource: foo\n" +
             "before-benchmark: no-op, no-op2\n" +
+            "after-benchmark: no-op2\n" +
             "prewarm-runs: 2\n" +
             "query-names: q1, q2, 1, 2";
 
@@ -55,6 +56,7 @@ public class BenchmarkDescriptorTest
         assertThat(descriptor.getRuns()).isEqualTo(Optional.empty());
         assertThat(descriptor.getConcurrency()).isEqualTo(Optional.empty());
         assertThat(descriptor.getBeforeBenchmarkMacros()).isEqualTo(Optional.of(ImmutableList.of("no-op", "no-op2")));
+        assertThat(descriptor.getAfterBenchmarkMacros()).isEqualTo(Optional.of(ImmutableList.of("no-op2")));
         assertThat(descriptor.getPrewarmRepeats()).isEqualTo(Optional.of(2));
     }
 

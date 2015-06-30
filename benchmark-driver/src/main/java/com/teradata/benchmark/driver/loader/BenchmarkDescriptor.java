@@ -32,6 +32,7 @@ public class BenchmarkDescriptor
     private static final String PREWARM_RUNS_KEY = "prewarm-runs";
     private static final String CONCURRENCY_KEY = "concurrency";
     private static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
+    private static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
     private static final String VARIABLES_KEY = "variables";
 
     public static BenchmarkDescriptor loadFromFile(Path file)
@@ -48,13 +49,8 @@ public class BenchmarkDescriptor
         Optional<Integer> runs = Optional.ofNullable((Integer) yaml.getOrDefault(RUNS_KEY, concurrency.isPresent() ? concurrency.get() : null));
         Optional<Integer> prewarmRuns = Optional.ofNullable((Integer) yaml.get(PREWARM_RUNS_KEY));
 
-        Optional<List<String>> beforeBenchmarkMacros;
-        if (yaml.containsKey(BEFORE_BENCHMARK_MACROS_KEY)) {
-            beforeBenchmarkMacros = Optional.of(asStringList(yaml.get(BEFORE_BENCHMARK_MACROS_KEY)));
-        }
-        else {
-            beforeBenchmarkMacros = Optional.empty();
-        }
+        Optional<List<String>> beforeBenchmarkMacros = getBenchmarkMacros(yaml, BEFORE_BENCHMARK_MACROS_KEY);
+        Optional<List<String>> afterBenchmarkMacros = getBenchmarkMacros(yaml, AFTER_BENCHMARK_MACROS_KEY);
 
         checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Benchmark yaml must contain '%s' key", DATA_SOURCE_KEY);
 
@@ -63,8 +59,18 @@ public class BenchmarkDescriptor
                 checkNotNull(yaml.get(DATA_SOURCE_KEY)).toString(),
                 asStringList(checkNotNull(yaml.get(QUERY_NAMES_KEY))),
                 runs, prewarmRuns, concurrency,
-                beforeBenchmarkMacros,
+                beforeBenchmarkMacros, afterBenchmarkMacros,
                 extractVariableMapList(yaml));
+    }
+
+    private static Optional<List<String>> getBenchmarkMacros(Map<String, Object> yaml, String key)
+    {
+        if (yaml.containsKey(key)) {
+            return Optional.of(asStringList(yaml.get(key)));
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
     private static List<Map<String, String>> extractVariableMapList(Map<String, Object> yaml)
@@ -90,12 +96,14 @@ public class BenchmarkDescriptor
     private final Optional<Integer> prewarmRepeats;
     private final Optional<Integer> concurrency;
     private final Optional<List<String>> beforeBenchmarkMacros;
+    private final Optional<List<String>> afterBenchmarkMacros;
     private final List<Map<String, String>> variableMapList;
 
     public BenchmarkDescriptor(
             Path descriptorPath, String dataSource, List<String> queryNames,
             Optional<Integer> runs, Optional<Integer> prewarmRepeats, Optional<Integer> concurrency,
-            Optional<List<String>> beforeBenchmarkMacros, List<Map<String, String>> variableMapList)
+            Optional<List<String>> beforeBenchmarkMacros, Optional<List<String>> afterBenchmarkMacros,
+            List<Map<String, String>> variableMapList)
     {
         this.descriptorPath = descriptorPath;
         this.dataSource = dataSource;
@@ -104,6 +112,7 @@ public class BenchmarkDescriptor
         this.prewarmRepeats = prewarmRepeats;
         this.concurrency = concurrency;
         this.beforeBenchmarkMacros = beforeBenchmarkMacros;
+        this.afterBenchmarkMacros = afterBenchmarkMacros;
         this.variableMapList = variableMapList;
     }
 
@@ -140,6 +149,11 @@ public class BenchmarkDescriptor
     public Optional<List<String>> getBeforeBenchmarkMacros()
     {
         return beforeBenchmarkMacros;
+    }
+
+    public Optional<List<String>> getAfterBenchmarkMacros()
+    {
+        return afterBenchmarkMacros;
     }
 
     public List<Map<String, String>> getVariableMapList()

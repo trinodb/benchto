@@ -31,6 +31,8 @@ graphite:
 macros:
   no-op:
     command:
+  no-op-after:
+    command:
   create-file:
     command: touch ${FILENAME}${USER}
   error-macro:

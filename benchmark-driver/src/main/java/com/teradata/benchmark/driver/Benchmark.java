@@ -23,10 +23,11 @@ public class Benchmark
     private final int prewarmRuns;
     private final int concurrency;
     private final List<String> beforeBenchmarkMacros;
+    private final List<String> afterBenchmarkMacros;
     private final Map<String, String> variables;
 
     public Benchmark(String name, String sequenceId, String dataSource, String environment, List<Query> queries, int runs, int prewarmRuns, int concurrency,
-            List<String> beforeBenchmarkMacros, Map<String, String> variables)
+            List<String> beforeBenchmarkMacros, List<String> afterBenchmarkMacros, Map<String, String> variables)
     {
         this.name = name;
         this.sequenceId = sequenceId;
@@ -37,6 +38,7 @@ public class Benchmark
         this.prewarmRuns = prewarmRuns;
         this.concurrency = concurrency;
         this.beforeBenchmarkMacros = beforeBenchmarkMacros;
+        this.afterBenchmarkMacros = afterBenchmarkMacros;
         this.variables = variables;
     }
 
@@ -83,6 +85,11 @@ public class Benchmark
     public List<String> getBeforeBenchmarkMacros()
     {
         return beforeBenchmarkMacros;
+    }
+
+    public List<String> getAfterBenchmarkMacros()
+    {
+        return afterBenchmarkMacros;
     }
 
     public Map<String, String> getVariables()

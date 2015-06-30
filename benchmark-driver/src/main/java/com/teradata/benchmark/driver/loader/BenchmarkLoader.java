@@ -42,6 +42,7 @@ public class BenchmarkLoader
     private static final int DEFAULT_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
     private static final List<String> DEFAULT_BEFORE_BENCHMARK_MACROS = ImmutableList.of();
+    private static final List<String> DEFAULT_AFTER_BENCHMARK_MACROS = ImmutableList.of();
     private static final int DEFAULT_PREWARM_RUNS = 0;
 
     @Autowired
@@ -134,6 +135,7 @@ public class BenchmarkLoader
     private Benchmark createBenchmark(String sequenceId, BenchmarkDescriptor descriptor, Map<String, String> variables)
     {
         String benchmarkName = generateBenchmarkName(descriptor, variables);
+ 
         List<Query> queries = loadQueries(descriptor.getQueryNames(), variables);
         return new Benchmark(
                 benchmarkName, sequenceId, descriptor.getDataSource(), properties.getEnvironmentName(), queries,
@@ -141,6 +143,7 @@ public class BenchmarkLoader
                 descriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS),
                 descriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY),
                 descriptor.getBeforeBenchmarkMacros().orElse(DEFAULT_BEFORE_BENCHMARK_MACROS),
+                descriptor.getAfterBenchmarkMacros().orElse(DEFAULT_AFTER_BENCHMARK_MACROS),
                 variables);
     }
 
