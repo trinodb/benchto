@@ -6,6 +6,7 @@ package com.teradata.benchmark.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.Type;
@@ -43,6 +44,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.teradata.benchmark.service.model.AggregatedMeasurement.aggregate;
 import static java.util.stream.Collectors.toMap;
+import static javax.persistence.FetchType.EAGER;
 import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
@@ -83,7 +85,7 @@ public class BenchmarkRun
     private Set<BenchmarkRunExecution> executions = newHashSet();
 
     @BatchSize(size = 10)
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = EAGER)
     @JoinTable(name = "benchmark_run_measurements",
             joinColumns = @JoinColumn(name = "benchmark_run_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "measurement_id", referencedColumnName = "id"))
@@ -98,13 +100,13 @@ public class BenchmarkRun
     private ZonedDateTime ended;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = EAGER)
     @JoinColumn(name = "environment_id")
     private Environment environment;
 
     @Cache(usage = TRANSACTIONAL)
     @BatchSize(size = 10)
-    @ElementCollection
+    @ElementCollection(fetch = EAGER)
     @MapKeyColumn(name = "name")
     @Column(name = "value")
     @CollectionTable(name = "benchmark_runs_attributes", joinColumns = @JoinColumn(name = "benchmark_run_id"))
@@ -215,7 +217,7 @@ public class BenchmarkRun
 
     public Map<String, AggregatedMeasurement> getAggregatedMeasurements()
     {
-        if (aggregatedMeasurements == null) {
+        if (aggregatedMeasurements == null && Hibernate.isInitialized(executions)) {
             ListMultimap<Measurement, Double> measurementValues = ArrayListMultimap.create();
             for (BenchmarkRunExecution execution : executions) {
                 for (Measurement measurement : execution.getMeasurements()) {

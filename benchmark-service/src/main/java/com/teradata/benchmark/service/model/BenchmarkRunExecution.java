@@ -37,6 +37,7 @@ import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.Maps.newHashMap;
+import static javax.persistence.FetchType.EAGER;
 import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Cacheable
@@ -74,7 +75,7 @@ public class BenchmarkRunExecution
     private BenchmarkRun benchmarkRun;
 
     @BatchSize(size = 10)
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = EAGER)
     @JoinTable(name = "execution_measurements",
             joinColumns = @JoinColumn(name = "execution_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "measurement_id", referencedColumnName = "id"))
@@ -90,7 +91,7 @@ public class BenchmarkRunExecution
 
     @Cache(usage = TRANSACTIONAL)
     @BatchSize(size = 10)
-    @ElementCollection
+    @ElementCollection(fetch = EAGER)
     @MapKeyColumn(name = "name")
     @Column(name = "value")
     @CollectionTable(name = "execution_attributes", joinColumns = @JoinColumn(name = "execution_id"))

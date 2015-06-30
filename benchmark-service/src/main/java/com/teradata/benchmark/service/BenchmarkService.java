@@ -10,6 +10,7 @@ import com.teradata.benchmark.service.model.Environment;
 import com.teradata.benchmark.service.model.Measurement;
 import com.teradata.benchmark.service.model.Status;
 import com.teradata.benchmark.service.repo.BenchmarkRunRepo;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,13 +118,18 @@ public class BenchmarkService
         if (benchmarkRun == null) {
             throw new IllegalArgumentException("Could not find benchmark " + benchmarkName + " - " + sequenceId);
         }
+        Hibernate.initialize(benchmarkRun.getExecutions());
         return benchmarkRun;
     }
 
     @Transactional(readOnly = true)
     public Benchmark findBenchmark(String benchmarkName)
     {
-        return new Benchmark(benchmarkName, benchmarkRunRepo.findByName(benchmarkName));
+        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByName(benchmarkName);
+        for (BenchmarkRun benchmarkRun : benchmarkRuns) {
+            Hibernate.initialize(benchmarkRun.getExecutions());
+        }
+        return new Benchmark(benchmarkName, benchmarkRuns);
     }
 
     @Transactional(readOnly = true)

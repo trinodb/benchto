@@ -5,6 +5,7 @@ spring:
     password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     hibernate.ddl-auto: validate
     properties:
       hibernate.cache.region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
