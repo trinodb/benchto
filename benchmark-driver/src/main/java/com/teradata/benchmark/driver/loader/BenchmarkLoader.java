@@ -3,12 +3,13 @@
  */
 package com.teradata.benchmark.driver.loader;
 
-import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.Benchmark.BenchmarkBuilder;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.utils.NaturalOrderComparator;
+import com.teradata.benchmark.driver.utils.YamlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +24,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import static com.facebook.presto.jdbc.internal.guava.collect.Lists.newArrayListWithCapacity;
 import static com.facebook.presto.jdbc.internal.guava.collect.Sets.newLinkedHashSet;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.DATA_SOURCE_KEY;
+import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.QUERY_NAMES_KEY;
+import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.VARIABLES_KEY;
+import static com.teradata.benchmark.driver.utils.CartesianProductUtils.cartesianProduct;
 import static com.teradata.benchmark.driver.utils.FilterUtils.benchmarkNameMatchesTo;
-import static com.teradata.benchmark.driver.utils.ResourceUtils.asPath;
+import static com.teradata.benchmark.driver.utils.YamlUtils.loadYamlFromString;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.readAllBytes;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 @Component
 public class BenchmarkLoader
@@ -41,8 +51,6 @@ public class BenchmarkLoader
 
     private static final int DEFAULT_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
-    private static final List<String> DEFAULT_BEFORE_BENCHMARK_MACROS = ImmutableList.of();
-    private static final List<String> DEFAULT_AFTER_BENCHMARK_MACROS = ImmutableList.of();
     private static final int DEFAULT_PREWARM_RUNS = 0;
 
     @Autowired
@@ -50,6 +58,9 @@ public class BenchmarkLoader
 
     @Autowired
     private QueryLoader queryLoader;
+
+    @Autowired
+    private BenchmarkNameGenerator benchmarkNameGenerator;
 
     public List<Benchmark> loadBenchmarks(String sequenceId)
     {
@@ -86,7 +97,7 @@ public class BenchmarkLoader
         LOGGER.info("Searching for benchmarks in classpath ...");
 
         List<Path> benchmarkFiles = Files
-                .walk(benchmarksFilesPath())
+                .walk(properties.benchmarksFilesPath())
                 .filter(file -> isRegularFile(file) && file.toString().endsWith(BENCHMARK_FILE_SUFFIX))
                 .collect(toList());
         benchmarkFiles.stream().forEach((path) -> LOGGER.info("Benchmark found: {}", path.toString()));
@@ -119,74 +130,75 @@ public class BenchmarkLoader
     private List<Benchmark> loadBenchmarks(String sequenceId, Path benchmarkFile)
     {
         try {
-            BenchmarkDescriptor descriptor = BenchmarkDescriptor.loadFromFile(benchmarkFile);
-            List<Map<String, String>> variableMapList = descriptor.getVariableMapList();
+            String content = new String(readAllBytes(benchmarkFile), UTF_8);
+            Map<String, Object> yaml = loadYamlFromString(content);
 
-            return variableMapList
-                    .stream()
-                    .map(variables -> createBenchmark(sequenceId, descriptor, variables))
-                    .collect(toList());
+            checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", DATA_SOURCE_KEY, benchmarkFile);
+            checkArgument(yaml.containsKey(QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", QUERY_NAMES_KEY, benchmarkFile);
+
+            List<BenchmarkDescriptor> benchmarkDescriptors = createBenchmarkDescriptors(yaml);
+
+            List<Benchmark> benchmarks = newArrayListWithCapacity(benchmarkDescriptors.size());
+            for (BenchmarkDescriptor benchmarkDescriptor : benchmarkDescriptors) {
+                String benchmarkName = benchmarkNameGenerator.generateBenchmarkName(benchmarkFile, benchmarkDescriptor);
+                List<Query> queries = queryLoader.loadFromFiles(benchmarkDescriptor.getQueryNames(), benchmarkDescriptor.getVariables());
+
+                benchmarks.add(new BenchmarkBuilder(benchmarkName, sequenceId, queries)
+                        .withDataSource(benchmarkDescriptor.getDataSource())
+                        .withEnvironment(properties.getEnvironmentName())
+                        .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
+                        .withPrewarmRuns(benchmarkDescriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS))
+                        .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
+                        .withBeforeBenchmarkMacros(benchmarkDescriptor.getBeforeBenchmarkMacros())
+                        .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
+                        .withVariables(benchmarkDescriptor.getVariables()).createBenchmark());
+            }
+
+            return benchmarks;
         }
         catch (IOException e) {
-            throw new BenchmarkExecutionException("could not load benchmark: " + benchmarkFile, e);
+            throw new BenchmarkExecutionException("Could not load benchmark: " + benchmarkFile, e);
         }
     }
 
-    private Benchmark createBenchmark(String sequenceId, BenchmarkDescriptor descriptor, Map<String, String> variables)
+    private List<BenchmarkDescriptor> createBenchmarkDescriptors(Map<String, Object> yaml)
     {
-        String benchmarkName = generateBenchmarkName(descriptor, variables);
- 
-        List<Query> queries = loadQueries(descriptor.getQueryNames(), variables);
-        return new Benchmark(
-                benchmarkName, sequenceId, descriptor.getDataSource(), properties.getEnvironmentName(), queries,
-                descriptor.getRuns().orElse(DEFAULT_RUNS),
-                descriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS),
-                descriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY),
-                descriptor.getBeforeBenchmarkMacros().orElse(DEFAULT_BEFORE_BENCHMARK_MACROS),
-                descriptor.getAfterBenchmarkMacros().orElse(DEFAULT_AFTER_BENCHMARK_MACROS),
-                variables);
-    }
+        List<Map<String, String>> variablesCombinations = extractVariableMapList(yaml);
+        Map<String, String> globalVariables = extractGlobalVariables(yaml);
 
-    private List<Query> loadQueries(List<String> queryNames, Map<String, String> variables)
-    {
-        return queryNames
-                .stream()
-                .map(queryName -> queryLoader.loadFromFile(queryName, variables))
+        for (Map<String, String> variablesMap : variablesCombinations) {
+            for (Map.Entry<String, String> globalVariableEntry : globalVariables.entrySet()) {
+                variablesMap.putIfAbsent(globalVariableEntry.getKey(), globalVariableEntry.getValue());
+            }
+        }
+
+        return variablesCombinations.stream()
+                .map(BenchmarkDescriptor::new)
                 .collect(toList());
     }
 
-    private Path benchmarksFilesPath()
+    private Map<String, String> extractGlobalVariables(Map<String, Object> yaml)
     {
-        return asPath(properties.getBenchmarksDir());
+        return yaml.entrySet().stream()
+                .filter(entry -> !entry.getKey().equals(VARIABLES_KEY))
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue() == null ? null : entry.getValue().toString()));
     }
 
-    private String generateBenchmarkName(BenchmarkDescriptor descriptor, Map<String, String> variables)
+    @SuppressWarnings("unchecked")
+    private List<Map<String, String>> extractVariableMapList(Map<String, Object> yaml)
     {
-        String relativePath = benchmarksFilesPath().relativize(descriptor.getDescriptorPath()).toString();
-        String pathWithoutExtension = removeExtension(relativePath);
-        StringBuilder benchmarkName = new StringBuilder(pathWithoutExtension);
+        Map<String, Map<String, Object>> variableMaps = (Map) yaml.getOrDefault(VARIABLES_KEY, newHashMap());
+        List<Map<String, String>> variableMapList = variableMaps.values()
+                .stream()
+                .map(YamlUtils::stringifyMultimap)
+                .flatMap(variableMap -> cartesianProduct(variableMap).stream())
+                .collect(toList());
 
-        for (Map.Entry<String, String> variablesEntry : variables.entrySet()) {
-            benchmarkName.append('_');
-            benchmarkName.append(variablesEntry.getKey());
-            benchmarkName.append('=');
-            benchmarkName.append(variablesEntry.getValue());
+        if (variableMapList.isEmpty()) {
+            variableMapList.add(newHashMap());
         }
 
-        benchmarkName.append("_env=");
-        benchmarkName.append(properties.getEnvironmentName());
-
-        return sanitizeBenchmarkName(benchmarkName.toString());
-    }
-
-    /**
-     * Leaves in benchmark name only alphanumerics, underscores and dashes
-     * <p/>
-     * TODO: We should better do that where we passing benchmark name into REST URL
-     */
-    private String sanitizeBenchmarkName(String benchmarkName)
-    {
-        return benchmarkName.replaceAll("[^A-Za-z0-9_=-]", "_");
+        return variableMapList;
     }
 
     private Predicate<Benchmark> activeBenchmarksByName()

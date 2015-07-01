@@ -4,107 +4,130 @@
 package com.teradata.benchmark.driver.loader;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.BenchmarkProperties;
+import com.teradata.benchmark.driver.Query;
+import org.assertj.core.api.MapAssert;
+import org.assertj.core.data.MapEntry;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 
-import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.loadFromString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.MapEntry.entry;
 
 public class BenchmarkDescriptorTest
 {
-    private static final String SIMPLE_BENCHMARK = "" +
-            "datasource: foo\n" +
-            "before-benchmark: no-op, no-op2\n" +
-            "after-benchmark: no-op2\n" +
-            "prewarm-runs: 2\n" +
-            "query-names: q1, q2, 1, 2";
 
-    private static final String BENCHMARK_NO_DATA_SOURCE = "query-names: q1, q2, 1, 2";
+    private BenchmarkProperties benchmarkProperties;
 
-    private static final String BENCHMARK_WITH_VARIABLES = "" +
-            "datasource: foo\n" +
-            "query-names: q1, q2, 1, 2\n" +
-            "variables:\n" +
-            "  combinations1:\n" +
-            "    size: [1GB, 2GB]\n" +
-            "    format: [txt, orc]\n" +
-            "  combinations2:\n" +
-            "    size: 10GB\n" +
-            "    format: parquet\n";
+    private BenchmarkLoader benchmarkLoader;
 
-    private static final String CONCURRENT_BENCHMARK = "" +
-            "datasource: foo\n" +
-            "query-names: q1, q2, 1, 2\n" +
-            "runs: 10\n" +
-            "concurrency: 20";
+    @Before
+    public void setupBenchmarkLoader()
+    {
+        QueryLoader queryLoader = mockQueryLoader();
+        benchmarkProperties = new BenchmarkProperties();
+        BenchmarkNameGenerator benchmarkNameGenerator = new BenchmarkNameGenerator();
 
-    private static final String CONCURRENT_BENCHMARK_NO_RUNS = "" +
-            "datasource: foo\n" +
-            "query-names: 1, 2\n" +
-            "concurrency: 20";
+        benchmarkLoader = new BenchmarkLoader();
+
+        ReflectionTestUtils.setField(benchmarkLoader, "properties", benchmarkProperties);
+        ReflectionTestUtils.setField(benchmarkLoader, "queryLoader", queryLoader);
+        ReflectionTestUtils.setField(benchmarkLoader, "benchmarkNameGenerator", benchmarkNameGenerator);
+        ReflectionTestUtils.setField(benchmarkNameGenerator, "properties", benchmarkProperties);
+    }
+
+    private QueryLoader mockQueryLoader()
+    {
+        return new QueryLoader()
+        {
+            @Override
+            public Query loadFromFile(String queryName, Map<String, ?> attributes)
+            {
+                return new Query(queryName, "");
+            }
+        };
+    }
 
     @Test
     public void shouldLoadSimpleBenchmark()
             throws IOException
     {
-        BenchmarkDescriptor descriptor = descriptorFromString(SIMPLE_BENCHMARK);
-        assertThat(descriptor.getQueryNames()).containsExactly("q1", "q2", "1", "2");
-        assertThat(descriptor.getDataSource()).isEqualTo("foo");
-        assertThat(descriptor.getRuns()).isEqualTo(Optional.empty());
-        assertThat(descriptor.getConcurrency()).isEqualTo(Optional.empty());
-        assertThat(descriptor.getBeforeBenchmarkMacros()).isEqualTo(Optional.of(ImmutableList.of("no-op", "no-op2")));
-        assertThat(descriptor.getAfterBenchmarkMacros()).isEqualTo(Optional.of(ImmutableList.of("no-op2")));
-        assertThat(descriptor.getPrewarmRepeats()).isEqualTo(Optional.of(2));
+        List<Benchmark> benchmarks = loadBenchmarkWithName("simple-benchmark");
+        assertThat(benchmarks).hasSize(1);
+
+        Benchmark benchmark = benchmarks.get(0);
+        assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
+        assertThat(benchmark.getDataSource()).isEqualTo("foo");
+        assertThat(benchmark.getRuns()).isEqualTo(3);
+        assertThat(benchmark.getConcurrency()).isEqualTo(1);
+        assertThat(benchmark.getBeforeBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op", "no-op2"));
+        assertThat(benchmark.getAfterBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op2"));
+        assertThat(benchmark.getPrewarmRuns()).isEqualTo(2);
     }
 
     @Test
     public void shouldLoadConcurrentBenchmark()
             throws IOException
     {
-        BenchmarkDescriptor descriptor = descriptorFromString(CONCURRENT_BENCHMARK);
-        assertThat(descriptor.getDataSource()).isEqualTo("foo");
-        assertThat(descriptor.getQueryNames()).containsExactly("q1", "q2", "1", "2");
-        assertThat(descriptor.getRuns()).isEqualTo(Optional.of(10));
-        assertThat(descriptor.getConcurrency()).isEqualTo(Optional.of(20));
-    }
+        List<Benchmark> benchmarks = loadBenchmarkWithName("concurrent-benchmark");
+        assertThat(benchmarks).hasSize(1);
 
-    @Test
-    public void shouldUseConcurrencyAsRuns()
-            throws IOException
-    {
-        BenchmarkDescriptor descriptor = descriptorFromString(CONCURRENT_BENCHMARK_NO_RUNS);
-        assertThat(descriptor.getConcurrency()).isEqualTo(Optional.of(20));
-        assertThat(descriptor.getRuns()).isEqualTo(descriptor.getConcurrency());
-        assertThat(descriptor.getQueryNames()).isEqualTo(ImmutableList.of("1", "2"));
+        Benchmark benchmark = benchmarks.get(0);
+        assertThat(benchmark.getDataSource()).isEqualTo("foo");
+        assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
+        assertThat(benchmark.getRuns()).isEqualTo(10);
+        assertThat(benchmark.getConcurrency()).isEqualTo(20);
     }
 
     @Test
     public void shouldLoadBenchmarkWithVariables()
             throws IOException
     {
-        BenchmarkDescriptor descriptor = descriptorFromString(BENCHMARK_WITH_VARIABLES);
-        assertThat(descriptor.getVariableMapList()).containsExactly(
-                ImmutableMap.of("size", "1GB", "format", "txt"),
-                ImmutableMap.of("size", "1GB", "format", "orc"),
-                ImmutableMap.of("size", "2GB", "format", "txt"),
-                ImmutableMap.of("size", "2GB", "format", "orc"),
-                ImmutableMap.of("size", "10GB", "format", "parquet")
-        );
+        List<Benchmark> benchmarks = loadBenchmarkWithName("multi-variables-benchmark");
+        assertThat(benchmarks).hasSize(5);
+
+        assertThatBenchmarkWithEntries(benchmarks, entry("size", "1GB"), entry("format", "txt"))
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "txt"));
+        assertThatBenchmarkWithEntries(benchmarks, entry("size", "1GB"), entry("format", "orc"))
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "orc"));
+        assertThatBenchmarkWithEntries(benchmarks, entry("size", "2GB"), entry("format", "txt"))
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "txt"));
+        assertThatBenchmarkWithEntries(benchmarks, entry("size", "2GB"), entry("format", "orc"))
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "orc"));
+        assertThatBenchmarkWithEntries(benchmarks, entry("size", "10GB"), entry("format", "parquet"))
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "10GB"), entry("format", "parquet"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldFailBenchmarkNoDataSource()
-            throws IOException
+    private List<Benchmark> loadBenchmarkWithName(String benchmarkName)
     {
-        descriptorFromString(BENCHMARK_NO_DATA_SOURCE);
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "unit-benchmarks");
+        ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", benchmarkName);
+
+        return benchmarkLoader.loadBenchmarks("sequenceId");
     }
 
-    private BenchmarkDescriptor descriptorFromString(String string)
-            throws IOException
+    private MapAssert<String, String> assertThatBenchmarkWithEntries(List<Benchmark> benchmarks, MapEntry<String, String>... entries)
     {
-        return loadFromString(null, string);
+        Benchmark searchBenchmark = benchmarks.stream()
+                .filter(benchmark -> {
+                    boolean containsAllEntries = true;
+                    for (MapEntry mapEntry : entries) {
+                        Object value = benchmark.getVariables().get(mapEntry.key);
+                        if (!mapEntry.value.equals(value)) {
+                            containsAllEntries = false;
+                            break;
+                        }
+                    }
+                    return containsAllEntries;
+                })
+                .findFirst().get();
+
+        return assertThat(searchBenchmark.getVariables());
     }
 }

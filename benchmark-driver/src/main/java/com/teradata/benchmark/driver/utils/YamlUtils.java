@@ -19,10 +19,11 @@ import static java.util.stream.Collectors.toMap;
  */
 public final class YamlUtils
 {
-    public static Object loadYamlFromString(String string, Class clazz)
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> loadYamlFromString(String string)
     {
         Yaml yaml = new Yaml();
-        return yaml.load(string);
+        return (Map<String, Object>) yaml.load(string);
     }
 
     public static Map<String, List<String>> stringifyMultimap(Map<String, Object> variableMap)

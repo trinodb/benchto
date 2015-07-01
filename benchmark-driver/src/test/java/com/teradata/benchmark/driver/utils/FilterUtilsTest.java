@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 
 import static com.teradata.benchmark.driver.utils.FilterUtils.benchmarkNameMatchesTo;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilterUtilsTest
@@ -33,6 +32,7 @@ public class FilterUtilsTest
 
     private Benchmark benchmarkWithName(String name)
     {
-        return new Benchmark(name, "", "", "", emptyList(), 0, 0, 0, emptyList(), emptyList(), emptyMap());
+        return new Benchmark.BenchmarkBuilder(name, "", emptyList())
+                .createBenchmark();
     }
 }

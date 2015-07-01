@@ -3,161 +3,92 @@
  */
 package com.teradata.benchmark.driver.loader;
 
-import com.teradata.benchmark.driver.utils.YamlUtils;
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableSet;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newHashMap;
-import static com.teradata.benchmark.driver.utils.CartesianProductUtils.cartesianProduct;
 import static com.teradata.benchmark.driver.utils.YamlUtils.asStringList;
-import static com.teradata.benchmark.driver.utils.YamlUtils.loadYamlFromString;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.readAllBytes;
-import static java.util.stream.Collectors.toList;
 
 /**
- * Describes benchmark parameters.
+ * Wrapper class around benchmark variables map with helper access methods.
  */
 public class BenchmarkDescriptor
 {
-    private static final String DATA_SOURCE_KEY = "datasource";
-    private static final String QUERY_NAMES_KEY = "query-names";
-    private static final String RUNS_KEY = "runs";
-    private static final String PREWARM_RUNS_KEY = "prewarm-runs";
-    private static final String CONCURRENCY_KEY = "concurrency";
-    private static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
-    private static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
-    private static final String VARIABLES_KEY = "variables";
+    public static final String DATA_SOURCE_KEY = "datasource";
+    public static final String QUERY_NAMES_KEY = "query-names";
+    public static final String RUNS_KEY = "runs";
+    public static final String PREWARM_RUNS_KEY = "prewarm-runs";
+    public static final String CONCURRENCY_KEY = "concurrency";
+    public static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
+    public static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
+    public static final String VARIABLES_KEY = "variables";
 
-    public static BenchmarkDescriptor loadFromFile(Path file)
-            throws IOException
+    public static final Set<String> RESERVED_KEYWORD = ImmutableSet.of(
+            DATA_SOURCE_KEY,
+            QUERY_NAMES_KEY,
+            RUNS_KEY,
+            PREWARM_RUNS_KEY,
+            CONCURRENCY_KEY,
+            BEFORE_BENCHMARK_MACROS_KEY,
+            AFTER_BENCHMARK_MACROS_KEY,
+            VARIABLES_KEY
+    );
+
+    private final Map<String, String> variables;
+
+    public BenchmarkDescriptor(Map<String, String> variables)
     {
-        return loadFromString(file, new String(readAllBytes(file), UTF_8));
+        this.variables = variables;
     }
 
-    public static BenchmarkDescriptor loadFromString(Path file, String content)
+    public Map<String, String> getVariables()
     {
-        Map<String, Object> yaml = (Map) loadYamlFromString(content, BenchmarkDescriptor.class);
-
-        Optional<Integer> concurrency = Optional.ofNullable((Integer) yaml.get(CONCURRENCY_KEY));
-        Optional<Integer> runs = Optional.ofNullable((Integer) yaml.getOrDefault(RUNS_KEY, concurrency.isPresent() ? concurrency.get() : null));
-        Optional<Integer> prewarmRuns = Optional.ofNullable((Integer) yaml.get(PREWARM_RUNS_KEY));
-
-        Optional<List<String>> beforeBenchmarkMacros = getBenchmarkMacros(yaml, BEFORE_BENCHMARK_MACROS_KEY);
-        Optional<List<String>> afterBenchmarkMacros = getBenchmarkMacros(yaml, AFTER_BENCHMARK_MACROS_KEY);
-
-        checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Benchmark yaml must contain '%s' key", DATA_SOURCE_KEY);
-
-        return new BenchmarkDescriptor(
-                file,
-                checkNotNull(yaml.get(DATA_SOURCE_KEY)).toString(),
-                asStringList(checkNotNull(yaml.get(QUERY_NAMES_KEY))),
-                runs, prewarmRuns, concurrency,
-                beforeBenchmarkMacros, afterBenchmarkMacros,
-                extractVariableMapList(yaml));
-    }
-
-    private static Optional<List<String>> getBenchmarkMacros(Map<String, Object> yaml, String key)
-    {
-        if (yaml.containsKey(key)) {
-            return Optional.of(asStringList(yaml.get(key)));
-        }
-        else {
-            return Optional.empty();
-        }
-    }
-
-    private static List<Map<String, String>> extractVariableMapList(Map<String, Object> yaml)
-    {
-        Map<String, Map<String, Object>> variableMaps = (Map) yaml.getOrDefault(VARIABLES_KEY, newHashMap());
-        List<Map<String, String>> variableMapList = variableMaps.values()
-                .stream()
-                .map(YamlUtils::stringifyMultimap)
-                .flatMap(variableMap -> cartesianProduct(variableMap).stream())
-                .collect(toList());
-
-        if (variableMapList.isEmpty()) {
-            variableMapList.add(newHashMap());
-        }
-
-        return variableMapList;
-    }
-
-    private final Path descriptorPath;
-    private final String dataSource;
-    private final List<String> queryNames;
-    private final Optional<Integer> runs;
-    private final Optional<Integer> prewarmRepeats;
-    private final Optional<Integer> concurrency;
-    private final Optional<List<String>> beforeBenchmarkMacros;
-    private final Optional<List<String>> afterBenchmarkMacros;
-    private final List<Map<String, String>> variableMapList;
-
-    public BenchmarkDescriptor(
-            Path descriptorPath, String dataSource, List<String> queryNames,
-            Optional<Integer> runs, Optional<Integer> prewarmRepeats, Optional<Integer> concurrency,
-            Optional<List<String>> beforeBenchmarkMacros, Optional<List<String>> afterBenchmarkMacros,
-            List<Map<String, String>> variableMapList)
-    {
-        this.descriptorPath = descriptorPath;
-        this.dataSource = dataSource;
-        this.queryNames = queryNames;
-        this.runs = runs;
-        this.prewarmRepeats = prewarmRepeats;
-        this.concurrency = concurrency;
-        this.beforeBenchmarkMacros = beforeBenchmarkMacros;
-        this.afterBenchmarkMacros = afterBenchmarkMacros;
-        this.variableMapList = variableMapList;
-    }
-
-    public Path getDescriptorPath()
-    {
-        return descriptorPath;
+        return variables;
     }
 
     public String getDataSource()
     {
-        return dataSource;
+        return variables.get(DATA_SOURCE_KEY);
     }
 
     public List<String> getQueryNames()
     {
-        return queryNames;
+        return asStringList(variables.get(QUERY_NAMES_KEY));
     }
 
     public Optional<Integer> getRuns()
     {
-        return runs;
+        return getIntegerOptional(RUNS_KEY);
     }
 
     public Optional<Integer> getPrewarmRepeats()
     {
-        return prewarmRepeats;
+        return getIntegerOptional(PREWARM_RUNS_KEY);
     }
 
     public Optional<Integer> getConcurrency()
     {
-        return concurrency;
+        return getIntegerOptional(CONCURRENCY_KEY);
     }
 
-    public Optional<List<String>> getBeforeBenchmarkMacros()
+    public List<String> getBeforeBenchmarkMacros()
     {
-        return beforeBenchmarkMacros;
+        return asStringList(variables.getOrDefault(BEFORE_BENCHMARK_MACROS_KEY, ""));
     }
 
-    public Optional<List<String>> getAfterBenchmarkMacros()
+    public List<String> getAfterBenchmarkMacros()
     {
-        return afterBenchmarkMacros;
+        return asStringList(variables.getOrDefault(AFTER_BENCHMARK_MACROS_KEY, ""));
     }
 
-    public List<Map<String, String>> getVariableMapList()
+    private Optional<Integer> getIntegerOptional(String key)
     {
-        return variableMapList;
+        if (variables.containsKey(key)) {
+            return Optional.of(Integer.valueOf(variables.get(key)));
+        }
+        return Optional.empty();
     }
 }

@@ -1,0 +1,9 @@
+datasource: foo
+query-names: q1, q2, 1, 2
+variables:
+  combinations1:
+    size: [1GB, 2GB]
+    format: [txt, orc]
+  combinations2:
+    size: 10GB
+    format: parquet

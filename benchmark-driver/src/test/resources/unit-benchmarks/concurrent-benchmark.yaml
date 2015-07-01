@@ -1,0 +1,4 @@
+datasource: foo
+query-names: q1, q2, 1, 2
+runs: 10
+concurrency: 20

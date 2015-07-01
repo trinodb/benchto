@@ -3,43 +3,30 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class Benchmark
 {
-    private final String name;
-    private final String sequenceId;
-    private final String dataSource;
-    private final String environment;
-    private final List<Query> queries;
-    private final int runs;
-    private final int prewarmRuns;
-    private final int concurrency;
-    private final List<String> beforeBenchmarkMacros;
-    private final List<String> afterBenchmarkMacros;
-    private final Map<String, String> variables;
+    private String name;
+    private String sequenceId;
+    private String dataSource;
+    private String environment;
+    private List<Query> queries;
+    private int runs;
+    private int prewarmRuns;
+    private int concurrency;
+    private List<String> beforeBenchmarkMacros;
+    private List<String> afterBenchmarkMacros;
+    private Map<String, String> variables;
 
-    public Benchmark(String name, String sequenceId, String dataSource, String environment, List<Query> queries, int runs, int prewarmRuns, int concurrency,
-            List<String> beforeBenchmarkMacros, List<String> afterBenchmarkMacros, Map<String, String> variables)
+    private Benchmark()
     {
-        this.name = name;
-        this.sequenceId = sequenceId;
-        this.dataSource = dataSource;
-        this.environment = environment;
-        this.queries = ImmutableList.copyOf(checkNotNull(queries));
-        this.runs = runs;
-        this.prewarmRuns = prewarmRuns;
-        this.concurrency = concurrency;
-        this.beforeBenchmarkMacros = beforeBenchmarkMacros;
-        this.afterBenchmarkMacros = afterBenchmarkMacros;
-        this.variables = variables;
     }
 
     public String getName()
@@ -103,7 +90,15 @@ public class Benchmark
         return MoreObjects.toStringHelper(this)
                 .add("name", name)
                 .add("sequenceId", sequenceId)
+                .add("dataSource", dataSource)
                 .add("environment", environment)
+                .add("queries", queries)
+                .add("runs", runs)
+                .add("prewarmRuns", prewarmRuns)
+                .add("concurrency", concurrency)
+                .add("beforeBenchmarkMacros", beforeBenchmarkMacros)
+                .add("afterBenchmarkMacros", afterBenchmarkMacros)
+                .add("variables", variables)
                 .toString();
     }
 
@@ -127,7 +122,71 @@ public class Benchmark
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, sequenceId, dataSource, environment, queries, runs,
-                prewarmRuns, concurrency, beforeBenchmarkMacros, variables);
+        return Objects.hashCode(name, sequenceId, environment);
+    }
+
+    public static class BenchmarkBuilder
+    {
+        private final Benchmark benchmark = new Benchmark();
+
+        public BenchmarkBuilder(String name, String sequenceId, List<Query> queries)
+        {
+            this.benchmark.name = name;
+            this.benchmark.sequenceId = sequenceId;
+            this.benchmark.queries = ImmutableList.copyOf(queries);
+        }
+
+        public BenchmarkBuilder withDataSource(String dataSource)
+        {
+            this.benchmark.dataSource = dataSource;
+            return this;
+        }
+
+        public BenchmarkBuilder withEnvironment(String environment)
+        {
+            this.benchmark.environment = environment;
+            return this;
+        }
+
+        public BenchmarkBuilder withRuns(int runs)
+        {
+            this.benchmark.runs = runs;
+            return this;
+        }
+
+        public BenchmarkBuilder withPrewarmRuns(int prewarmRuns)
+        {
+            this.benchmark.prewarmRuns = prewarmRuns;
+            return this;
+        }
+
+        public BenchmarkBuilder withConcurrency(int concurrency)
+        {
+            this.benchmark.concurrency = concurrency;
+            return this;
+        }
+
+        public BenchmarkBuilder withBeforeBenchmarkMacros(List<String> beforeBenchmarkMacros)
+        {
+            this.benchmark.beforeBenchmarkMacros = ImmutableList.copyOf(beforeBenchmarkMacros);
+            return this;
+        }
+
+        public BenchmarkBuilder withAfterBenchmarkMacros(List<String> afterBenchmarkMacros)
+        {
+            this.benchmark.afterBenchmarkMacros = ImmutableList.copyOf(afterBenchmarkMacros);
+            return this;
+        }
+
+        public BenchmarkBuilder withVariables(Map<String, String> variables)
+        {
+            this.benchmark.variables = ImmutableMap.copyOf(variables);
+            return this;
+        }
+
+        public Benchmark createBenchmark()
+        {
+            return benchmark;
+        }
     }
 }

@@ -21,7 +21,16 @@ public class BenchmarkExecutionResultTest
     public void testBuilder_successful_run()
             throws InterruptedException
     {
-        Benchmark benchmark = new Benchmark("name", "sequenceId", "datasource", "environment", emptyList(), 1, 0, 1, emptyList(), emptyList(), emptyMap());
+        Benchmark benchmark = new Benchmark.BenchmarkBuilder("name", "sequenceId", emptyList())
+                .withDataSource("datasource")
+                .withEnvironment("environment")
+                .withRuns(1)
+                .withPrewarmRuns(0)
+                .withConcurrency(1)
+                .withBeforeBenchmarkMacros(emptyList())
+                .withAfterBenchmarkMacros(emptyList())
+                .withVariables(emptyMap())
+                .createBenchmark();
         BenchmarkExecutionResultBuilder builder = new BenchmarkExecutionResultBuilder(new BenchmarkExecution(benchmark, 1, 0));
 
         builder.startTimer();

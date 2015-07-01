@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkState;
 import static com.teradata.benchmark.driver.utils.PropertiesUtils.splitProperty;
+import static com.teradata.benchmark.driver.utils.ResourceUtils.asPath;
 import static java.util.stream.Collectors.toMap;
 
 @Component
@@ -62,6 +64,11 @@ public class BenchmarkProperties
     public String getBenchmarksDir()
     {
         return benchmarksDir;
+    }
+
+    public Path benchmarksFilesPath()
+    {
+        return asPath(getBenchmarksDir());
     }
 
     public Optional<String> getExecutionSequenceId()

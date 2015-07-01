@@ -16,6 +16,7 @@ import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -23,6 +24,7 @@ import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.teradata.benchmark.driver.utils.ResourceUtils.asPath;
 import static java.lang.String.format;
 import static java.nio.file.Files.newInputStream;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class QueryLoader
@@ -54,6 +56,14 @@ public class QueryLoader
                     queryPath, Objects.toString(attributes)
             ), e);
         }
+    }
+
+    public List<Query> loadFromFiles(List<String> queryNames, Map<String, ?> attributes)
+    {
+        return queryNames
+                .stream()
+                .map(queryName -> loadFromFile(queryName, attributes))
+                .collect(toList());
     }
 
     private Path sqlFilesPath()

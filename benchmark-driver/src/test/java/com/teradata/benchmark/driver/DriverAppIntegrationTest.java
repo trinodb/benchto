@@ -102,13 +102,13 @@ public class DriverAppIntegrationTest
 
         setBenchmark("test_concurrent_benchmark");
 
-        verifyBenchmarkStart("test_concurrent_benchmark_env=TEST_ENV", TEST_QUERY);
-        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", 0);
-        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", 0, concurrentQueryMeasurementName);
-        verifyExecutionStarted("test_concurrent_benchmark_env=TEST_ENV", 1);
-        verifyExecutionFinished("test_concurrent_benchmark_env=TEST_ENV", 1, concurrentQueryMeasurementName);
+        verifyBenchmarkStart("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", TEST_QUERY);
+        verifyExecutionStarted("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 0);
+        verifyExecutionFinished("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 0, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 1);
+        verifyExecutionFinished("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 1, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
-        verifyBenchmarkFinish("test_concurrent_benchmark_env=TEST_ENV", concurrentBenchmarkMeasurementNames);
+        verifyBenchmarkFinish("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", concurrentBenchmarkMeasurementNames);
         verifyComplete();
     }
 
