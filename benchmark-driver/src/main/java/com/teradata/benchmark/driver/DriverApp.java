@@ -6,7 +6,7 @@ package com.teradata.benchmark.driver;
 import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
-import com.teradata.benchmark.driver.listeners.LoggingBenchmarkExecutionListener;
+import com.teradata.benchmark.driver.listeners.LoggingPrewarmExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import freemarker.template.TemplateException;
@@ -72,8 +72,9 @@ public class DriverApp
     }
 
     @Bean(name = "prewarmStatusReporter")
-    public BenchmarkStatusReporter prewarmStatusReporter(TaskExecutor taskExecutor, LoggingBenchmarkExecutionListener loggingListener)
+    public BenchmarkStatusReporter prewarmStatusReporter(TaskExecutor taskExecutor)
     {
+        BenchmarkExecutionListener loggingListener = new LoggingPrewarmExecutionListener();
         return new BenchmarkStatusReporter(taskExecutor, ImmutableList.of(loggingListener));
     }
 
