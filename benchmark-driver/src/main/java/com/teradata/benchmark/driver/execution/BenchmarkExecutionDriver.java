@@ -80,98 +80,112 @@ public class BenchmarkExecutionDriver
         return run(benchmarks);
     }
 
-    public boolean run(List<Benchmark> benchmarks)
-    {
-        List<BenchmarkExecutionResult> benchmarkExecutionResults = benchmarks.stream()
-                .map(this::executePrewarmAndBenchmark)
-                .collect(toList());
-        suiteStatusReporter.reportSuiteFinished(benchmarkExecutionResults);
-
-        return !benchmarkExecutionResults.stream()
-                .filter(result -> !result.isSuccessful())
-                .findAny().isPresent();
-    }
-
     private String benchmarkExecutionSequenceId()
     {
         return properties.getExecutionSequenceId().orElse(nowUtc().format(DATE_TIME_FORMATTER));
     }
 
-    private BenchmarkExecutionResult executePrewarmAndBenchmark(Benchmark benchmark)
+    public boolean run(List<Benchmark> benchmarks)
     {
-        macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
+        return new BenchmarkRunner(benchmarks).run();
+    }
 
-        try {
-            BenchmarkExecution prewarmBenchmarkExecution = new BenchmarkExecution(benchmark, benchmark.getConcurrency(), benchmark.getPrewarmRuns());
-            BenchmarkExecutionResult prewarmResult = executeBenchmark(prewarmBenchmarkExecution, prewarmStatusReporter);
-            if (!prewarmResult.isSuccessful()) {
-                return prewarmResult;
+    private class BenchmarkRunner
+    {
+        private final List<Benchmark> benchmarks;
+        private int current = 1;
+
+        public BenchmarkRunner(List<Benchmark> benchmarks) {this.benchmarks = benchmarks;}
+
+        private boolean run()
+        {
+            List<BenchmarkExecutionResult> benchmarkExecutionResults = benchmarks.stream()
+                    .map(this::executePrewarmAndBenchmark)
+                    .collect(toList());
+            suiteStatusReporter.reportSuiteFinished(benchmarkExecutionResults);
+
+            return !benchmarkExecutionResults.stream()
+                    .filter(result -> !result.isSuccessful())
+                    .findAny().isPresent();
+        }
+
+        private BenchmarkExecutionResult executePrewarmAndBenchmark(Benchmark benchmark)
+        {
+            LOG.info("[{} of {}] processing benchmark: {}", current++, benchmarks.size(), benchmark);
+            macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
+
+            try {
+                BenchmarkExecution prewarmBenchmarkExecution = new BenchmarkExecution(benchmark, benchmark.getConcurrency(), benchmark.getPrewarmRuns());
+                BenchmarkExecutionResult prewarmResult = executeBenchmark(prewarmBenchmarkExecution, prewarmStatusReporter);
+                if (!prewarmResult.isSuccessful()) {
+                    return prewarmResult;
+                }
+
+                BenchmarkExecution benchmarkExecution = new BenchmarkExecution(benchmark, benchmark.getConcurrency(), benchmark.getRuns());
+                return executeBenchmark(benchmarkExecution, benchmarkStatusReporter);
             }
-
-            BenchmarkExecution benchmarkExecution = new BenchmarkExecution(benchmark, benchmark.getConcurrency(), benchmark.getRuns());
-            return executeBenchmark(benchmarkExecution, benchmarkStatusReporter);
-        }
-        catch (InterruptedException e) {
-            throw new BenchmarkExecutionException("Could not execute benchmark", e);
-        }
-        finally {
-            macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
-        }
-    }
-
-    private BenchmarkExecutionResult executeBenchmark(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter)
-            throws InterruptedException
-    {
-        ListeningExecutorService executorService = executorServiceFactory.create(benchmarkExecution.getConcurrency());
-        try {
-            benchmarkStatusReporter.reportBenchmarkStarted(benchmarkExecution);
-            BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmarkExecution);
-            resultBuilder.startTimer();
-
-            List<QueryExecutionResult> executionResults = runQueries(benchmarkExecution, benchmarkStatusReporter, executorService);
-
-            BenchmarkExecutionResult benchmarkExecutionResult = resultBuilder
-                    .endTimer()
-                    .setExecutions(executionResults)
-                    .build();
-
-            executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmarkExecutionResult);
-
-            benchmarkStatusReporter.reportBenchmarkFinished(benchmarkExecutionResult);
-
-            return benchmarkExecutionResult;
-        }
-        finally {
-            executorService.shutdown();
-        }
-    }
-
-    private List<QueryExecutionResult> runQueries(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter, ListeningExecutorService executorService)
-            throws InterruptedException
-    {
-        try {
-            List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmarkExecution, benchmarkStatusReporter);
-            @SuppressWarnings("unchecked")
-            List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
-            return Futures.allAsList(executionFutures).get();
-        }
-        catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            throw new BenchmarkExecutionException("Could not execute benchmark query: " + cause.getMessage(), cause);
-        }
-    }
-
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter)
-    {
-        List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
-        for (Query query : benchmarkExecution.getQueries()) {
-            for (int run = 0; run < benchmarkExecution.getRuns(); ++run) {
-                QueryExecution queryExecution = new QueryExecution(benchmarkExecution, query, run);
-                executionCallables.add(() -> {
-                    return queryExecutionDriver.execute(queryExecution, benchmarkStatusReporter, executionSynchronizer);
-                });
+            catch (InterruptedException e) {
+                throw new BenchmarkExecutionException("Could not execute benchmark", e);
+            }
+            finally {
+                macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
             }
         }
-        return executionCallables;
+
+        private BenchmarkExecutionResult executeBenchmark(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter)
+                throws InterruptedException
+        {
+            ListeningExecutorService executorService = executorServiceFactory.create(benchmarkExecution.getConcurrency());
+            try {
+                benchmarkStatusReporter.reportBenchmarkStarted(benchmarkExecution);
+                BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmarkExecution);
+                resultBuilder.startTimer();
+
+                List<QueryExecutionResult> executionResults = runQueries(benchmarkExecution, benchmarkStatusReporter, executorService);
+
+                BenchmarkExecutionResult benchmarkExecutionResult = resultBuilder
+                        .endTimer()
+                        .setExecutions(executionResults)
+                        .build();
+
+                executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmarkExecutionResult);
+
+                benchmarkStatusReporter.reportBenchmarkFinished(benchmarkExecutionResult);
+
+                return benchmarkExecutionResult;
+            }
+            finally {
+                executorService.shutdown();
+            }
+        }
+
+        private List<QueryExecutionResult> runQueries(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter, ListeningExecutorService executorService)
+                throws InterruptedException
+        {
+            try {
+                List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmarkExecution, benchmarkStatusReporter);
+                @SuppressWarnings("unchecked")
+                List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
+                return Futures.allAsList(executionFutures).get();
+            }
+            catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                throw new BenchmarkExecutionException("Could not execute benchmark query: " + cause.getMessage(), cause);
+            }
+        }
+
+        private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(BenchmarkExecution benchmarkExecution, BenchmarkStatusReporter benchmarkStatusReporter)
+        {
+            List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
+            for (Query query : benchmarkExecution.getQueries()) {
+                for (int run = 0; run < benchmarkExecution.getRuns(); ++run) {
+                    QueryExecution queryExecution = new QueryExecution(benchmarkExecution, query, run);
+                    executionCallables.add(() -> {
+                        return queryExecutionDriver.execute(queryExecution, benchmarkStatusReporter, executionSynchronizer);
+                    });
+                }
+            }
+            return executionCallables;
+        }
     }
 }
