@@ -30,6 +30,7 @@ import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.Maps.newHashMap;
+import static javax.persistence.FetchType.EAGER;
 import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
@@ -61,7 +62,7 @@ public class Environment
 
     @Cache(usage = TRANSACTIONAL)
     @BatchSize(size = 10)
-    @ElementCollection
+    @ElementCollection(fetch = EAGER)
     @MapKeyColumn(name = "name")
     @Column(name = "value")
     @CollectionTable(name = "environment_attributes", joinColumns = @JoinColumn(name = "environment_id"))
