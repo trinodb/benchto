@@ -2,21 +2,30 @@ datasource: teradata
 query-names: querygrid-presto-pushdown/linear-scan/selectivity-0.sql
 variables:
   1:
-    schema: sf100
+    schema: sf10
     database: tpch
   2:
-    schema: tpch_100gb_orc
+    schema: tpch_10gb_orc
     database: hive
   3:
-    schema: tpch_100gb_text
+    schema: tpch_10gb_text
     database: hive
   4:
-    schema: sf1000
+    schema: sf100
     database: tpch
   5:
-    schema: tpch_1tb_orc
+    schema: tpch_100gb_orc
     database: hive
   6:
+    schema: tpch_100gb_text
+    database: hive
+  7:
+    schema: sf1000
+    database: tpch
+  8:
+    schema: tpch_1tb_orc
+    database: hive
+  9:
     schema: tpch_1tb_text
     database: hive
 runs: 3
