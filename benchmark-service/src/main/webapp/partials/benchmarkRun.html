@@ -67,17 +67,17 @@
                 <tr>
                     <td>Name</td>
                     <td>Mean</td>
+                    <td>StdDev</td>
                     <td>Min</td>
                     <td>Max</td>
-                    <td>StdDev</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="(name, aggregatedMeasurement) in benchmarkRun.aggregatedMeasurements">
                     <td><strong>{{::name}}</strong></td>
                     <td>{{aggregatedMeasurement.mean | unit : measurementUnit(name)}}</td>
+                    <td>&#177; {{aggregatedMeasurement.stdDev | unit : measurementUnit(name)}} ({{aggregatedMeasurement.stdDevPercent | unit : 'PERCENT'}})</td>
                     <td>{{aggregatedMeasurement.min | unit : measurementUnit(name)}}</td>
                     <td>{{aggregatedMeasurement.max | unit : measurementUnit(name)}}</td>
-                    <td>{{aggregatedMeasurement.stdDev | unit : measurementUnit(name)}}</td>
                 </tr>
             </table>
         </div>
@@ -103,12 +103,22 @@
                         <span ng-if="execution.status == 'FAILED'"><a href="" ng-click="showFailure(execution)"> - details</a></span>
                     </td>
                     <td>
-                        <ul>
-                            <li ng-repeat="executionMeasurement in execution.measurements">
+                        <span ng-show="execution.isVisible">
+                            <ul>
+                                <li ng-repeat="executionMeasurement in execution.measurements">
+                                    <strong>{{executionMeasurement.name}}:</strong>
+                                    {{executionMeasurement.value | unit : executionMeasurement.unit}}
+                                </li>
+                            </ul>
+                            <a ng-click="execution.isVisible = false">hide details</a>
+                        </span>
+                        <span ng-show="!execution.isVisible && execution.measurements">
+                            <span ng-repeat="executionMeasurement in execution.measurements | limitTo : 3">
                                 <strong>{{executionMeasurement.name}}:</strong>
-                                {{executionMeasurement.value | unit : executionMeasurement.unit}}
-                            </li>
-                        </ul>
+                                        {{executionMeasurement.value | unit : executionMeasurement.unit}},
+                            </span>
+                            <a ng-click="execution.isVisible = true"> ...more details</a>
+                        </span>
                     </td>
                     <td>
                         <a target="_blank" ng-if="execution.attributes.prestoQueryId"

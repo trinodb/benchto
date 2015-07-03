@@ -16,10 +16,14 @@
                     {{::benchmark.runs[0].environment.name}}
                 </a>
             </li>
-            <li ng-repeat="(name, value) in benchmark.runs[0].attributes">
-                <strong>{{name}}:</strong>
-                {{value}}
+            <li ng-show="showBenchmarkDetails" ng-repeat="(name, value) in benchmark.runs[0].attributes">
+                <span ng-if="name != 'sqlStatement'">
+                    <strong>{{name}}:</strong>
+                    {{value}}
+                </span>
+                <pre ng-if="::name == 'sqlStatement'" class="prettyprint lang-sql">{{::value}}</pre>
             </li>
+            <a ng-show="!showBenchmarkDetails" ng-click="showBenchmarkDetails = true"> ...more details <span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span></a>
         </ul>
     </div>
 </div>
@@ -116,8 +120,8 @@
                     <td>SequenceId</td>
                     <td>Status</td>
                     <td>Started</td>
-                    <td>Duration</td>
-                    <td>min / mean / max</td>
+                    <td>Total duration</td>
+                    <td>Execution mean duration</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in benchmark.runs">
@@ -130,7 +134,7 @@
                     <td>{{benchmarkRun.ended ? ((benchmarkRun.ended - benchmarkRun.started) | duration) : 'Not finished'}}</td>
                     <td ng-init="duration=benchmarkRun.aggregatedMeasurements.duration">
                         <span ng-if="::benchmarkRun.status=='ENDED'">
-                            {{duration.min | duration}} / {{duration.mean | duration}} / {{duration.max | duration}}
+                            <strong>{{duration.mean | duration}}</strong> &#177; {{duration.stdDev | duration}} ({{duration.stdDevPercent | unit : 'PERCENT'}})
                         </span>
                     </td>
                 </tr>

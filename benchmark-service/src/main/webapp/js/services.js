@@ -23,11 +23,14 @@
                     var length = sequenceId.length;
                     if (length == 1) {
                         return '00' + sequenceId
-                    } else if (length == 2) {
+                    }
+                    else if (length == 2) {
                         return '0' + sequenceId
-                    } else if (length == 3) {
+                    }
+                    else if (length == 3) {
                         return sequenceId;
-                    } else {
+                    }
+                    else {
                         throw 'Too long sequence to be well sorted: ' + sequenceId;
                     }
                 });
