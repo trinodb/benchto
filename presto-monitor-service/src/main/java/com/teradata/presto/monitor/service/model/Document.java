@@ -21,7 +21,7 @@ import java.time.ZonedDateTime;
 
 @Cacheable
 @Entity
-@Table(name = "documents", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "timestamp"}))
+@Table(name = "documents", uniqueConstraints = @UniqueConstraint(columnNames = {"environment", "name", "timestamp"}))
 public class Document
 {
     @Id
@@ -34,6 +34,10 @@ public class Document
     private long id;
 
     @NotNull
+    @Column(name = "environment")
+    private String environment;
+
+    @NotNull
     @Column(name = "name")
     private String name;
 
@@ -42,21 +46,31 @@ public class Document
     private ZonedDateTime timestamp;
 
     @NotNull
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition="TEXT")
     private String content;
 
     @NotNull
     @ManyToOne
     private Snapshot snapshot;
 
-    public ZonedDateTime getTimestamp()
+    public long getId()
     {
-        return timestamp;
+        return id;
     }
 
-    public void setTimestamp(ZonedDateTime timestamp)
+    public void setId(long id)
     {
-        this.timestamp = timestamp;
+        this.id = id;
+    }
+
+    public String getEnvironment()
+    {
+        return environment;
+    }
+
+    public void setEnvironment(String environment)
+    {
+        this.environment = environment;
     }
 
     public String getName()
@@ -69,14 +83,14 @@ public class Document
         this.name = name;
     }
 
-    public long getId()
+    public ZonedDateTime getTimestamp()
     {
-        return id;
+        return timestamp;
     }
 
-    public void setId(long id)
+    public void setTimestamp(ZonedDateTime timestamp)
     {
-        this.id = id;
+        this.timestamp = timestamp;
     }
 
     public String getContent()

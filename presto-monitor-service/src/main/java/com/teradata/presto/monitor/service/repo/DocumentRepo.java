@@ -20,16 +20,31 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 public interface DocumentRepo
         extends JpaRepository<Document, Long>
 {
+    default Document findFirstDocument(String environment, String name)
+    {
+        return findFirstByEnvironmentAndNameOrderByTimestampAsc(environment, name);
+    }
+
+    default Document findLastDocument(String environment, String name)
+    {
+        return findFirstByEnvironmentAndNameOrderByTimestampDesc(environment, name);
+    }
+
+    default Document findLatestByName(String environment, String name, ZonedDateTime timestamp)
+    {
+        List<Document> documents = findLatestByName(environment, name, timestamp, new PageRequest(0, 1));
+        return !documents.isEmpty() ? getOnlyElement(documents) : null;
+    }
+
+    Document findFirstByEnvironmentAndNameOrderByTimestampAsc(String environment, String name);
+
+    Document findFirstByEnvironmentAndNameOrderByTimestampDesc(String environment, String name);
+
     @Query(value = "" +
             "from " +
             "  Document d " +
             "where " +
-            "  d.name = :name and d.timestamp <= :timestamp " +
+            "  d.environment = :environment and d.name = :name and d.timestamp <= :timestamp " +
             "order by d.timestamp desc")
-    List<Document> findLatestByName(@Param("name") String name, @Param("timestamp") ZonedDateTime timestamp, Pageable pageable);
-
-    default Document findLatestByName(String name, ZonedDateTime timestamp)
-    {
-        return getOnlyElement(findLatestByName(name, timestamp, new PageRequest(0, 1)));
-    }
+    List<Document> findLatestByName(@Param("environment") String environment, @Param("name") String name, @Param("timestamp") ZonedDateTime timestamp, Pageable pageable);
 }

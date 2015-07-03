@@ -1,0 +1,42 @@
+{
+  "tasks" : [ {
+    "taskId" : "20150630_103317_00032_g6mqe.0.0",
+    "state" : "FINISHED",
+    "host" : "10.25.17.79",
+    "uptime" : 340,
+    "cpuMillis" : 2,
+    "blockedMillis" : 50,
+    "inputBytes" : 1966,
+    "inputRows" : 24,
+    "outputBytes" : 1055,
+    "outputRows" : 1,
+    "usedMemoryBytes" : 0,
+    "queuedSplits" : 0,
+    "runningSplits" : 0,
+    "completedSplits" : 1,
+    "bufferedPages" : 0
+  }, {
+    "taskId" : "20150630_103317_00032_g6mqe.1.0",
+    "state" : "FINISHED",
+    "host" : "10.25.17.71",
+    "uptime" : 50,
+    "cpuMillis" : 12,
+    "blockedMillis" : 0,
+    "inputBytes" : 0,
+    "inputRows" : 0,
+    "outputBytes" : 14234,
+    "outputRows" : 24,
+    "usedMemoryBytes" : 0,
+    "queuedSplits" : 0,
+    "runningSplits" : 0,
+    "completedSplits" : 13,
+    "bufferedPages" : 0
+  } ],
+  "flows" : [ {
+    "from" : "20150630_103317_00032_g6mqe.1.0",
+    "to" : "20150630_103317_00032_g6mqe.0.0",
+    "pagesSent" : 12,
+    "bufferedPages" : 0,
+    "finished" : true
+  } ]
+}

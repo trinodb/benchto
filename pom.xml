@@ -71,7 +71,7 @@
         <dep.spring.boot.version>1.2.3.RELEASE</dep.spring.boot.version>
         <dep.spring.retry.version>1.1.2.RELEASE</dep.spring.retry.version>
         <dep.reactor.bus.version>2.0.2.RELEASE</dep.reactor.bus.version>
-        <dep.freemarker>2.3.20</dep.freemarker>
+        <dep.freemarker>2.3.22</dep.freemarker>
         <dep.mockito.version>1.10.19</dep.mockito.version>
         <dep.javax.validation.api.version>1.1.0.Final</dep.javax.validation.api.version>
         <dep.hibernate.validator.version>5.1.3.Final</dep.hibernate.validator.version>

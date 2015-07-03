@@ -7,6 +7,7 @@ CREATE TABLE snapshots
 CREATE TABLE documents
 (
   id          BIGSERIAL PRIMARY KEY NOT NULL,
+  environment VARCHAR(64)           NOT NULL,
   name        VARCHAR(64)           NOT NULL,
   timestamp   TIMESTAMP             NOT NULL,
   content     TEXT                  NOT NULL,
@@ -15,5 +16,5 @@ CREATE TABLE documents
 
 ALTER TABLE documents ADD FOREIGN KEY (snapshot_id) REFERENCES snapshots (id);
 
-CREATE UNIQUE INDEX idx_uk_documents_name ON documents (name, timestamp);
+CREATE UNIQUE INDEX idx_uk_documents_environment_name_timestamp ON documents (environment, name, timestamp);
 

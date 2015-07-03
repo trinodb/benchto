@@ -4,6 +4,7 @@
 package com.teradata.presto.monitor.service;
 
 import com.teradata.presto.monitor.service.category.IntegrationTest;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -12,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +30,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @WebAppConfiguration
 public class IntegrationTestBase
 {
+    @Autowired
+    protected RestTemplate restTemplate;
+
+    protected MockMvc mvc;
+
+    protected MockRestServiceServer restServiceServer;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -33,13 +43,23 @@ public class IntegrationTestBase
     @Autowired
     private PlatformTransactionManager transactionManager;
 
-    protected MockMvc mvc;
-
     @Before
     public void setUp()
             throws Exception
     {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+
+    @Before
+    public void initializeRestServiceServer()
+    {
+        restServiceServer = MockRestServiceServer.createServer(restTemplate);
+    }
+
+    @After
+    public void verifyRestServiceServer()
+    {
+        restServiceServer.verify();
     }
 
     @Test
@@ -55,5 +75,14 @@ public class IntegrationTestBase
             runnable.run();
             return new Object();
         });
+    }
+
+    protected RequestMatcher matchAll(RequestMatcher... matchers)
+    {
+        return request -> {
+            for (RequestMatcher matcher : matchers) {
+                matcher.match(request);
+            }
+        };
     }
 }

@@ -44,16 +44,6 @@ public class Snapshot
     @OneToMany(mappedBy = "snapshot", cascade = CascadeType.ALL)
     private Set<Document> documents = newHashSet();
 
-    public Set<Document> getDocuments()
-    {
-        return documents;
-    }
-
-    public void setDocuments(Set<Document> documents)
-    {
-        this.documents = documents;
-    }
-
     public long getId()
     {
         return id;
@@ -72,5 +62,15 @@ public class Snapshot
     public void setTimestamp(ZonedDateTime timestamp)
     {
         this.timestamp = timestamp;
+    }
+
+    public Set<Document> getDocuments()
+    {
+        return documents;
+    }
+
+    public void setDocuments(Set<Document> documents)
+    {
+        this.documents = documents;
     }
 }
