@@ -128,7 +128,12 @@ public class BenchmarkExecutionDriver
                 throw new BenchmarkExecutionException("Could not execute benchmark", e);
             }
             finally {
-                macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
+                try {
+                    macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
+                }
+                catch (RuntimeException e) {
+                    LOG.error("Error while running after benchmark macros ({})", benchmark.getAfterBenchmarkMacros(), e);
+                }
             }
         }
 

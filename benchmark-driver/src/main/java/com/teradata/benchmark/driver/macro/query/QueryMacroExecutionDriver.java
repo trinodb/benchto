@@ -3,7 +3,6 @@
  */
 package com.teradata.benchmark.driver.macro.query;
 
-import com.google.common.collect.ImmutableMap;
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.loader.QueryLoader;

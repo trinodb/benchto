@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static com.facebook.presto.jdbc.internal.guava.collect.Iterables.filter;
-import static com.facebook.presto.jdbc.internal.guava.collect.Iterables.getOnlyElement;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class MacroServiceImpl
@@ -21,7 +22,18 @@ public class MacroServiceImpl
 
     public void runBenchmarkMacro(String macroName, Benchmark benchmark)
     {
-        MacroExecutionDriver macroExecutionDriver = getOnlyElement(filter(macroExecutionDrivers, service -> service.canExecuteBenchmarkMacro(macroName)));
+        MacroExecutionDriver macroExecutionDriver = macroExecutionDrivers.stream()
+                .filter(executionDriver -> executionDriver.canExecuteBenchmarkMacro(macroName))
+                .collect(Collectors.collectingAndThen(toList(), matchingExecutionDrivers -> {
+                    if (matchingExecutionDrivers.size() > 1) {
+                        throw new IllegalStateException(format("More than one execution driver for macro %s - matching drivers %s", macroName, matchingExecutionDrivers));
+                    }
+                    else if (matchingExecutionDrivers.size() == 0) {
+                        throw new IllegalStateException(format("No execution driver for macro %s", macroName));
+                    }
+                    return matchingExecutionDrivers.get(0);
+                }));
+
         macroExecutionDriver.runBenchmarkMacro(macroName, benchmark);
     }
 }

@@ -70,11 +70,8 @@ public class BenchmarkLoader
             List<Benchmark> allBenchmarks = loadBenchmarks(sequenceId, benchmarkFiles);
             LOGGER.debug("All benchmarks: {}", allBenchmarks);
 
-            List<Benchmark> allBenchmarksSorted = sortBenchmarksByName(allBenchmarks);
-            LOGGER.debug("All benchmarks sorted: {}", allBenchmarks);
-
-            List<Benchmark> includedBenchmarks = filterBenchmarks(allBenchmarksSorted);
-            Set<Benchmark> excludedBenchmarks = newLinkedHashSet(allBenchmarksSorted);
+            List<Benchmark> includedBenchmarks = filterBenchmarks(allBenchmarks);
+            Set<Benchmark> excludedBenchmarks = newLinkedHashSet(allBenchmarks);
             excludedBenchmarks.removeAll(includedBenchmarks);
 
             String formatString = createFormatString(allBenchmarks);
@@ -87,7 +84,7 @@ public class BenchmarkLoader
             return includedBenchmarks;
         }
         catch (IOException e) {
-            throw new BenchmarkExecutionException("could not load benchmarks", e);
+            throw new BenchmarkExecutionException("Could not load benchmarks", e);
         }
     }
 
@@ -109,12 +106,6 @@ public class BenchmarkLoader
     {
         return benchmarkFiles.stream()
                 .flatMap(file -> loadBenchmarks(sequenceId, file).stream())
-                .collect(toList());
-    }
-
-    private List<Benchmark> sortBenchmarksByName(List<Benchmark> benchmarks)
-    {
-        return benchmarks.stream()
                 .sorted((left, right) -> NaturalOrderComparator.forStrings().compare(left.getName(), right.getName()))
                 .collect(toList());
     }

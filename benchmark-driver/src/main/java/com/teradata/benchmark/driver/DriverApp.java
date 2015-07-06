@@ -45,6 +45,8 @@ public class DriverApp
         ConfigurableApplicationContext ctx = SpringApplication.run(DriverApp.class, args);
         BenchmarkExecutionDriver benchmarkExecutionDriver = ctx.getBean(BenchmarkExecutionDriver.class);
 
+        Thread.currentThread().setName("main");
+
         boolean successful = benchmarkExecutionDriver.run();
         if (successful) {
             System.exit(0);
