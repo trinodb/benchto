@@ -35,6 +35,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @Controller
 public class DocumentController
 {
+    private static final String DOCUMENT_NAME_PREFIX = "/v1/";
+
     private static final Logger LOG = LoggerFactory.getLogger(DocumentController.class);
 
     @Autowired
@@ -65,7 +67,7 @@ public class DocumentController
 
         String path = extractWildcardParameter(request);
         Optional<Document> document = snapshot.getDocuments().stream()
-                .filter(d -> d.getName().equals("/v1/" + path))
+                .filter(d -> d.getName().equals(DOCUMENT_NAME_PREFIX + path))
                 .findAny();
 
         if (!document.isPresent()) {
@@ -84,7 +86,7 @@ public class DocumentController
     {
         String path = extractWildcardParameter(request);
 
-        Document document = documentRepo.findLatestByName(environment, "/v1/" + path, timestamp);
+        Document document = documentRepo.findLatestByName(environment, DOCUMENT_NAME_PREFIX + path, timestamp);
         if (document == null) {
             throw new ResourceNotFoundException();
         }

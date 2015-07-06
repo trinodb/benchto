@@ -40,6 +40,7 @@ public class PrestoSnapshotIdAppender
 
         if (!querySnapshotId.isPresent() && refererSnapshotId.isPresent()) {
             String redirectRequest = httpRequest.getRequestURI();
+
             if (query != null) {
                 redirectRequest += "?" + query;
             }

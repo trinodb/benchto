@@ -15,15 +15,19 @@
 </head>
 <body>
 
-<div id="header">
-  <p>
-    <label for="timestamp">Date:</label>
-    <input type="text" id="timestamp" readonly style="border:0; color:#f6931f; font-weight:bold;">
-  </p>
+<div class="box">
+  <div class="row header ui-widget-content">
+    <p>
+      <label for="timestamp">Date:</label>
+      <input type="text" id="timestamp" readonly style="border:0; color:#f6931f; font-weight:bold;">
+    </p>
 
-  <div id="timestamp-slider"></div>
+    <div id="timestamp-slider"></div>
+  </div>
+  <div class="row content">
+    <iframe frameBorder="0" id="snapshot-page" src="${pageUrl}?snapshotId=${firstDocument.snapshotId}"></iframe>
+  </div>
 </div>
-<iframe id="snapshot-page" src="${pageUrl}?snapshotId=${firstDocument.snapshotId}"></iframe>
 
 </body>
 <script>
@@ -85,12 +89,5 @@
       }
       return newUrl
   }
-
-  $(function() {
-      $(window).resize(function() {
-          $('#snapshot-page').height($(window).height() - $('#snapshot-page').offset().top - 20);
-      });
-      $(window).resize();
-  });
 </script>
 </html>

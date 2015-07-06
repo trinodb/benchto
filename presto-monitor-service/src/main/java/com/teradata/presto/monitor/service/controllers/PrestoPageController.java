@@ -44,7 +44,7 @@ public class PrestoPageController
         return new ModelAndView("history", model);
     }
 
-    @RequestMapping(value = "/history/{environment}", method = GET)
+    @RequestMapping(value = "/history/{environment}/queryList", method = GET)
     @ResponseBody
     public ModelAndView queryListRequest(@PathVariable("environment") String environment)
     {
@@ -66,6 +66,7 @@ public class PrestoPageController
     {
         Document firstDocument = documentRepo.findFirstDocument(environment, documentName);
         Document lastDocument = documentRepo.findLastDocument(environment, documentName);
+
         if (firstDocument == null || lastDocument == null) {
             throw new ResourceNotFoundException();
         }
