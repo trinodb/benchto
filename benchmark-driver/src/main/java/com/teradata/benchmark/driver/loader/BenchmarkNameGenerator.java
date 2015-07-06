@@ -3,12 +3,14 @@
  */
 package com.teradata.benchmark.driver.loader;
 
+import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
+import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
-import java.util.Map;
+import java.util.List;
 
 import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORD;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
@@ -26,14 +28,15 @@ public class BenchmarkNameGenerator
         String pathWithoutExtension = removeExtension(relativePath);
         StringBuilder benchmarkName = new StringBuilder(pathWithoutExtension);
 
-        for (Map.Entry<String, String> variablesEntry : benchmarkDescriptor.getVariables().entrySet()) {
-            if (RESERVED_KEYWORD.contains(variablesEntry.getKey())) {
+        List<String> orderedVariableNames = ImmutableList.copyOf(Ordering.natural().sortedCopy(benchmarkDescriptor.getVariables().keySet()));
+        for (String variableName : orderedVariableNames) {
+            if (RESERVED_KEYWORD.contains(variableName)) {
                 continue;
             }
             benchmarkName.append('_');
-            benchmarkName.append(variablesEntry.getKey());
+            benchmarkName.append(variableName);
             benchmarkName.append('=');
-            benchmarkName.append(variablesEntry.getValue());
+            benchmarkName.append(benchmarkDescriptor.getVariables().get(variableName));
         }
 
         if (benchmarkDescriptor.getConcurrency().isPresent() && benchmarkDescriptor.getConcurrency().get() > 1) {
