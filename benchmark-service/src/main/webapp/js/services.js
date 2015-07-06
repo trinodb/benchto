@@ -109,5 +109,32 @@
                     return deferredEnvironment.promise;
                 }
             };
+        }])
+        .factory('CompareService', ['$rootScope', function ($rootScope) {
+            var cart = [];
+            return {
+                add: function (benchmarkRun) {
+                    cart.push(benchmarkRun);
+                    $rootScope.$broadcast('cart:changed');
+                },
+                remove: function (benchmarkRun) {
+                    cart.splice(cart.indexOf(benchmarkRun), 1);
+                    $rootScope.$broadcast('cart:changed');
+                },
+                getAll: function () {
+                    return cart;
+                },
+                size: function () {
+                    return cart.length;
+                },
+                contains: function (benchmarkRun) {
+                    for (var i in cart) {
+                        if (benchmarkRun.name == cart[i].name && benchmarkRun.sequenceId == cart[i].sequenceId) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
         }]);
 }());

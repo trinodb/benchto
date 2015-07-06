@@ -36,6 +36,38 @@
         <div class="navbar-header">
             <a class="navbar-brand" href="#/">Benchto <span class="glyphicon glyphicon-signal"></span></a>
         </div>
+
+        <div role="presentation" class="dropdown navbar-right" ng-controller="CompareCartNavBarCtrl">
+            <a target="_blank" role="button" class="dropdown-toogle navbar-brand" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="glyphicon glyphicon-shopping-cart"></span>
+                Compare cart size: {{ compareCartSize }}
+            </a>
+            <div ng-if="compareCartSize > 0" class="dropdown-menu">
+                <table class="table table-striped table-condensed">
+                    <thead>
+                    <tr>
+                        <td>#</td>
+                        <td>Name</td>
+                        <td></td>
+                    </tr>
+                    </thead>
+                    <tr ng-repeat="benchmarkRun in benchmarkRuns">
+                        <td>{{$index + 1}}</td>
+                        <td>{{benchmarkRun.name}} ({{benchmarkRun.sequenceId}})</td>
+                        <td>
+                            <button class="btn btn-primary" ng-click="remove(benchmarkRun)">Remove</button>
+                        </td>
+                    </tr>
+                    <tr ng-if="compareCartSize > 1">
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <button class="btn btn-primary">Compare</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
     </div>
 </nav>
 <div class="container-fluid">

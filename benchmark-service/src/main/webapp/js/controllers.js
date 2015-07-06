@@ -104,7 +104,7 @@
                     });
                 });
         }])
-        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', function ($scope, $routeParams, $modal, BenchmarkService) {
+        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CompareService', function ($scope, $routeParams, $modal, BenchmarkService, CompareService) {
             BenchmarkService.loadBenchmarkRun($routeParams.benchmarkName, $routeParams.benchmarkSequenceId)
                 .then(function (benchmarkRun) {
                     $scope.benchmarkRun = benchmarkRun;
@@ -142,6 +142,14 @@
                     }
                 });
             };
+
+            $scope.addToCompare = function(benchmarkRun) {
+                CompareService.add(benchmarkRun);
+            }
+
+            $scope.isAddedToCompare = function(benchmarkRun) {
+                return CompareService.contains(benchmarkRun);
+            }
         }])
         .controller('EnvironmentCtrl', ['$scope', '$routeParams', 'EnvironmentService', function ($scope, $routeParams, EnvironmentService) {
             EnvironmentService.loadEnvironment($routeParams.environmentName)
@@ -154,6 +162,18 @@
 
             $scope.close = function () {
                 $modalInstance.dismiss('cancel');
+            }
+        }])
+        .controller('CompareCartNavBarCtrl', ['$scope', 'CompareService', function ($scope, CompareService) {
+            $scope.compareCartSize = CompareService.size();
+            $scope.benchmarkRuns = CompareService.getAll();
+
+            $scope.$on('cart:changed', function() {
+                $scope.compareCartSize = CompareService.size();
+            })
+
+            $scope.remove = function (benchmarkRun) {
+                CompareService.remove(benchmarkRun);
             }
         }]);
 }());

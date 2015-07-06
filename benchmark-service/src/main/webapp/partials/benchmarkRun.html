@@ -6,9 +6,21 @@
     </ol>
 
     <div class="col-sm-12">
-        <h2 class="sub-header">Benchmark: {{::benchmarkRun.name}}</h2>
+        <div class="row">
+            <div class="col-sm-11">
+                <h2>Benchmark: {{::benchmarkRun.name}}</h2>
+            </div>
+
+            <div ng-switch on="isAddedToCompare(benchmarkRun)" class="col-sm-1">
+                <div ng-switch-when="false">
+                    <button class="btn btn-primary pull-right" ng-click="addToCompare(benchmarkRun)">Add to compare</button>
+                </div>
+                <div ng-switch-when="true">Already added to compare.</div>
+            </div>
+        </div>
 
         <pre ng-if="::benchmarkRun.attributes.sqlStatement" class="prettyprint lang-sql">{{::benchmarkRun.attributes.sqlStatement}}</pre>
+
 
         <ul>
             <li>
