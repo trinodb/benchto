@@ -1,0 +1,10 @@
+snapshot.interval: 1000000000
+
+environments:
+  test:
+    presto.url: http://presto-test-master:8090
+
+spring:
+  jpa:
+    properties:
+      hibernate.cache.region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
