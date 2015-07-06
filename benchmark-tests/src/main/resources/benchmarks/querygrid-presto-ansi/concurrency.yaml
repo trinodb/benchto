@@ -1,0 +1,13 @@
+datasource: teradata
+query-names: querygrid-presto-ansi/linear-scan/selectivity-${selectivity}.sql
+schema: tpch_100gb_orc
+database: hive
+runs: ${concurrency}
+prewarm-runs: 10
+variables:
+  1:
+    selectivity: 10, 100
+    concurrency: 10
+  2:
+    selectivity: 10, 100
+    concurrency: 20

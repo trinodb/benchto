@@ -1,0 +1,24 @@
+datasource: teradata
+query-names: teradata/linear-scan/selectivity-${selectivity}.sql
+runs: 3
+variables:
+  1:
+    selectivity: 0, 2, 10, 100
+    schema: sf100, sf1000
+    database: tpch
+    prewarm-runs: 2
+  2:
+    selectivity: 0, 2, 10, 100
+    schema: tpch_100gb_orc, tpch_100gb_text, tpch_1tb_orc, tpch_1tb_text
+    database: hive
+    prewarm-runs: 2
+  3:
+    selectivity: 0, 2, 10, 100
+    schema: sf10000
+    database: tpch
+    prewarm-runs: 1
+  3:
+    selectivity: 0, 2, 10, 100
+    schema: tpch_10tb_orc, tpch_10tb_text
+    database: hive
+    prewarm-runs: 1

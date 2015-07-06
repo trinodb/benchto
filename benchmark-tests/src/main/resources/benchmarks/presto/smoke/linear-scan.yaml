@@ -1,0 +1,9 @@
+datasource: presto
+query-names: presto/linear-scan/selectivity-${selectivity}.sql
+runs: 3
+prewarm-runs: 3
+variables:
+  1:
+    selectivity: 0, 2, 10, 100
+    schema: tpch_100gb_orc, tpch_100gb_text
+    database: hive

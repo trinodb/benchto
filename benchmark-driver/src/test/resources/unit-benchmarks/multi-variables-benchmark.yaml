@@ -4,6 +4,8 @@ variables:
   combinations1:
     size: [1GB, 2GB]
     format: [txt, orc]
+    pattern: ${size}-${format}
   combinations2:
     size: 10GB
     format: parquet
+    pattern: ${size}-${format}

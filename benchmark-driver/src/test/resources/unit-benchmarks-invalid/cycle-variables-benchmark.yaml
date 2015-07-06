@@ -1,0 +1,7 @@
+datasource: foo
+query-names: q1
+variables:
+  1:
+    a: ${b}
+    b: ${c}
+    c: ${a}

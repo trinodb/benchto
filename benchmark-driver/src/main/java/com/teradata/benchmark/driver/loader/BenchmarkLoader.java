@@ -10,6 +10,9 @@ import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.utils.NaturalOrderComparator;
 import com.teradata.benchmark.driver.utils.YamlUtils;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +24,11 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.facebook.presto.jdbc.internal.guava.collect.Lists.newArrayListWithCapacity;
@@ -40,12 +45,16 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isRegularFile;
 import static java.nio.file.Files.readAllBytes;
+import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 
 @Component
 public class BenchmarkLoader
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkLoader.class);
+
+    private static final Pattern VALUE_SUBSTITUTION_PATTERN = Pattern.compile(".*\\$\\{.+\\}.*");
 
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
@@ -61,6 +70,9 @@ public class BenchmarkLoader
 
     @Autowired
     private BenchmarkNameGenerator benchmarkNameGenerator;
+
+    @Autowired
+    private Configuration freemarkerConfiguration;
 
     public List<Benchmark> loadBenchmarks(String sequenceId)
     {
@@ -158,9 +170,11 @@ public class BenchmarkLoader
         Map<String, String> globalVariables = extractGlobalVariables(yaml);
 
         for (Map<String, String> variablesMap : variablesCombinations) {
-            for (Map.Entry<String, String> globalVariableEntry : globalVariables.entrySet()) {
+            for (Entry<String, String> globalVariableEntry : globalVariables.entrySet()) {
                 variablesMap.putIfAbsent(globalVariableEntry.getKey(), globalVariableEntry.getValue());
             }
+
+            evaluateValueExpressions(variablesMap);
         }
 
         return variablesCombinations.stream()
@@ -168,11 +182,35 @@ public class BenchmarkLoader
                 .collect(toList());
     }
 
+    @SuppressWarnings("unchecked")
+    private void evaluateValueExpressions(Map<String, String> variablesMap)
+    {
+        for (Entry<String, String> variableEntry : variablesMap.entrySet()) {
+            String variableValue = variableEntry.getValue();
+
+            try {
+                if (VALUE_SUBSTITUTION_PATTERN.matcher(variableValue).matches()) {
+                    Template valueTemplate = new Template(randomUUID().toString(), variableValue, freemarkerConfiguration);
+                    String evaluatedValue = processTemplateIntoString(valueTemplate, variablesMap);
+
+                    if (VALUE_SUBSTITUTION_PATTERN.matcher(evaluatedValue).matches()) {
+                        throw new BenchmarkExecutionException("Recursive value substitution is not supported, invalid " + variableEntry.getKey() + ": " + variableValue);
+                    }
+
+                    variableEntry.setValue(evaluatedValue);
+                }
+            }
+            catch (IOException | TemplateException e) {
+                throw new BenchmarkExecutionException("Could not evaluate value " + variableValue, e);
+            }
+        }
+    }
+
     private Map<String, String> extractGlobalVariables(Map<String, Object> yaml)
     {
         return yaml.entrySet().stream()
                 .filter(entry -> !entry.getKey().equals(VARIABLES_KEY))
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue() == null ? null : entry.getValue().toString()));
+                .collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue() == null ? null : entry.getValue().toString()));
     }
 
     @SuppressWarnings("unchecked")
@@ -208,7 +246,7 @@ public class BenchmarkLoader
 
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)
     {
-        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarm Runs", "Concurrency"));
+        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarms", "Concurrency"));
         for (Benchmark benchmark : benchmarks) {
             LOGGER.info(format(formatString,
                     benchmark.getName(),
@@ -224,6 +262,6 @@ public class BenchmarkLoader
         int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().getAsInt();
         int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().getAsInt();
         int indent = 3;
-        return "\t| %-" + (nameMaxLength + indent) + "s | %-" + (dataSourceMaxLength + indent) + "s | %-4s | %-12s | %-11s |";
+        return "\t| %-" + (nameMaxLength + indent) + "s | %-" + (dataSourceMaxLength + indent) + "s | %-4s | %-8s | %-11s |";
     }
 }

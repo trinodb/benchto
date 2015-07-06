@@ -5,12 +5,17 @@ package com.teradata.benchmark.driver.loader;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchmark.driver.Benchmark;
+import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
+import com.teradata.benchmark.driver.DriverApp;
 import com.teradata.benchmark.driver.Query;
+import freemarker.template.Configuration;
 import org.assertj.core.api.MapAssert;
 import org.assertj.core.data.MapEntry;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -23,22 +28,28 @@ import static org.assertj.core.data.MapEntry.entry;
 public class BenchmarkDescriptorTest
 {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     private BenchmarkProperties benchmarkProperties;
 
     private BenchmarkLoader benchmarkLoader;
 
     @Before
     public void setupBenchmarkLoader()
+            throws Exception
     {
         QueryLoader queryLoader = mockQueryLoader();
         benchmarkProperties = new BenchmarkProperties();
         BenchmarkNameGenerator benchmarkNameGenerator = new BenchmarkNameGenerator();
+        Configuration freemarkerConfiguration = new DriverApp().freemarkerConfiguration().createConfiguration();
 
         benchmarkLoader = new BenchmarkLoader();
 
         ReflectionTestUtils.setField(benchmarkLoader, "properties", benchmarkProperties);
         ReflectionTestUtils.setField(benchmarkLoader, "queryLoader", queryLoader);
         ReflectionTestUtils.setField(benchmarkLoader, "benchmarkNameGenerator", benchmarkNameGenerator);
+        ReflectionTestUtils.setField(benchmarkLoader, "freemarkerConfiguration", freemarkerConfiguration);
         ReflectionTestUtils.setField(benchmarkNameGenerator, "properties", benchmarkProperties);
     }
 
@@ -95,20 +106,36 @@ public class BenchmarkDescriptorTest
         assertThat(benchmarks).hasSize(5);
 
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "1GB"), entry("format", "txt"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "txt"));
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "txt"), entry("pattern", "1GB-txt"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "1GB"), entry("format", "orc"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "orc"));
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "orc"), entry("pattern", "1GB-orc"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "2GB"), entry("format", "txt"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "txt"));
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "txt"), entry("pattern", "2GB-txt"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "2GB"), entry("format", "orc"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "orc"));
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "orc"), entry("pattern", "2GB-orc"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "10GB"), entry("format", "parquet"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "10GB"), entry("format", "parquet"));
+                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "10GB"), entry("format", "parquet"),
+                        entry("pattern", "10GB-parquet"));
+    }
+
+    @Test
+    public void benchmarkWithCycleVariables()
+            throws IOException
+    {
+        thrown.expect(BenchmarkExecutionException.class);
+        thrown.expectMessage("Recursive value substitution is not supported, invalid a: ${b}");
+
+        loadBenchmarkWithName("cycle-variables-benchmark", "unit-benchmarks-invalid");
     }
 
     private List<Benchmark> loadBenchmarkWithName(String benchmarkName)
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "unit-benchmarks");
+        return loadBenchmarkWithName(benchmarkName, "unit-benchmarks");
+    }
+
+    private List<Benchmark> loadBenchmarkWithName(String benchmarkName, String benchmarksDir)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", benchmarksDir);
         ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", benchmarkName);
 
         return benchmarkLoader.loadBenchmarks("sequenceId");
