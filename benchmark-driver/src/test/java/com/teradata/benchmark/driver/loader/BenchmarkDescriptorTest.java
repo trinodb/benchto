@@ -83,6 +83,8 @@ public class BenchmarkDescriptorTest
         assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
         assertThat(benchmark.getRuns()).isEqualTo(10);
         assertThat(benchmark.getConcurrency()).isEqualTo(20);
+        assertThat(benchmark.getAfterBenchmarkMacros()).isEmpty();
+        assertThat(benchmark.getBeforeBenchmarkMacros()).isEmpty();
     }
 
     @Test

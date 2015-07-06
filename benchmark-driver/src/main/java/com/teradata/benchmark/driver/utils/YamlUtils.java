@@ -36,7 +36,7 @@ public final class YamlUtils
     public static List<String> asStringList(Object object)
     {
         if (!(object instanceof Iterable<?>)) {
-            return ImmutableList.copyOf(Splitter.on(",").trimResults().split(object.toString()));
+            return ImmutableList.copyOf(Splitter.on(",").trimResults().omitEmptyStrings().split(object.toString()));
         }
         else {
             Iterable<?> iterable = (Iterable<?>) object;
