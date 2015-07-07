@@ -40,9 +40,14 @@ public class PrestoSnapshotServiceTest
         verifyQueryJsonRequested();
         verifyQueryExecutionJsonRequested();
 
+        verifyServiceJsonRequested();
+        verifyQueryListJsonRequested();
+
+        snapshotService.makeSnapshot();
         snapshotService.makeSnapshot();
 
-        Document queryDocument = documentRepo.findFirstByEnvironmentAndNameOrderByTimestampAsc("test", "/v1/query/20150630_103317_00032_g6mqe");
+        assertThat(documentRepo.findByEnvironmentAndName("test", "/v1/query/20150630_103317_00032_g6mqe")).hasSize(1);
+        Document queryDocument = documentRepo.findFirstDocument("test", "/v1/query/20150630_103317_00032_g6mqe");
 
         assertThat(queryDocument.getContent()).isEqualTo(loadResource("json/query.json"));
         assertThat(queryDocument.getSnapshot().getDocuments().size()).isEqualTo(4);

@@ -7,6 +7,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 import com.teradata.presto.monitor.service.model.Document;
 import com.teradata.presto.monitor.service.model.Snapshot;
+import com.teradata.presto.monitor.service.repo.DocumentRepo;
 import com.teradata.presto.monitor.service.repo.SnapshotRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,13 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.teradata.presto.monitor.service.utils.PrestoJsonUtils.QUERY_PLANNING;
+import static com.teradata.presto.monitor.service.utils.PrestoJsonUtils.QUERY_RUNNING;
 import static com.teradata.presto.monitor.service.utils.PrestoJsonUtils.queryIdsFromQueryList;
+import static com.teradata.presto.monitor.service.utils.PrestoJsonUtils.queryStateFromQuery;
 import static java.time.Clock.systemUTC;
+import static java.util.Collections.synchronizedList;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -44,6 +50,9 @@ public class PrestoSnapshotService
     private ExecutorService downloadExecutorService;
 
     @Autowired
+    private DocumentRepo documentRepo;
+
+    @Autowired
     private SnapshotRepo snapshotRepo;
 
     @Autowired
@@ -60,8 +69,8 @@ public class PrestoSnapshotService
     {
         try {
             Snapshot snapshot = createSnapshot();
-            downloadServiceDocument(snapshot, environment);
-            downloadQueryDocuments(snapshot, environment);
+            downloadAndAddServiceDocument(snapshot, environment);
+            downloadAndAddQueryDocuments(snapshot, environment);
             snapshotRepo.save(snapshot);
             LOG.info("Created new snapshot with ID: {}", snapshot.getId());
         }
@@ -70,53 +79,71 @@ public class PrestoSnapshotService
         }
     }
 
-    private void downloadServiceDocument(Snapshot snapshot, Environment environment)
+    private void downloadAndAddServiceDocument(Snapshot snapshot, Environment environment)
     {
-        addDocument(snapshot, environment, SERVICE_PATH, downloadPrestoFile(environment, SERVICE_PATH));
+        addDocument(snapshot, createDocument(environment, SERVICE_PATH, downloadPrestoFile(environment, SERVICE_PATH)));
     }
 
-    private void downloadQueryDocuments(Snapshot snapshot, Environment environment)
+    private void downloadAndAddQueryDocuments(Snapshot snapshot, Environment environment)
             throws InterruptedException
     {
-        ReadContext queryList = downloadQueryListDocument(snapshot, environment);
-        List<Callable<Void>> queryDownloadCallables = queryIdsFromQueryList(queryList).stream()
+        ReadContext queryList = downloadAndAddQueryListDocument(snapshot, environment);
+        List<String> queryIds = queryIdsFromQueryList(queryList).stream()
+                .filter(queryId -> !isLatestQueryDocumentFinished(environment, queryId))
+                .collect(toList());
+
+        List<Document> queryDocuments = synchronizedList(newArrayList());
+        List<Document> queryExecutionDocuments = synchronizedList(newArrayList());
+
+        List<Callable<Void>> queryDocumentsDownloadCallables = queryIds.stream()
                 .map(queryId -> (Callable<Void>) () -> {
                     try {
-                        downloadQueryDocument(snapshot, environment, queryId);
-                        downloadQueryExecutionDocument(snapshot, environment, queryId);
+                        Document queryDocument = downloadQueryDocument(environment, queryId);
+                        Document queryExecutionDocument = downloadQueryExecutionDocument(environment, queryId);
+
+                        queryDocuments.add(queryDocument);
+                        queryExecutionDocuments.add(queryExecutionDocument);
                     }
                     catch (HttpServerErrorException e) {
                         LOG.info("Could not download JSONs for query {} in environment {}", queryId, environment.getName(), e);
                     }
                     return null;
                 }).collect(toList());
-        downloadExecutorService.invokeAll(queryDownloadCallables);
+        downloadExecutorService.invokeAll(queryDocumentsDownloadCallables);
+
+        queryDocuments.stream().forEach(document -> addDocument(snapshot, document));
+        queryExecutionDocuments.stream().forEach(document -> addDocument(snapshot, document));
     }
 
-    private ReadContext downloadQueryListDocument(Snapshot snapshot, Environment environment)
+    private ReadContext downloadAndAddQueryListDocument(Snapshot snapshot, Environment environment)
     {
         String queryListJson = downloadPrestoFile(environment, QUERY_PATH);
-        addDocument(snapshot, environment, QUERY_PATH, queryListJson);
+        addDocument(snapshot, createDocument(environment, QUERY_PATH, queryListJson));
         return JsonPath.parse(queryListJson);
     }
 
-    private void downloadQueryDocument(Snapshot snapshot, Environment environment, String queryId)
+    private boolean isLatestQueryDocumentFinished(Environment environment, String queryId)
     {
         String name = QUERY_PATH + "/" + queryId;
-        addDocument(snapshot, environment, name, downloadPrestoFile(environment, name));
+        Document document = documentRepo.findLastDocument(environment.getName(), name);
+        if (document == null) {
+            return false;
+        }
+
+        String queryState = queryStateFromQuery(JsonPath.parse(document.getContent()));
+        return !queryState.equals(QUERY_PLANNING) && !queryState.equals(QUERY_RUNNING);
     }
 
-    private void downloadQueryExecutionDocument(Snapshot snapshot, Environment environment, String queryId)
+    private Document downloadQueryDocument(Environment environment, String queryId)
+    {
+        String name = QUERY_PATH + "/" + queryId;
+        return createDocument(environment, name, downloadPrestoFile(environment, name));
+    }
+
+    private Document downloadQueryExecutionDocument(Environment environment, String queryId)
     {
         String name = QUERY_EXECUTION_PATH + "/" + queryId;
-        addDocument(snapshot, environment, name, downloadPrestoFile(environment, name));
-    }
-
-    private String downloadPrestoFile(Environment environment, String path)
-    {
-        String url = environment.getPrestoUrl() + path;
-        LOG.info("Downloading {},", url);
-        return restTemplate.getForObject(environment.getPrestoUrl() + path, String.class);
+        return createDocument(environment, name, downloadPrestoFile(environment, name));
     }
 
     private Snapshot createSnapshot()
@@ -126,13 +153,25 @@ public class PrestoSnapshotService
         return snapshot;
     }
 
-    private void addDocument(Snapshot snapshot, Environment environment, String name, String content)
+    private void addDocument(Snapshot snapshot, Document document)
+    {
+        document.setSnapshot(snapshot);
+    }
+
+    private Document createDocument(Environment environment, String name, String content)
     {
         Document document = new Document();
         document.setEnvironment(environment.getName());
         document.setName(name);
         document.setTimestamp(ZonedDateTime.now(systemUTC()));
         document.setContent(content);
-        document.setSnapshot(snapshot);
+        return document;
+    }
+
+    private String downloadPrestoFile(Environment environment, String path)
+    {
+        String url = environment.getPrestoUrl() + path;
+        LOG.info("Downloading {},", url);
+        return restTemplate.getForObject(environment.getPrestoUrl() + path, String.class);
     }
 }

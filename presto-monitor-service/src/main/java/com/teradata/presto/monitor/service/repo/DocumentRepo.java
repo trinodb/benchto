@@ -47,4 +47,6 @@ public interface DocumentRepo
             "  d.environment = :environment and d.name = :name and d.timestamp <= :timestamp " +
             "order by d.timestamp desc")
     List<Document> findLatestByName(@Param("environment") String environment, @Param("name") String name, @Param("timestamp") ZonedDateTime timestamp, Pageable pageable);
+
+    List<Document> findByEnvironmentAndName(String environment, String name);
 }
