@@ -110,7 +110,7 @@
                 }
             };
         }])
-        .factory('CompareService', ['$rootScope', function ($rootScope) {
+        .factory('CartCompareService', ['$rootScope', function ($rootScope) {
             var cart = [];
             return {
                 add: function (benchmarkRun) {

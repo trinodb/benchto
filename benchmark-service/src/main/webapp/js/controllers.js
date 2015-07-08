@@ -4,7 +4,7 @@
 (function () {
     'use strict';
 
-    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services'])
+    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3'])
         .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
 
             BenchmarkService.loadLatestBenchmarkRuns()
@@ -27,76 +27,39 @@
                     var benchmarkRuns = _.filter(benchmark.runs, function (benchmarkRun) {
                         return benchmarkRun.status === 'ENDED';
                     });
-
-                    // aggregated executions measurements graph data
-                    var aggregatedExecutionsMeasurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
-                        function (benchmarkRun) {
-                            return _.allKeys(benchmarkRun.aggregatedMeasurements);
-                        }
-                    )));
-
-                    var aggregatedExecutionsMeasurementUnit = function (measurementKey) {
-                        return benchmarkRuns[0].aggregatedMeasurements[measurementKey].unit;
-                    };
-
-                    var extractAggregatedExecutionsAggregatedMeasurements = function (measurementKey) {
-                        return _.map(benchmarkRuns, function (benchmarkRun) {
-                            return benchmarkRun.aggregatedMeasurements[measurementKey];
-                        });
-                    };
+                    var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
 
                     var dataForQueryMeasurementKey = function (measurementKey) {
-                        var aggregatedMeasurementsForKey = extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
+                        var aggregatedMeasurements = benchmarkRunsHelper.extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
                         return [
-                            _.pluck(aggregatedMeasurementsForKey, 'mean'),
-                            _.pluck(aggregatedMeasurementsForKey, 'min'),
-                            _.pluck(aggregatedMeasurementsForKey, 'max'),
-                            _.pluck(aggregatedMeasurementsForKey, 'stdDev')
+                            _.pluck(aggregatedMeasurements, 'mean'),
+                            _.pluck(aggregatedMeasurements, 'min'),
+                            _.pluck(aggregatedMeasurements, 'max'),
+                            _.pluck(aggregatedMeasurements, 'stdDev')
                         ];
                     };
 
-                    $scope.aggregatedExecutionsMeasurementGraphsData = _.map(aggregatedExecutionsMeasurementKeys, function (measurementKey) {
+                    $scope.aggregatedExecutionsMeasurementGraphsData = _.map(benchmarkRunsHelper.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
                         return {
                             name: measurementKey,
-                            unit: aggregatedExecutionsMeasurementUnit(measurementKey),
+                            unit: benchmarkRunsHelper.aggregatedExecutionsMeasurementUnit(measurementKey),
                             data: dataForQueryMeasurementKey(measurementKey),
                             labels: _.pluck(benchmarkRuns, 'sequenceId'),
                             series: ['mean', 'min', 'max', 'stdDev']
                         }
                     });
 
-                    // benchmark measurements graph data
-                    var benchmarkMeasurementKeys = _.uniq(_.flatten(_.map(benchmarkRuns,
-                        function (benchmarkRun) {
-                            return _.pluck(benchmarkRun.measurements, 'name');
-                        }
-                    )));
-
-                    var findBenchmarkMeasurement= function(benchmarkRun, measurementKey) {
-                        return _.findWhere(benchmarkRun.measurements, { name: measurementKey });
-                    };
-
-                    var benchmarkMeasurementUnit = function (measurementKey) {
-                        return findBenchmarkMeasurement(benchmarkRuns[0], measurementKey).unit;
-                    };
-
-                    var extractBenchmarkMeasurements = function (measurementKey) {
-                        return _.map(benchmarkRuns, function (benchmarkRun) {
-                            return findBenchmarkMeasurement(benchmarkRun, measurementKey);
-                        });
-                    };
-
                     var dataForBenchmarkMeasurementKey = function (measurementKey) {
-                        var measurementsForKey = extractBenchmarkMeasurements(measurementKey);
+                        var measurements = benchmarkRunsHelper.extractBenchmarkMeasurements(measurementKey);
                         return [
-                            _.pluck(measurementsForKey, 'value')
+                            _.pluck(measurements, 'value')
                         ];
                     };
 
-                    $scope.benchmarkMeasurementGraphsData = _.map(benchmarkMeasurementKeys, function (measurementKey) {
+                    $scope.benchmarkMeasurementGraphsData = _.map(benchmarkRunsHelper.benchmarkMeasurementKeys(), function (measurementKey) {
                         return {
                             name: measurementKey,
-                            unit: benchmarkMeasurementUnit(measurementKey),
+                            unit: benchmarkRunsHelper.benchmarkMeasurementUnit(measurementKey),
                             data: dataForBenchmarkMeasurementKey(measurementKey),
                             labels: _.pluck(benchmarkRuns, 'sequenceId'),
                             series: ['value']
@@ -104,7 +67,7 @@
                     });
                 });
         }])
-        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CompareService', function ($scope, $routeParams, $modal, BenchmarkService, CompareService) {
+        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CartCompareService', function ($scope, $routeParams, $modal, BenchmarkService, CartCompareService) {
             BenchmarkService.loadBenchmarkRun($routeParams.benchmarkName, $routeParams.benchmarkSequenceId)
                 .then(function (benchmarkRun) {
                     $scope.benchmarkRun = benchmarkRun;
@@ -144,11 +107,11 @@
             };
 
             $scope.addToCompare = function(benchmarkRun) {
-                CompareService.add(benchmarkRun);
+                CartCompareService.add(benchmarkRun);
             }
 
             $scope.isAddedToCompare = function(benchmarkRun) {
-                return CompareService.contains(benchmarkRun);
+                return CartCompareService.contains(benchmarkRun);
             }
         }])
         .controller('EnvironmentCtrl', ['$scope', '$routeParams', 'EnvironmentService', function ($scope, $routeParams, EnvironmentService) {
@@ -164,16 +127,109 @@
                 $modalInstance.dismiss('cancel');
             }
         }])
-        .controller('CompareCartNavBarCtrl', ['$scope', 'CompareService', function ($scope, CompareService) {
-            $scope.compareCartSize = CompareService.size();
-            $scope.benchmarkRuns = CompareService.getAll();
+        .controller('CartCompareNavBarCtrl', ['$scope', '$location', 'CartCompareService', function ($scope, $location, CartCompareService) {
+            $scope.compareCartSize = CartCompareService.size();
+            $scope.benchmarkRuns = CartCompareService.getAll();
 
             $scope.$on('cart:changed', function() {
-                $scope.compareCartSize = CompareService.size();
+                $scope.compareCartSize = CartCompareService.size();
             })
 
             $scope.remove = function (benchmarkRun) {
-                CompareService.remove(benchmarkRun);
+                CartCompareService.remove(benchmarkRun);
             }
+
+            $scope.compare = function() {
+                var names = _.map($scope.benchmarkRuns, function(benchmarkRun) {
+                    return benchmarkRun.name;
+                }).join();
+                var sequenceIds = _.map($scope.benchmarkRuns, function(benchmarkRun) {
+                    return benchmarkRun.sequenceId;
+                }).join();
+                $location.path('compare/' + names + '/' + sequenceIds);
+            }
+        }])
+        .controller('CompareCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
+            $scope.benchmarkRuns = [];
+
+            var benchmarkNames = $routeParams.benchmarkNames.split(',');
+            var sequenceIds = $routeParams.benchmarkSequenceIds.split(',');
+            if (benchmarkNames.length != sequenceIds.length) {
+                throw new Error('Expected the same number of benchmark run names and sequence ids.');
+            }
+            for (var i in sequenceIds) {
+                BenchmarkService.loadBenchmarkRun(benchmarkNames[i], sequenceIds[i])
+                    .then(function (benchmarkRun) {
+                        $scope.benchmarkRuns.push(benchmarkRun);
+                        prepareChartData();
+                    });
+            }
+
+            var prepareChartData = function() {
+                if (sequenceIds.length != $scope.benchmarkRuns.length) {
+                    return; // not all benchmarkRuns are loaded yet
+                }
+
+                // sort benchmarkRuns to match requested order
+                var tmpBenchmarkRuns = $scope.benchmarkRuns;
+                $scope.benchmarkRuns = [];
+                for (var i in sequenceIds) {
+                    $scope.benchmarkRuns.push(_.findWhere(tmpBenchmarkRuns, {name: benchmarkNames[i], sequenceId: sequenceIds[i]}))
+                }
+
+                var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns);
+
+                var dataForSingleMeasurementKey = function(aggregatedMeasurements, singleMeasurement) {
+                    return {
+                        "key": singleMeasurement,
+                        "values": _.zip(
+                            _.map(_.range($scope.benchmarkRuns.length), function(i) { return i + 1; }),
+                            _.pluck(aggregatedMeasurements, singleMeasurement)
+                        )
+                    }
+                }
+
+                var dataForAggregatedMeasurementKey = function (measurementKey) {
+                    var aggregatedMeasurements = benchmarkRunsHelper.extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
+                    return [
+                        dataForSingleMeasurementKey(aggregatedMeasurements, 'mean'),
+                        dataForSingleMeasurementKey(aggregatedMeasurements, 'min'),
+                        dataForSingleMeasurementKey(aggregatedMeasurements, 'max'),
+                        dataForSingleMeasurementKey(aggregatedMeasurements, 'stdDev')
+                    ];
+                };
+
+                $scope.aggregatedExecutionsMeasurementGraphsData = _.map(benchmarkRunsHelper.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
+                    return {
+                        name: measurementKey,
+                        unit: benchmarkRunsHelper.aggregatedExecutionsMeasurementUnit(measurementKey),
+                        data: dataForAggregatedMeasurementKey(measurementKey)
+                    }
+                });
+
+                var dataForBenchmarkMeasurementKey = function (measurementKey) {
+                    var measurements = benchmarkRunsHelper.extractBenchmarkMeasurements(measurementKey);
+                    return dataForSingleMeasurementKey(measurements, "value");
+                };
+
+                $scope.benchmarkMeasurementGraphsData = _.map(benchmarkRunsHelper.benchmarkMeasurementKeys(), function (measurementKey) {
+                    return {
+                        name: measurementKey,
+                        unit: benchmarkRunsHelper.benchmarkMeasurementUnit(measurementKey),
+                        data: dataForBenchmarkMeasurementKey(measurementKey),
+                    }
+                });
+
+               $scope.options = {
+                    chart: {
+                        type: 'multiBarChart',
+                        height: 400,
+                        width: 400,
+                        x: function(d){return d[0];},
+                        y: function(d){return d[1];},
+                        stacked: false
+                    }
+                };
+            };
         }]);
 }());

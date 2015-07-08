@@ -24,6 +24,10 @@
                     templateUrl: 'partials/environment.html',
                     controller: 'EnvironmentCtrl'
                 })
+                .when('/compare/:benchmarkNames/:benchmarkSequenceIds', {
+                    templateUrl: 'partials/compare.html',
+                    controller: 'CompareCtrl'
+                })
                 .otherwise({
                     templateUrl: 'partials/404.html'
                 });

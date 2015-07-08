@@ -16,9 +16,13 @@
     <script src="js/lib/jquery-1.11.3.js"></script>
     <script src="js/lib/bootstrap.js"></script>
     <script src="js/lib/daterangepicker.js"></script>
+    <script src="js/lib/d3.js"></script>
+    <script src="js/lib/nv.d3.js"></script>
     <script src="js/lib/angular-chart.js"></script>
     <script src="js/lib/angular-daterangepicker.js"></script>
     <script src="js/lib/angular-ui-bootstrap-tpls-0.13.0.js"></script>
+    <script src="js/lib/angular-nvd3.js"></script>
+    <script src="js/utils/BenchmarkRunsHelper.js"></script>
     <script src="js/services.js"></script>
     <script src="js/controllers.js"></script>
     <script src="js/filters.js"></script>
@@ -28,6 +32,7 @@
     <link rel="stylesheet" href="css/lib/angular-chart.css">
     <link rel="stylesheet" href="css/lib/bootstrap.css">
     <link rel="stylesheet" href="css/lib/bootstrap-theme.css">
+    <link rel="stylesheet" href="css/lib/nv.d3.css"/>
     <link rel="stylesheet" href="css/benchmark-webapp.css">
 </head>
 <body>
@@ -37,7 +42,7 @@
             <a class="navbar-brand" href="#/">Benchto <span class="glyphicon glyphicon-signal"></span></a>
         </div>
 
-        <div role="presentation" class="dropdown navbar-right" ng-controller="CompareCartNavBarCtrl">
+        <div role="presentation" class="dropdown navbar-right" ng-controller="CartCompareNavBarCtrl">
             <a target="_blank" role="button" class="dropdown-toogle navbar-brand" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="glyphicon glyphicon-shopping-cart"></span>
                 Compare cart size: {{ compareCartSize }}
@@ -62,7 +67,7 @@
                         <td></td>
                         <td></td>
                         <td>
-                            <button class="btn btn-primary">Compare</button>
+                            <button class="btn btn-primary" ng-click="compare()">Compare</button>
                         </td>
                     </tr>
                 </table>
