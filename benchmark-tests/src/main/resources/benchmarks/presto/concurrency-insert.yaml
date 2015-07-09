@@ -4,16 +4,17 @@ schema: tpch_100gb_orc
 database: hive
 before-benchmark: presto/linear-scan-insert/create-insert-table.sql
 after-benchmark: presto/linear-scan-insert/drop-insert-table.sql
-table: tmp_insert_selectivity_${selectivity}_concurrency_${concurrency}
-runs: ${concurrency}
+table: tmp_insert_selectivity_${selectivity}_concurrency_${concurrency_level}
+runs: ${concurrency_level}
+concurrency: ${concurrency_level}
 prewarm-runs: 3
 variables:
   1:
     selectivity: 10, 100
-    concurrency: 10
+    concurrency_level: 10
   2:
     selectivity: 10, 100
-    concurrency: 20
+    concurrency_level: 20
   3:
     selectivity: 10, 100
-    concurrency: 50
+    concurrency_level: 50
