@@ -24,6 +24,7 @@ import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.validation.constraints.Size;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -37,6 +38,7 @@ import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 @Cacheable
 @Table(name = "environments", uniqueConstraints = @UniqueConstraint(columnNames = {"name"}))
 public class Environment
+        implements Serializable
 {
 
     public static final String DEFAULT_ENVIRONMENT_NAME = "name";

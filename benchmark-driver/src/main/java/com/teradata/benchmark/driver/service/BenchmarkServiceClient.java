@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver.service;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.MoreObjects;
 import org.slf4j.Logger;
@@ -36,49 +37,61 @@ public class BenchmarkServiceClient
     private RestTemplate restTemplate;
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
-    public void startBenchmark(String benchmarkName, String benchmarkSequenceId, BenchmarkStartRequest request)
+    public String[] generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
     {
-        Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
-
-        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", request, requestParams);
+        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
+        return postForObject("{serviceUrl}/v1/benchmark/generate-unique-names", generateUniqueNamesRequestItems, String[].class, requestParams);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
-    public void finishBenchmark(String benchmarkName, String benchmarkSequenceId, FinishRequest request)
+    public String startBenchmark(String uniqueBenchmarkName, String benchmarkSequenceId, BenchmarkStartRequest request)
     {
-        Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
+        Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
 
-        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", request, requestParams);
+        return postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/start", request, requestParams);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
-    public void startExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, ExecutionStartRequest request)
+    public void finishBenchmark(String uniqueBenchmarkName, String benchmarkSequenceId, FinishRequest request)
     {
-        Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
+        Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
+
+        postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/finish", request, requestParams);
+    }
+
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
+    public void startExecution(String uniqueBenchmarkName, String benchmarkSequenceId, String executionSequenceId, ExecutionStartRequest request)
+    {
+        Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
         requestParams.put("executionSequenceId", executionSequenceId);
 
-        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, requestParams);
+        postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, requestParams);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
-    public void finishExecution(String benchmarkName, String benchmarkSequenceId, String executionSequenceId, FinishRequest request)
+    public void finishExecution(String uniqueBenchmarkName, String benchmarkSequenceId, String executionSequenceId, FinishRequest request)
     {
-        Map<String, String> requestParams = requestParams(benchmarkName, benchmarkSequenceId);
+        Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
         requestParams.put("executionSequenceId", executionSequenceId);
 
-        postForObject("{serviceUrl}/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, requestParams);
+        postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, requestParams);
     }
 
-    private Map<String, String> requestParams(String benchmarkName, String benchmarkSequenceId)
+    private Map<String, String> requestParams(String uniqueBenchmarkName, String benchmarkSequenceId)
     {
         Map<String, String> params = newHashMap();
         params.put("serviceUrl", serviceUrl);
-        params.put("benchmarkName", benchmarkName);
+        params.put("uniqueBenchmarkName", uniqueBenchmarkName);
         params.put("benchmarkSequenceId", benchmarkSequenceId);
         return params;
     }
 
-    private Object postForObject(String url, Object request, Map<String, String> requestParams)
+    private String postForObject(String url, Object request, Map<String, String> requestParams)
+    {
+        return postForObject(url, request, String.class, requestParams);
+    }
+
+    private <T> T postForObject(String url, Object request, Class<T> clazz, Map<String, String> requestParams)
     {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Post object to benchmark service on URL: {}, with request: {}",
@@ -86,7 +99,43 @@ public class BenchmarkServiceClient
                     request);
         }
 
-        return restTemplate.postForObject(url, request, Object.class, requestParams);
+        return restTemplate.postForObject(url, request, clazz, requestParams);
+    }
+
+    public static class GenerateUniqueNamesRequestItem
+    {
+        private String name;
+        private Map<String, String> variables;
+
+        private GenerateUniqueNamesRequestItem(String name, Map<String, String> variables)
+        {
+            this.name = name;
+            this.variables = variables;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public Map<String, String> getVariables()
+        {
+            return variables;
+        }
+
+        public static GenerateUniqueNamesRequestItem generateUniqueNamesRequestItem(String name, Map<String, String> variables)
+        {
+            return new GenerateUniqueNamesRequestItem(name, variables);
+        }
+
+        @Override
+        public String toString()
+        {
+            return MoreObjects.toStringHelper(this)
+                    .add("name", name)
+                    .add("variables", variables)
+                    .toString();
+        }
     }
 
     @SuppressWarnings("unused")
@@ -121,7 +170,9 @@ public class BenchmarkServiceClient
     public static class BenchmarkStartRequest
             extends AttributeRequest
     {
+        private String name;
         private String environmentName;
+        private Map<String, String> variables = newHashMap();
 
         private BenchmarkStartRequest()
         {
@@ -130,14 +181,21 @@ public class BenchmarkServiceClient
         public static class BenchmarkStartRequestBuilder
                 extends AttributeRequestBuilder<BenchmarkStartRequest>
         {
-            public BenchmarkStartRequestBuilder()
+            public BenchmarkStartRequestBuilder(String name)
             {
                 super(new BenchmarkStartRequest());
+                request.name = name;
             }
 
             public BenchmarkStartRequestBuilder environmentName(String environmentName)
             {
                 request.environmentName = environmentName;
+                return this;
+            }
+
+            public BenchmarkStartRequestBuilder addVariable(String name, String value)
+            {
+                request.variables.put(name, value);
                 return this;
             }
         }
@@ -146,7 +204,9 @@ public class BenchmarkServiceClient
         public String toString()
         {
             return MoreObjects.toStringHelper(this)
+                    .add("name", name)
                     .add("environmentName", environmentName)
+                    .add("variables", variables)
                     .add("attributes", attributes)
                     .toString();
         }

@@ -26,7 +26,7 @@ public class BenchmarkDescriptor
     public static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
     public static final String VARIABLES_KEY = "variables";
 
-    public static final Set<String> RESERVED_KEYWORD = ImmutableSet.of(
+    public static final Set<String> RESERVED_KEYWORDS = ImmutableSet.of(
             DATA_SOURCE_KEY,
             QUERY_NAMES_KEY,
             RUNS_KEY,

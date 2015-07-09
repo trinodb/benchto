@@ -30,8 +30,8 @@
     <tr ng-repeat="benchmarkRun in benchmarkRuns">
         <td>{{$index + 1}}</td>
         <td>
-            <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong>
-            (<a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)
+            <strong><a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}">{{benchmarkRun.name}}</a></strong>
+            (<a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)
         </td>
     </tr>
 </table>

@@ -7,16 +7,22 @@ function BenchmarkRunsHelper(benchmarkRuns) {
     this.benchmarkRuns = benchmarkRuns;
 }
 
-BenchmarkRunsHelper.prototype.aggregatedExecutionsMeasurementKeys = function() {
+BenchmarkRunsHelper.prototype.aggregatedExecutionsMeasurementKeys = function () {
     return _.uniq(_.flatten(_.map(this.benchmarkRuns,
         function (benchmarkRun) {
             return _.allKeys(benchmarkRun.aggregatedMeasurements);
         }
     )));
-}
+};
 
 BenchmarkRunsHelper.prototype.aggregatedExecutionsMeasurementUnit = function (measurementKey) {
-    return this.benchmarkRuns[0].aggregatedMeasurements[measurementKey].unit;
+    for (var i = 0; i < this.benchmarkRuns.length; ++i) {
+        var aggregatedMeasurement = this.benchmarkRuns[i].aggregatedMeasurements[measurementKey];
+        if (aggregatedMeasurement) {
+            return aggregatedMeasurement.unit;
+        }
+    }
+    throw new Error("Could not find unit for measurement key: " + measurementKey);
 };
 
 BenchmarkRunsHelper.prototype.extractAggregatedExecutionsAggregatedMeasurements = function (measurementKey) {
@@ -26,24 +32,26 @@ BenchmarkRunsHelper.prototype.extractAggregatedExecutionsAggregatedMeasurements 
 };
 
 // benchmark measurements graph data
-BenchmarkRunsHelper.prototype.benchmarkMeasurementKeys = function() {
-    return _.uniq(_.flatten(_.map(this.benchmarkRuns,
-        function (benchmarkRun) {
-            return _.pluck(benchmarkRun.measurements, 'name');
-        }
-    )));
-}
-
-BenchmarkRunsHelper.prototype.findBenchmarkMeasurement = function(benchmarkRun, measurementKey) {
-    return _.findWhere(benchmarkRun.measurements, { name: measurementKey });
+BenchmarkRunsHelper.prototype.benchmarkMeasurementKeys = function () {
+    return _.chain(this.benchmarkRuns)
+        .map(function (benchmarkRun) { return _.pluck(benchmarkRun.measurements, 'name'); })
+        .flatten()
+        .uniq()
+        .value();
 };
 
 BenchmarkRunsHelper.prototype.benchmarkMeasurementUnit = function (measurementKey) {
-    return findBenchmarkMeasurement(this.benchmarkRuns[0], measurementKey).unit;
+    for (var i = 0; i < this.benchmarkRuns.length; ++i) {
+        var measurement = _.findWhere(this.benchmarkRuns[i].measurements, {name: measurementKey});
+        if (measurement) {
+            return measurement.unit;
+        }
+    }
+    throw new Error("Could not find unit for measurement key: " + measurementKey);
 };
 
 BenchmarkRunsHelper.prototype.extractBenchmarkMeasurements = function (measurementKey) {
     return _.map(this.benchmarkRuns, function (benchmarkRun) {
-        return findBenchmarkMeasurement(benchmarkRun, measurementKey);
+        return _.findWhere(benchmarkRun.measurements, {name: measurementKey});
     });
 };

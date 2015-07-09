@@ -1,7 +1,7 @@
 <div class="row">
     <ol class="breadcrumb">
         <li><a href="#/">Home</a></li>
-        <li><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{::benchmarkRun.name}}</a></li>
+        <li><a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}">{{::benchmarkRun.uniqueName}}</a></li>
         <li class="active">{{::benchmarkRun.sequenceId}}</li>
     </ol>
 
@@ -50,6 +50,15 @@
                     {{::benchmarkRun.environment.attributes.dashboardType}} dashboard
                 </a>
             </li>
+            <li ng-show="showBenchmarkDetails"  ng-repeat="(name, value) in benchmarkRun.variables">
+                <strong>{{name}}:</strong> {{value}}
+            </li>
+            <li ng-show="showBenchmarkDetails"  ng-repeat="(name, value) in benchmarkRun.attributes">
+                <span ng-if="name != 'sqlStatement'">
+                    <strong>{{name}}:</strong> {{value}}
+                </span>
+            </li>
+            <a ng-show="!showBenchmarkDetails" ng-click="showBenchmarkDetails = true"> ...more details <span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span></a>
         </ul>
 
         <div ng-if="benchmarkRun.measurements > 0">

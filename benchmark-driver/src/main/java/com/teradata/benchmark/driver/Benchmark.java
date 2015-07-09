@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 public class Benchmark
 {
     private String name;
@@ -24,6 +26,7 @@ public class Benchmark
     private List<String> beforeBenchmarkMacros;
     private List<String> afterBenchmarkMacros;
     private Map<String, String> variables;
+    private String uniqueName;
 
     private Benchmark()
     {
@@ -32,6 +35,16 @@ public class Benchmark
     public String getName()
     {
         return name;
+    }
+
+    public String getUniqueName()
+    {
+        return uniqueName;
+    }
+
+    public void setUniqueName(String uniqueName)
+    {
+        this.uniqueName = uniqueName;
     }
 
     public String getSequenceId()
@@ -67,6 +80,16 @@ public class Benchmark
     public int getConcurrency()
     {
         return concurrency;
+    }
+
+    public boolean isConcurrent()
+    {
+        return concurrency > 1;
+    }
+
+    public boolean isSerial()
+    {
+        return concurrency == 1;
     }
 
     public List<String> getBeforeBenchmarkMacros()
@@ -150,6 +173,7 @@ public class Benchmark
 
         public BenchmarkBuilder withRuns(int runs)
         {
+            checkArgument(runs >= 1, "Runs must be greater of equal 1");
             this.benchmark.runs = runs;
             return this;
         }
@@ -162,6 +186,7 @@ public class Benchmark
 
         public BenchmarkBuilder withConcurrency(int concurrency)
         {
+            checkArgument(concurrency >= 1, "Concurrency must be greater of equal 1");
             this.benchmark.concurrency = concurrency;
             return this;
         }

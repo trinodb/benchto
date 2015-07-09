@@ -12,11 +12,11 @@
                     templateUrl: 'partials/benchmarkList.html',
                     controller: 'BenchmarkListCtrl'
                 })
-                .when('/benchmark/:benchmarkName', {
+                .when('/benchmark/:uniqueName', {
                     templateUrl: 'partials/benchmark.html',
                     controller: 'BenchmarkCtrl'
                 })
-                .when('/benchmark/:benchmarkName/:benchmarkSequenceId', {
+                .when('/benchmark/:uniqueName/:benchmarkSequenceId', {
                     templateUrl: 'partials/benchmarkRun.html',
                     controller: 'BenchmarkRunCtrl'
                 })

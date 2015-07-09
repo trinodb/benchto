@@ -1,15 +1,31 @@
-<div class="row">
-    <div class="col-sm-12">
-        <h2 class="sub-header">List of Benchmarks</h2>
-    </div>
-</div>
-<form class="form-inline">
+<form class="form-horizontal filter-benchmarks">
     <div class="form-group">
-        <label for="query">Search:</label>
-        <input type="text" class="form-control" id="query" ng-model="query"/>
+        <label for="query" class="control-label col-sm-1" data-toggle="tooltip" title="Filtering expression, eg. 'selectivity=100 schema=tpch_100gb_orc'">
+            Filter <i class="glyphicon glyphicon-search"></i>
+        </label>
+
+        <div class="col-sm-5">
+            <input type="text" class="form-control" id="query" ng-model="query"/>
+        </div>
+
+        <div class="col-sm-offset-4 col-sm-2" ng-if="availableVariables">
+            <div class="btn-group" dropdown auto-close="outsideClick">
+                <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+                    <i class="glyphicon glyphicon-th-list"></i> Variable columns <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li ng-repeat="variable in ::availableVariables">
+                        <input class="columnSelectCheckbox" type="checkbox" ng-model="variable.visible"> {{::variable.name | capitalize}}
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </form>
-<div class="row">
+<div ng-if="!latestBenchmarkRuns">
+    <img class="progress-image" src="img/ajax-loader.gif" alt="Loading"/>
+</div>
+<div class="row" ng-if="latestBenchmarkRuns">
     <div class="col-sm-12">
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
@@ -19,6 +35,9 @@
                     <td>Name</td>
                     <td>Status</td>
                     <td>Environment</td>
+                    <td ng-repeat="variable in availableVariables | filter:{visible:true}">
+                        {{::variable.name | capitalize}}
+                    </td>
                     <td>Started</td>
                     <td>Duration</td>
                 </tr>
@@ -26,14 +45,17 @@
                 <tr ng-repeat="benchmarkRun in latestBenchmarkRuns | filter:query">
                     <td>{{$index + 1}}</td>
                     <td>
-                        <strong><a ng-href="#/benchmark/{{benchmarkRun.name}}">{{benchmarkRun.name}}</a></strong>
-                        (<a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)
+                        <strong><a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}">{{benchmarkRun.name}}</a></strong>
+                        (<a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a>)
                     </td>
                     <td><span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span></td>
                     <td>
                         <a target="_blank" ng-href="#/environment/{{::benchmarkRun.environment.name}}">
-                        {{::benchmarkRun.environment.name}}
+                            {{::benchmarkRun.environment.name}}
                         </a>
+                    </td>
+                    <td ng-repeat="variable in availableVariables | filter:{visible:true}">
+                        {{benchmarkRun.variables[variable.name]}}
                     </td>
                     <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
                     <td>{{benchmarkRun.ended ? ((benchmarkRun.ended - benchmarkRun.started) | duration) : 'Not finished'}}</td>

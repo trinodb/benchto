@@ -3,30 +3,30 @@
  */
 package com.teradata.benchmark.driver.execution;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Measurable;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-import java.time.Duration;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Collections.emptyList;
 
 public class BenchmarkExecutionResult
         extends Measurable
 {
-    private final BenchmarkExecution benchmarkExecution;
+    private final Benchmark benchmark;
+    private boolean prewarmFailed;
     private List<QueryExecutionResult> executions;
-    private DescriptiveStatistics durationStatistics;
 
-    private BenchmarkExecutionResult(BenchmarkExecution benchmarkExecution)
+    private BenchmarkExecutionResult(Benchmark benchmark)
     {
-        this.benchmarkExecution = benchmarkExecution;
+        this.benchmark = benchmark;
     }
 
     @Override
-    public BenchmarkExecution getBenchmarkExecution()
+    public Benchmark getBenchmark()
     {
-        return benchmarkExecution;
+        return benchmark;
     }
 
     public List<QueryExecutionResult> getExecutions()
@@ -34,35 +34,31 @@ public class BenchmarkExecutionResult
         return executions;
     }
 
-    public DescriptiveStatistics getDurationStatistics()
-    {
-        return durationStatistics;
-    }
-
     public boolean isSuccessful()
 
     {
-        return executions.stream().allMatch(QueryExecutionResult::isSuccessful);
+        return !prewarmFailed && executions.stream().allMatch(QueryExecutionResult::isSuccessful);
     }
 
     public static class BenchmarkExecutionResultBuilder
             extends Measurable.MeasuredBuilder<BenchmarkExecutionResult, BenchmarkExecutionResultBuilder>
     {
 
-        public BenchmarkExecutionResultBuilder(BenchmarkExecution benchmarkExecution)
+        public BenchmarkExecutionResultBuilder(Benchmark benchmark)
         {
-            super(new BenchmarkExecutionResult(benchmarkExecution));
+            super(new BenchmarkExecutionResult(benchmark));
+        }
+
+        public BenchmarkExecutionResultBuilder withPrewarmFailed()
+        {
+            object.prewarmFailed = true;
+            object.executions = emptyList();
+            return this;
         }
 
         public BenchmarkExecutionResultBuilder setExecutions(List<QueryExecutionResult> executions)
         {
             object.executions = executions;
-            object.durationStatistics = new DescriptiveStatistics(
-                    executions.stream()
-                            .map(QueryExecutionResult::getQueryDuration)
-                            .map(Duration::toMillis)
-                            .mapToDouble(Long::doubleValue)
-                            .toArray());
             return this;
         }
 

@@ -6,11 +6,13 @@ package com.teradata.benchmark.service.model;
 import com.google.common.collect.Iterables;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class AggregatedMeasurement
+        implements Serializable
 {
     private final MeasurementUnit unit;
     private final double min, max, mean, stdDev, stdDevPercent;

@@ -4,30 +4,40 @@
 
 package com.teradata.benchmark.driver.listeners.benchmark;
 
-import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
+import com.google.common.collect.ImmutableList;
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchmark.driver.execution.QueryExecution;
 import com.teradata.benchmark.driver.execution.QueryExecutionResult;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 import java.util.List;
 
+@Component
 public class BenchmarkStatusReporter
 {
-    private final TaskExecutor taskExecutor;
+    @Autowired
+    private TaskExecutor taskExecutor;
 
-    private final List<BenchmarkExecutionListener> executionListeners;
+    @Autowired
+    private List<BenchmarkExecutionListener> executionListeners;
 
-    public BenchmarkStatusReporter(TaskExecutor taskExecutor, List<BenchmarkExecutionListener> executionListeners)
+    @PostConstruct
+    public void sortExecutionListeners()
     {
-        this.taskExecutor = taskExecutor;
-        this.executionListeners = executionListeners;
+        // HACK: listeners have to be sorted to provide tests determinism
+        executionListeners = ImmutableList.copyOf(Ordering.usingToString().sortedCopy(executionListeners));
     }
 
-    public void reportBenchmarkStarted(BenchmarkExecution benchmarkExecution)
+    public void reportBenchmarkStarted(Benchmark benchmark)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.benchmarkStarted(benchmarkExecution));
+            taskExecutor.execute(() -> listener.benchmarkStarted(benchmark));
         }
     }
 

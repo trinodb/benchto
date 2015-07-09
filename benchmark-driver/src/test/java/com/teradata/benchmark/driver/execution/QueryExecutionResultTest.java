@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver.execution;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import org.junit.Test;
@@ -54,6 +55,6 @@ public class QueryExecutionResultTest
 
     private QueryExecution queryExecution()
     {
-        return new QueryExecution(mock(BenchmarkExecution.class), mock(Query.class), 0);
+        return new QueryExecution(mock(Benchmark.class), mock(Query.class), 0);
     }
 }

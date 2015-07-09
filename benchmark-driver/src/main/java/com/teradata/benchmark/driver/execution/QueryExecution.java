@@ -3,28 +3,28 @@
  */
 package com.teradata.benchmark.driver.execution;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Query;
-import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class QueryExecution
 {
-    private final BenchmarkExecution benchmarkExecution;
+    private final Benchmark benchmark;
     private final Query query;
     private final int run;
 
-    public QueryExecution(BenchmarkExecution benchmarkExecution, Query query, int run)
+    public QueryExecution(Benchmark benchmark, Query query, int run)
     {
-        this.benchmarkExecution = checkNotNull(benchmarkExecution);
+        this.benchmark = checkNotNull(benchmark);
         this.query = checkNotNull(query);
         this.run = run;
     }
 
-    public BenchmarkExecution getBenchmarkExecution()
+    public Benchmark getBenchmark()
     {
-        return benchmarkExecution;
+        return benchmark;
     }
 
     public String getQueryName()

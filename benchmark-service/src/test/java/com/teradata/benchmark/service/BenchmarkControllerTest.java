@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,6 +48,7 @@ public class BenchmarkControllerTest
     {
         String environmentName = "environmentName";
         String benchmarkName = "benchmarkName";
+        String uniqueName = "benchmarkName_k1=v1";
         String benchmarkSequenceId = "benchmarkSequenceId";
         String executionSequenceId = "executionSequenceId";
         ZonedDateTime testStart = currentDateTime();
@@ -65,50 +67,55 @@ public class BenchmarkControllerTest
                 .andExpect(jsonPath("$.attributes.attribute2", is("value2")));
 
         // start benchmark
-        mvc.perform(post("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", benchmarkName, benchmarkSequenceId)
+        mvc.perform(post("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", uniqueName, benchmarkSequenceId)
                 .contentType(APPLICATION_JSON)
-                .content("{\"environmentName\": \"" + environmentName + "\"}"))
-                .andExpect(status().isOk());
+                .content("{\"name\": \"" + benchmarkName + "\",\"environmentName\": \"" + environmentName + "\", \"variables\":{\"k1\":\"v1\"}}"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(uniqueName));
 
         // get benchmark - no measurements, no executions
-        mvc.perform(get("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}", benchmarkName, benchmarkSequenceId))
+        mvc.perform(get("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}", uniqueName, benchmarkSequenceId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is(benchmarkName)))
+                .andExpect(jsonPath("$.uniqueName", is(uniqueName)))
                 .andExpect(jsonPath("$.status", is("STARTED")))
                 .andExpect(jsonPath("$.sequenceId", is(benchmarkSequenceId)))
                 .andExpect(jsonPath("$.environment.name", is(environmentName)))
+                .andExpect(jsonPath("$.variables.k1", is("v1")))
                 .andExpect(jsonPath("$.measurements", hasSize(0)))
                 .andExpect(jsonPath("$.executions", hasSize(0)));
 
         // start execution
-        mvc.perform(post("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start",
-                benchmarkName, benchmarkSequenceId, executionSequenceId)
+        mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start",
+                uniqueName, benchmarkSequenceId, executionSequenceId)
                 .contentType(APPLICATION_JSON)
                 .content("{\"attributes\": {}}"))
                 .andExpect(status().isOk());
 
         // get benchmark - no measurements, single execution without measurements
-        mvc.perform(get("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}", benchmarkName, benchmarkSequenceId))
+        mvc.perform(get("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}", uniqueName, benchmarkSequenceId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is(benchmarkName)))
+                .andExpect(jsonPath("$.uniqueName", is(uniqueName)))
                 .andExpect(jsonPath("$.status", is("STARTED")))
                 .andExpect(jsonPath("$.sequenceId", is(benchmarkSequenceId)))
                 .andExpect(jsonPath("$.environment.name", is(environmentName)))
                 .andExpect(jsonPath("$.measurements", hasSize(0)))
                 .andExpect(jsonPath("$.executions", hasSize(1)))
+                .andExpect(jsonPath("$.variables.k1", is("v1")))
                 .andExpect(jsonPath("$.executions[0].status", is("STARTED")))
                 .andExpect(jsonPath("$.executions[0].sequenceId", is(executionSequenceId)));
 
         // finish execution - post execution measurements
-        mvc.perform(post("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish",
-                benchmarkName, benchmarkSequenceId, executionSequenceId)
+        mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish",
+                uniqueName, benchmarkSequenceId, executionSequenceId)
                 .contentType(APPLICATION_JSON)
                 .content("{\"measurements\":[{\"name\": \"duration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"bytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
                         "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"}"))
                 .andExpect(status().isOk());
 
         // finish benchmark - post benchmark measurements
-        mvc.perform(post("/v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/finish", benchmarkName, benchmarkSequenceId)
+        mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/finish", uniqueName, benchmarkSequenceId)
                 .contentType(APPLICATION_JSON)
                 .content("{\"measurements\":[{\"name\": \"meanDuration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"sumBytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
                         "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"ENDED\"}"))
@@ -116,24 +123,26 @@ public class BenchmarkControllerTest
 
         ZonedDateTime testEnd = currentDateTime();
 
-        mvc.perform(get("/v1/benchmark/{benchmarkName}", benchmarkName))
+        mvc.perform(get("/v1/benchmark/{uniqueName}", uniqueName))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name", is(benchmarkName)))
-                .andExpect(jsonPath("$.runs[0].sequenceId", is(benchmarkSequenceId)))
-                .andExpect(jsonPath("$.runs[0].status", is("ENDED")))
-                .andExpect(jsonPath("$.runs[0].environment.name", is(environmentName)))
-                .andExpect(jsonPath("$.runs[0].attributes.attribute1", is("value1")))
-                .andExpect(jsonPath("$.runs[0].measurements", hasSize(2)))
-                .andExpect(jsonPath("$.runs[0].measurements[*].name", containsInAnyOrder("meanDuration", "sumBytes")))
-                .andExpect(jsonPath("$.runs[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
-                .andExpect(jsonPath("$.runs[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")))
-                .andExpect(jsonPath("$.runs[0].executions", hasSize(1)))
-                .andExpect(jsonPath("$.runs[0].executions[0].sequenceId", is(executionSequenceId)))
-                .andExpect(jsonPath("$.runs[0].executions[0].status", is("FAILED")))
-                .andExpect(jsonPath("$.runs[0].executions[0].attributes.attribute1", is("value1")))
-                .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].name", containsInAnyOrder("duration", "bytes")))
-                .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
-                .andExpect(jsonPath("$.runs[0].executions[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")));
+                .andExpect(jsonPath("$.[0].name", is(benchmarkName)))
+                .andExpect(jsonPath("$.[0].uniqueName", is(uniqueName)))
+                .andExpect(jsonPath("$.[0].sequenceId", is(benchmarkSequenceId)))
+                .andExpect(jsonPath("$.[0].status", is("ENDED")))
+                .andExpect(jsonPath("$.[0].variables.k1", is("v1")))
+                .andExpect(jsonPath("$.[0].environment.name", is(environmentName)))
+                .andExpect(jsonPath("$.[0].attributes.attribute1", is("value1")))
+                .andExpect(jsonPath("$.[0].measurements", hasSize(2)))
+                .andExpect(jsonPath("$.[0].measurements[*].name", containsInAnyOrder("meanDuration", "sumBytes")))
+                .andExpect(jsonPath("$.[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
+                .andExpect(jsonPath("$.[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")))
+                .andExpect(jsonPath("$.[0].executions", hasSize(1)))
+                .andExpect(jsonPath("$.[0].executions[0].sequenceId", is(executionSequenceId)))
+                .andExpect(jsonPath("$.[0].executions[0].status", is("FAILED")))
+                .andExpect(jsonPath("$.[0].executions[0].attributes.attribute1", is("value1")))
+                .andExpect(jsonPath("$.[0].executions[0].measurements[*].name", containsInAnyOrder("duration", "bytes")))
+                .andExpect(jsonPath("$.[0].executions[0].measurements[*].value", containsInAnyOrder(12.34, 56789.0)))
+                .andExpect(jsonPath("$.[0].executions[0].measurements[*].unit", containsInAnyOrder("MILLISECONDS", "BYTES")));
 
         // assert database state
         withinTransaction(() -> {
@@ -143,10 +152,12 @@ public class BenchmarkControllerTest
             assertThat(environment.getAttributes().get("attribute1")).isEqualTo("value1");
             assertThat(environment.getAttributes().get("attribute2")).isEqualTo("value2");
 
-            BenchmarkRun benchmarkRun = benchmarkRunRepo.findByNameAndSequenceId(benchmarkName, benchmarkSequenceId);
+            BenchmarkRun benchmarkRun = benchmarkRunRepo.findByUniqueNameAndSequenceId(uniqueName, benchmarkSequenceId);
             assertThat(benchmarkRun).isNotNull();
             assertThat(benchmarkRun.getId()).isGreaterThan(0);
             assertThat(benchmarkRun.getName()).isEqualTo(benchmarkName);
+            assertThat(benchmarkRun.getVariables()).containsEntry("k1", "v1");
+            assertThat(benchmarkRun.getUniqueName()).isEqualTo(uniqueName);
             assertThat(benchmarkRun.getSequenceId()).isEqualTo(benchmarkSequenceId);
             assertThat(benchmarkRun.getStatus()).isEqualTo(ENDED);
             assertThat(benchmarkRun.getMeasurements())

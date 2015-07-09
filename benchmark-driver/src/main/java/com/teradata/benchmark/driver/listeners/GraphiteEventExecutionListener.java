@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver.listeners;
 
-import com.teradata.benchmark.driver.execution.BenchmarkExecution;
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchmark.driver.execution.QueryExecution;
 import com.teradata.benchmark.driver.execution.QueryExecutionResult;
@@ -27,10 +27,10 @@ public class GraphiteEventExecutionListener
     private GraphiteClient graphiteClient;
 
     @Override
-    public void benchmarkStarted(BenchmarkExecution benchmarkExecution)
+    public void benchmarkStarted(Benchmark benchmark)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s started", benchmarkExecution.getBenchmarkName()))
+                .what(format("Benchmark %s started", benchmark.getUniqueName()))
                 .tags("benchmark", "started")
                 .build();
 
@@ -41,11 +41,9 @@ public class GraphiteEventExecutionListener
     public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s ended", benchmarkExecutionResult.getBenchmarkExecution().getBenchmarkName()))
+                .what(format("Benchmark %s ended", benchmarkExecutionResult.getBenchmark().getUniqueName()))
                 .tags("benchmark ended")
-                .data(format("successful %b, mean: %f.2, stdDev: %f.2", benchmarkExecutionResult.isSuccessful(),
-                        benchmarkExecutionResult.getDurationStatistics().getMean(),
-                        benchmarkExecutionResult.getDurationStatistics().getStandardDeviation()))
+                .data(format("successful %b", benchmarkExecutionResult.isSuccessful()))
                 .when(benchmarkExecutionResult.getUtcEnd())
                 .build();
 
@@ -55,12 +53,12 @@ public class GraphiteEventExecutionListener
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        if (execution.getBenchmarkExecution().isConcurrent()) {
+        if (execution.getBenchmark().isConcurrent()) {
             return;
         }
 
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s, execution %d started", execution.getQueryName(), execution.getRun()))
+                .what(format("Benchmark %s, query %s (%d) started", execution.getBenchmark().getUniqueName(), execution.getQueryName(), execution.getRun()))
                 .tags("execution", "started")
                 .build();
 
@@ -70,12 +68,13 @@ public class GraphiteEventExecutionListener
     @Override
     public void executionFinished(QueryExecutionResult executionResult)
     {
-        if (executionResult.getBenchmarkExecution().isConcurrent()) {
+        if (executionResult.getBenchmark().isConcurrent()) {
             return;
         }
 
+        QueryExecution queryExecution = executionResult.getQueryExecution();
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s, execution %d ended", executionResult.getQueryName(), executionResult.getQueryExecution().getRun()))
+                .what(format("Benchmark %s, query %s (%d) ended", queryExecution.getBenchmark().getUniqueName(), executionResult.getQueryName(), queryExecution.getRun()))
                 .tags("execution", "ended")
                 .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
                 .when(executionResult.getUtcEnd())

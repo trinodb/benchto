@@ -106,10 +106,10 @@ public class GraphiteMetricsLoader
 
     private boolean shouldLoadGraphiteMetrics(Measurable measurable)
     {
-        if (measurable instanceof QueryExecutionResult && measurable.getBenchmarkExecution().isSerial()) {
+        if (measurable instanceof QueryExecutionResult && measurable.getBenchmark().isSerial()) {
             return true;
         }
-        else if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmarkExecution().isConcurrent()) {
+        else if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmark().isConcurrent()) {
             return true;
         }
         return false;

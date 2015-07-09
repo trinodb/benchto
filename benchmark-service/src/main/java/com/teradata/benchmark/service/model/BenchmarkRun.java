@@ -34,6 +34,7 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -48,8 +49,9 @@ import static javax.persistence.FetchType.EAGER;
 import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
-@Table(name = "benchmark_runs", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "sequence_id"}))
+@Table(name = "benchmark_runs", uniqueConstraints = @UniqueConstraint(columnNames = {"unique_name", "sequence_id"}))
 public class BenchmarkRun
+        implements Serializable
 {
 
     @Id
@@ -69,6 +71,18 @@ public class BenchmarkRun
     @Size(min = 1, max = 54)
     @Column(name = "sequence_id")
     private String sequenceId;
+
+    @Size(min = 1, max = 1024)
+    @Column(name = "unique_name")
+    private String uniqueName;
+
+    @Cache(usage = TRANSACTIONAL)
+    @BatchSize(size = 10)
+    @ElementCollection(fetch = EAGER)
+    @MapKeyColumn(name = "name")
+    @Column(name = "value")
+    @CollectionTable(name = "benchmark_runs_variables", joinColumns = @JoinColumn(name = "benchmark_run_id"))
+    private Map<String, String> variables = newHashMap();
 
     @JsonIgnore
     @Column(name = "version")
@@ -115,14 +129,21 @@ public class BenchmarkRun
     @Transient
     private Map<String, AggregatedMeasurement> aggregatedMeasurements;
 
+    protected BenchmarkRun()
+    {
+    }
+
+    public BenchmarkRun(String name, String sequenceId, Map<String, String> variables, String uniqueName)
+    {
+        this.name = name;
+        this.sequenceId = sequenceId;
+        this.variables = variables;
+        this.uniqueName = uniqueName;
+    }
+
     public long getId()
     {
         return id;
-    }
-
-    public void setId(long id)
-    {
-        this.id = id;
     }
 
     public String getName()
@@ -130,19 +151,19 @@ public class BenchmarkRun
         return name;
     }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
     public String getSequenceId()
     {
         return sequenceId;
     }
 
-    public void setSequenceId(String sequenceId)
+    public String getUniqueName()
     {
-        this.sequenceId = sequenceId;
+        return uniqueName;
+    }
+
+    public Map<String, String> getVariables()
+    {
+        return variables;
     }
 
     public Status getStatus()
@@ -240,14 +261,14 @@ public class BenchmarkRun
             return false;
         }
         BenchmarkRun benchmarkRun = (BenchmarkRun) o;
-        return Objects.equals(name, benchmarkRun.name) &&
+        return Objects.equals(uniqueName, benchmarkRun.uniqueName) &&
                 Objects.equals(sequenceId, benchmarkRun.sequenceId);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(super.hashCode(), name, sequenceId);
+        return Objects.hash(uniqueName, sequenceId);
     }
 
     @Override
@@ -256,6 +277,8 @@ public class BenchmarkRun
         return toStringHelper(this)
                 .add("id", id)
                 .add("name", name)
+                .add("uniqueName", uniqueName)
+                .add("variables", variables)
                 .add("version", version)
                 .add("sequenceId", sequenceId)
                 .add("status", status)

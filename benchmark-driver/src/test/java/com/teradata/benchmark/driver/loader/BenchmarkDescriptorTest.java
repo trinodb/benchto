@@ -4,11 +4,13 @@
 package com.teradata.benchmark.driver.loader;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.base.Joiner;
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.DriverApp;
 import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
 import freemarker.template.Configuration;
 import org.assertj.core.api.MapAssert;
 import org.assertj.core.data.MapEntry;
@@ -41,16 +43,15 @@ public class BenchmarkDescriptorTest
     {
         QueryLoader queryLoader = mockQueryLoader();
         benchmarkProperties = new BenchmarkProperties();
-        BenchmarkNameGenerator benchmarkNameGenerator = new BenchmarkNameGenerator();
+        BenchmarkServiceClient benchmarkServiceClient = mockBenchmarkServiceClient();
         Configuration freemarkerConfiguration = new DriverApp().freemarkerConfiguration().createConfiguration();
 
         benchmarkLoader = new BenchmarkLoader();
 
         ReflectionTestUtils.setField(benchmarkLoader, "properties", benchmarkProperties);
         ReflectionTestUtils.setField(benchmarkLoader, "queryLoader", queryLoader);
-        ReflectionTestUtils.setField(benchmarkLoader, "benchmarkNameGenerator", benchmarkNameGenerator);
+        ReflectionTestUtils.setField(benchmarkLoader, "benchmarkServiceClient", benchmarkServiceClient);
         ReflectionTestUtils.setField(benchmarkLoader, "freemarkerConfiguration", freemarkerConfiguration);
-        ReflectionTestUtils.setField(benchmarkNameGenerator, "properties", benchmarkProperties);
     }
 
     private QueryLoader mockQueryLoader()
@@ -61,6 +62,20 @@ public class BenchmarkDescriptorTest
             public Query loadFromFile(String queryName, Map<String, ?> attributes)
             {
                 return new Query(queryName, "");
+            }
+        };
+    }
+
+    private BenchmarkServiceClient mockBenchmarkServiceClient()
+    {
+        return new BenchmarkServiceClient()
+        {
+            @Override
+            public String[] generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
+            {
+                return generateUniqueNamesRequestItems.stream()
+                        .map(requestItem -> requestItem.getName() + "_" + Joiner.on("_").withKeyValueSeparator("=").join(requestItem.getVariables().entrySet()))
+                        .toArray(String[]::new);
             }
         };
     }

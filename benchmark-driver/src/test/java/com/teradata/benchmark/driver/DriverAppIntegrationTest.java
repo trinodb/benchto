@@ -5,13 +5,11 @@ package com.teradata.benchmark.driver;
 
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
-import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import com.teradata.benchmark.driver.macro.MacroService;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.RequestMatcher;
@@ -26,7 +24,6 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -56,37 +53,26 @@ public class DriverAppIntegrationTest
     private BenchmarkProperties benchmarkProperties;
 
     @Autowired
-    @Qualifier("prewarmStatusReporter")
-    private BenchmarkStatusReporter prewarmStatusReporter;
-
-    @Autowired
     private MacroService macroService;
 
     @Test
     public void simpleSelectBenchmark()
     {
         setBenchmark("simple_select_benchmark");
-        verifyBenchmarkStart("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", TEST_QUERY);
-        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", "simple_select", 0);
-        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA_env=TEST_ENV", ImmutableList.of());
+        verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA", TEST_QUERY);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
+        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
         verifyComplete();
-
-        verify(prewarmStatusReporter, times(1)).reportBenchmarkStarted(any());
-        verify(prewarmStatusReporter, times(1)).reportExecutionStarted(any());
-        verify(prewarmStatusReporter, times(1)).reportExecutionFinished(any());
-        verify(prewarmStatusReporter, times(1)).reportBenchmarkFinished(any());
-
-        verifyNoMoreInteractions(prewarmStatusReporter);
     }
 
     @Test
     public void testBenchmark()
     {
         setBenchmark("test_benchmark");
-        verifyBenchmarkStart("test_benchmark_env=TEST_ENV", TEST_QUERY);
-        verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 0);
-        verifySerialExecution("test_benchmark_env=TEST_ENV", "test_query", 1);
-        verifyBenchmarkFinish("test_benchmark_env=TEST_ENV", ImmutableList.of());
+        verifyBenchmarkStart("test_benchmark", "test_benchmark", TEST_QUERY);
+        verifySerialExecution("test_benchmark", "test_query", 0);
+        verifySerialExecution("test_benchmark", "test_query", 1);
+        verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
         verifyComplete();
     }
 
@@ -102,13 +88,13 @@ public class DriverAppIntegrationTest
 
         setBenchmark("test_concurrent_benchmark");
 
-        verifyBenchmarkStart("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", TEST_QUERY);
-        verifyExecutionStarted("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 0);
-        verifyExecutionFinished("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 0, concurrentQueryMeasurementName);
-        verifyExecutionStarted("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 1);
-        verifyExecutionFinished("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", 1, concurrentQueryMeasurementName);
+        verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark", TEST_QUERY);
+        verifyExecutionStarted("test_concurrent_benchmark", 0);
+        verifyExecutionFinished("test_concurrent_benchmark", 0, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark", 1);
+        verifyExecutionFinished("test_concurrent_benchmark", 1, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
-        verifyBenchmarkFinish("test_concurrent_benchmark_concurrency=2_env=TEST_ENV", concurrentBenchmarkMeasurementNames);
+        verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
         verifyComplete();
     }
 
@@ -117,11 +103,18 @@ public class DriverAppIntegrationTest
         ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", s);
     }
 
-    private void verifyBenchmarkStart(String benchmarkName, String sql)
+    private void verifyBenchmarkStart(String benchmarkName, String uniqueBenchmarkName, String sql)
     {
         restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/start"),
+                requestTo("http://benchmark-service:8080/v1/benchmark/generate-unique-names"),
                 method(HttpMethod.POST),
+                jsonPath("$.[0].name", is(benchmarkName))
+        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body("[\"" + uniqueBenchmarkName + "\"]"));
+
+        restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/start"),
+                method(HttpMethod.POST),
+                jsonPath("$.name", is(benchmarkName)),
                 jsonPath("$.environmentName", is("TEST_ENV")),
                 jsonPath("$.attributes.sqlStatement", is(sql))
         )).andRespond(withSuccess());
@@ -129,16 +122,16 @@ public class DriverAppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark " + benchmarkName + " started")),
+                jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + " started")),
                 jsonPath("$.tags", is("benchmark started")),
                 jsonPath("$.data", is(""))
         )).andRespond(withSuccess());
     }
 
-    private void verifyBenchmarkFinish(String benchmarkName, List<String> measurementNames)
+    private void verifyBenchmarkFinish(String uniqueBenchmarkName, List<String> measurementNames)
     {
         restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/finish"),
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/finish"),
                 method(HttpMethod.POST),
                 jsonPath("$.status", ENDED_STATUS_MATCHER),
                 jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
@@ -147,31 +140,31 @@ public class DriverAppIntegrationTest
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark " + benchmarkName + " ended")),
+                jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + " ended")),
                 jsonPath("$.tags", is("benchmark ended")),
                 jsonPath("$.data", startsWith("successful"))
         )).andRespond(withSuccess());
     }
 
-    private void verifySerialExecution(String benchmarkName, String queryName, int executionNumber)
+    private void verifySerialExecution(String uniqueBenchmarkName, String queryName, int executionNumber)
     {
         ImmutableList<String> serialQueryMeasurementNames = ImmutableList.<String>builder()
                 .addAll(GRAPHITE_MEASUREMENT_NAMES)
                 .add("duration")
                 .build();
-        verifySerialExecutionStarted(benchmarkName, queryName, executionNumber);
+        verifySerialExecutionStarted(uniqueBenchmarkName, queryName, executionNumber);
         verifyGetGraphiteMeasurements();
-        verifySerialExecutionFinished(benchmarkName, queryName, executionNumber, serialQueryMeasurementNames);
+        verifySerialExecutionFinished(uniqueBenchmarkName, queryName, executionNumber, serialQueryMeasurementNames);
     }
 
-    private void verifySerialExecutionStarted(String benchmarkName, String queryName, int executionNumber)
+    private void verifySerialExecutionStarted(String uniqueBenchmarkName, String queryName, int executionNumber)
     {
-        verifyExecutionStarted(benchmarkName, executionNumber);
+        verifyExecutionStarted(uniqueBenchmarkName, executionNumber);
 
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark " + queryName + ", execution " + executionNumber + " started")),
+                jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + ", query " + queryName + " (" + executionNumber + ") started")),
                 jsonPath("$.tags", is("execution started")),
                 jsonPath("$.data", is(""))
         )).andRespond(withSuccess());
@@ -185,23 +178,23 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifySerialExecutionFinished(String benchmarkName, String queryName, int executionNumber, List<String> measurementNames)
+    private void verifySerialExecutionFinished(String uniqueBenchmarkName, String queryName, int executionNumber, List<String> measurementNames)
     {
-        verifyExecutionFinished(benchmarkName, executionNumber, measurementNames);
+        verifyExecutionFinished(uniqueBenchmarkName, executionNumber, measurementNames);
 
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark " + queryName + ", execution " + executionNumber + " ended")),
+                jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + ", query " + queryName + " (" + executionNumber + ") ended")),
                 jsonPath("$.tags", is("execution ended")),
                 jsonPath("$.data", startsWith("duration: "))
         )).andRespond(withSuccess());
     }
 
-    private void verifyExecutionFinished(String benchmarkName, int executionNumber, List<String> measurementNames)
+    private void verifyExecutionFinished(String uniqueBenchmarkName, int executionNumber, List<String> measurementNames)
     {
         restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + benchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
+                requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
                 method(HttpMethod.POST),
                 jsonPath("$.status", ENDED_STATUS_MATCHER),
                 jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))

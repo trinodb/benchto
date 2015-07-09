@@ -3,7 +3,6 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.teradata.benchmark.driver.execution.BenchmarkExecution;
 import com.teradata.benchmark.driver.utils.TimeUtils;
 
 import java.time.Duration;
@@ -32,7 +31,7 @@ public abstract class Measurable
         return Duration.of(end - start, NANOS);
     }
 
-    public abstract BenchmarkExecution getBenchmarkExecution();
+    public abstract Benchmark getBenchmark();
 
     @Override
     public String toString()

@@ -21,7 +21,8 @@ public class FinishRequest
     private final Map<String, String> attributes;
 
     @JsonCreator
-    public FinishRequest(@JsonProperty("status") Status status, @JsonProperty("measurements") List<Measurement> measurements, @JsonProperty("attributes") Map<String, String> attributes)
+    public FinishRequest(@JsonProperty("status") Status status, @JsonProperty("measurements") List<Measurement> measurements,
+            @JsonProperty("attributes") Map<String, String> attributes)
     {
         this.status = status;
         this.measurements = measurements;

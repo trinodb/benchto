@@ -32,6 +32,11 @@
            eternal="true"
            memoryStoreEvictionPolicy="FIFO"/>
 
+    <cache name="com.teradata.benchmark.service.model.BenchmarkRun.variables"
+           maxEntriesLocalHeap="5000"
+           eternal="true"
+           memoryStoreEvictionPolicy="FIFO"/>
+
     <cache name="com.teradata.benchmark.service.model.BenchmarkRun.attributes"
            maxEntriesLocalHeap="5000"
            eternal="true"

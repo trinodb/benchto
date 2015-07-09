@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.driver.execution;
 
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.graphite.GraphiteProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class ExecutionSynchronizer
      */
     public void awaitAfterQueryExecutionAndBeforeResultReport(QueryExecutionResult queryExecutionResult)
     {
-        if (properties.isGraphiteMetricsCollectionEnabled() && queryExecutionResult.getBenchmarkExecution().isSerial()) {
+        if (properties.isGraphiteMetricsCollectionEnabled() && queryExecutionResult.getBenchmark().isSerial()) {
             int waitSecondsBetweenRuns = waitSecondsBetweenRuns();
             LOGGER.info("Waiting {}s between queries - thread ({})", waitSecondsBetweenRuns, currThreadName());
             sleep(waitSecondsBetweenRuns, SECONDS);
@@ -50,9 +51,9 @@ public class ExecutionSynchronizer
      * If metrics collection is enabled and we are doing concurrent benchmark, we should wait
      * between benchmarks, so measurements are accurate.
      */
-    public void awaitAfterBenchmarkExecutionAndBeforeResultReport(BenchmarkExecutionResult benchmarkResult)
+    public void awaitAfterBenchmarkExecutionAndBeforeResultReport(Benchmark benchmark)
     {
-        if (properties.isGraphiteMetricsCollectionEnabled() && benchmarkResult.getBenchmarkExecution().isConcurrent()) {
+        if (properties.isGraphiteMetricsCollectionEnabled() && benchmark.isConcurrent()) {
             int waitSecondsBetweenRuns = waitSecondsBetweenRuns();
             LOGGER.info("Waiting {}s between benchmarks - thread ({})", waitSecondsBetweenRuns, currThreadName());
             sleep(waitSecondsBetweenRuns, SECONDS);

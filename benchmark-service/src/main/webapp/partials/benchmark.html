@@ -1,22 +1,25 @@
 <div class="row">
     <ol class="breadcrumb">
         <li><a href="#/">Home</a></li>
-        <li class="active">{{benchmark.name}}</li>
+        <li class="active">{{::uniqueName}}</li>
     </ol>
 </div>
 <div class="row">
     <div class="col-sm-12">
-        <h2 class="sub-header">Benchmark: {{benchmark.name}}</h2>
+        <h3 class="sub-header">Benchmark: {{::benchmarkRuns[0].name}}</h3>
     </div>
     <div class="col-sm-12">
         <ul>
             <li>
                 <strong>Environment:</strong>
-                <a target="_blank" ng-href="#/environment/{{::benchmark.runs[0].environment.name}}">
-                    {{::benchmark.runs[0].environment.name}}
+                <a target="_blank" ng-href="#/environment/{{::benchmarkRuns[0].environment.name}}">
+                    {{::benchmarkRuns[0].environment.name}}
                 </a>
             </li>
-            <li ng-show="showBenchmarkDetails" ng-repeat="(name, value) in benchmark.runs[0].attributes">
+            <li ng-show="showBenchmarkDetails" ng-repeat="(name, value) in benchmarkRuns[0].variables">
+                <strong>{{name}}:</strong> {{value}}
+            </li>
+            <li ng-show="showBenchmarkDetails" ng-repeat="(name, value) in benchmarkRuns[0].attributes">
                 <span ng-if="name != 'sqlStatement'">
                     <strong>{{name}}:</strong>
                     {{value}}
@@ -34,7 +37,7 @@
 </div>
 <div ng-if="benchmarkMeasurementGraphsData.length > 0" class="row">
     <div class="col-sm-12">
-        <h3 class="sub-header">Benchmark graphs</h3>
+        <h4 class="sub-header">Benchmark graphs</h4>
     </div>
 </div>
 <div ng-if="benchmarkMeasurementGraphsData.length > 0" class="row">
@@ -61,7 +64,7 @@
 </div>
 <div ng-if="aggregatedExecutionsMeasurementGraphsData.length > 0" class="row">
     <div class="col-sm-12">
-        <h3 class="sub-header">Query graphs</h3>
+        <h4 class="sub-header">Query graphs</h4>
     </div>
 </div>
 <div ng-if="aggregatedExecutionsMeasurementGraphsData.length > 0" class="row">
@@ -107,10 +110,7 @@
 
 <div class="row">
     <div class="col-sm-12">
-        <h3 class="sub-header">Runs</h3>
-
-        <a ng-if="page > 0" ng-href="#/benchmark/{{benchmark.name}}?page={{ (1 * page - 1) | number:0 }}&size={{pageSize}}"><< Newer</a>
-        <a ng-if="benchmark.runs > 0" ng-href="#/benchmark/{{benchmark.name}}?page={{ (1 * page + 1) | number:0 }}&size={{pageSize}}">Older >></a>
+        <h4 class="sub-header">Latest runs</h4>
 
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
@@ -124,9 +124,9 @@
                     <td>Execution mean duration</td>
                 </tr>
                 </thead>
-                <tr ng-repeat="benchmarkRun in benchmark.runs">
+                <tr ng-repeat="benchmarkRun in ::benchmarkRuns">
                     <td>{{::$index + 1}}</td>
-                    <td><a ng-href="#/benchmark/{{benchmarkRun.name}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
+                    <td><a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
                     <td>
                         <span class="execution-status execution-status-{{::benchmarkRun.status}}">{{benchmarkRun.status}}</span>
                     </td>

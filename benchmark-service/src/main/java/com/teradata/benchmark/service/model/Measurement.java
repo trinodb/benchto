@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
@@ -24,6 +25,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 @Entity
 @Table(name = "measurements")
 public class Measurement
+        implements Serializable
 {
 
     @Id

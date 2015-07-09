@@ -4,6 +4,7 @@
 package com.teradata.benchmark.driver.execution;
 
 import com.google.common.base.MoreObjects;
+import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Measurable;
 
 import java.util.Optional;
@@ -31,9 +32,9 @@ public class QueryExecutionResult
     }
 
     @Override
-    public BenchmarkExecution getBenchmarkExecution()
+    public Benchmark getBenchmark()
     {
-        return queryExecution.getBenchmarkExecution();
+        return queryExecution.getBenchmark();
     }
 
     public boolean isSuccessful()

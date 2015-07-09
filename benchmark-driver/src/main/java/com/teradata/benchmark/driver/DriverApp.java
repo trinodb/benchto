@@ -3,12 +3,7 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
-import com.google.common.collect.ImmutableList;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
-import com.teradata.benchmark.driver.listeners.LoggingPrewarmExecutionListener;
-import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkExecutionListener;
-import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
 import freemarker.template.TemplateException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -19,7 +14,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -27,7 +21,6 @@ import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.List;
 
 @Configuration
 @EnableRetry
@@ -71,24 +64,6 @@ public class DriverApp
         taskExecutor.setAwaitTerminationSeconds(300);
 
         return taskExecutor;
-    }
-
-    @Bean(name = "prewarmStatusReporter")
-    public BenchmarkStatusReporter prewarmStatusReporter(TaskExecutor taskExecutor)
-    {
-        BenchmarkExecutionListener loggingListener = new LoggingPrewarmExecutionListener();
-        return new BenchmarkStatusReporter(taskExecutor, ImmutableList.of(loggingListener));
-    }
-
-    @Bean(name = "benchmarkStatusReporter")
-    public BenchmarkStatusReporter benchmarkStatusReporter(
-            TaskExecutor taskExecutor,
-            List<BenchmarkExecutionListener> benchmarkExecutionListeners)
-    {
-        // HACK: listeners have to be sorted to provide tests determinism
-        ImmutableList<BenchmarkExecutionListener> sortedExecutionListeners
-                = ImmutableList.copyOf(Ordering.usingToString().sortedCopy(benchmarkExecutionListeners));
-        return new BenchmarkStatusReporter(taskExecutor, sortedExecutionListeners);
     }
 
     @Bean

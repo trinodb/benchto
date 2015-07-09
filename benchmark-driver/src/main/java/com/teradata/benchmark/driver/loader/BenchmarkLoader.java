@@ -8,6 +8,8 @@ import com.teradata.benchmark.driver.Benchmark.BenchmarkBuilder;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
+import com.teradata.benchmark.driver.service.BenchmarkServiceClient;
+import com.teradata.benchmark.driver.service.BenchmarkServiceClient.GenerateUniqueNamesRequestItem;
 import com.teradata.benchmark.driver.utils.NaturalOrderComparator;
 import com.teradata.benchmark.driver.utils.YamlUtils;
 import freemarker.template.Configuration;
@@ -31,6 +33,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.facebook.presto.jdbc.internal.guava.base.Preconditions.checkState;
 import static com.facebook.presto.jdbc.internal.guava.collect.Lists.newArrayListWithCapacity;
 import static com.facebook.presto.jdbc.internal.guava.collect.Sets.newLinkedHashSet;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -38,6 +41,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.DATA_SOURCE_KEY;
 import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.QUERY_NAMES_KEY;
 import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.VARIABLES_KEY;
+import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.GenerateUniqueNamesRequestItem.generateUniqueNamesRequestItem;
 import static com.teradata.benchmark.driver.utils.CartesianProductUtils.cartesianProduct;
 import static com.teradata.benchmark.driver.utils.FilterUtils.benchmarkNameMatchesTo;
 import static com.teradata.benchmark.driver.utils.YamlUtils.loadYamlFromString;
@@ -47,6 +51,7 @@ import static java.nio.file.Files.isRegularFile;
 import static java.nio.file.Files.readAllBytes;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.io.FilenameUtils.removeExtension;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 
 @Component
@@ -66,10 +71,10 @@ public class BenchmarkLoader
     private BenchmarkProperties properties;
 
     @Autowired
-    private QueryLoader queryLoader;
+    private BenchmarkServiceClient benchmarkServiceClient;
 
     @Autowired
-    private BenchmarkNameGenerator benchmarkNameGenerator;
+    private QueryLoader queryLoader;
 
     @Autowired
     private Configuration freemarkerConfiguration;
@@ -89,6 +94,8 @@ public class BenchmarkLoader
             String formatString = createFormatString(allBenchmarks);
             LOGGER.info("Excluded Benchmarks:");
             printFormattedBenchmarksInfo(formatString, excludedBenchmarks);
+
+            fillUniqueBenchmarkNames(includedBenchmarks);
 
             LOGGER.info("Selected Benchmarks:");
             printFormattedBenchmarksInfo(formatString, includedBenchmarks);
@@ -143,7 +150,7 @@ public class BenchmarkLoader
 
             List<Benchmark> benchmarks = newArrayListWithCapacity(benchmarkDescriptors.size());
             for (BenchmarkDescriptor benchmarkDescriptor : benchmarkDescriptors) {
-                String benchmarkName = benchmarkNameGenerator.generateBenchmarkName(benchmarkFile, benchmarkDescriptor);
+                String benchmarkName = benchmarkName(benchmarkFile);
                 List<Query> queries = queryLoader.loadFromFiles(benchmarkDescriptor.getQueryNames(), benchmarkDescriptor.getVariables());
 
                 benchmarks.add(new BenchmarkBuilder(benchmarkName, sequenceId, queries)
@@ -206,6 +213,12 @@ public class BenchmarkLoader
         }
     }
 
+    private String benchmarkName(Path benchmarkFile)
+    {
+        String relativePath = properties.benchmarksFilesPath().relativize(benchmarkFile).toString();
+        return removeExtension(relativePath);
+    }
+
     private Map<String, String> extractGlobalVariables(Map<String, Object> yaml)
     {
         return yaml.entrySet().stream()
@@ -242,6 +255,19 @@ public class BenchmarkLoader
     private Predicate<Benchmark> activeBenchmarksByProperties()
     {
         return new BenchmarkByActiveVariablesFilter(properties);
+    }
+
+    private void fillUniqueBenchmarkNames(List<Benchmark> includedBenchmarks)
+    {
+        List<GenerateUniqueNamesRequestItem> namesRequestItems = includedBenchmarks.stream()
+                .map(benchmark -> generateUniqueNamesRequestItem(benchmark.getName(), benchmark.getVariables()))
+                .collect(toList());
+        String[] uniqueBenchmarkNames = benchmarkServiceClient.generateUniqueBenchmarkNames(namesRequestItems);
+
+        checkState(uniqueBenchmarkNames.length == includedBenchmarks.size());
+        for (int i = 0; i < uniqueBenchmarkNames.length; i++) {
+            includedBenchmarks.get(i).setUniqueName(uniqueBenchmarkNames[i]);
+        }
     }
 
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)

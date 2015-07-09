@@ -2,15 +2,16 @@ datasource: presto
 query-names: presto/linear-scan/selectivity-${selectivity}.sql
 schema: tpch_100gb_orc
 database: hive
-runs: ${concurrency}
+concurrency: ${concurrency-level}
+runs: ${concurrency-level}
 prewarm-runs: 3
 variables:
   1:
     selectivity: 10, 100
-    concurrency: 10
+    concurrency-level: 10
   2:
     selectivity: 10, 100
-    concurrency: 20
+    concurrency-level: 20
   3:
     selectivity: 10, 100
-    concurrency: 50
+    concurrency-level: 50

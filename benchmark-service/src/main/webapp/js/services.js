@@ -45,11 +45,11 @@
             };
 
             return {
-                loadBenchmarkRun: function (benchmarkName, benchmarkSequenceId) {
+                loadBenchmarkRun: function (uniqueName, benchmarkSequenceId) {
                     var deferredBenchmark = $q.defer();
                     $http({
                         method: 'GET',
-                        url: '/v1/benchmark/' + benchmarkName + '/' + benchmarkSequenceId
+                        url: '/v1/benchmark/' + uniqueName + '/' + benchmarkSequenceId
                     }).then(function (response) {
                         var benchmarkRun = response.data;
                         postProcessBenchmarkRun(benchmarkRun);
@@ -59,18 +59,17 @@
                     });
                     return deferredBenchmark.promise;
                 },
-                loadBenchmark: function (benchmarkName) {
+                loadBenchmark: function (uniqueName) {
                     var deferredBenchmark = $q.defer();
                     $http({
                         method: 'GET',
-                        url: '/v1/benchmark/' + benchmarkName
+                        url: '/v1/benchmark/' + uniqueName
                     }).then(function (response) {
-                        var benchmark = response.data;
-                        benchmark.runs.forEach(function (benchmarkRun) {
+                        var runs = response.data;
+                        runs.forEach(function (benchmarkRun) {
                             postProcessBenchmarkRun(benchmarkRun);
                         });
-                        benchmark.runs.reverse();
-                        deferredBenchmark.resolve(benchmark);
+                        deferredBenchmark.resolve(runs);
                     }, function (reason) {
                         deferredBenchmark.reject(reason);
                     });

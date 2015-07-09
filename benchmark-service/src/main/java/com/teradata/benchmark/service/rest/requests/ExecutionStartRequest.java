@@ -13,7 +13,7 @@ public class ExecutionStartRequest
     private final Map<String, String> attributes;
 
     @JsonCreator
-    public ExecutionStartRequest(@JsonProperty("environmentName") Map<String, String> attributes)
+    public ExecutionStartRequest(@JsonProperty("attributes") Map<String, String> attributes)
     {
         this.attributes = attributes;
     }

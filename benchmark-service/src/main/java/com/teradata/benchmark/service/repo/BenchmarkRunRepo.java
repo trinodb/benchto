@@ -14,15 +14,16 @@ import java.util.List;
 public interface BenchmarkRunRepo
         extends JpaRepository<BenchmarkRun, String>
 {
-    BenchmarkRun findByNameAndSequenceId(String benchmarkName, String sequenceId);
+    BenchmarkRun findByUniqueNameAndSequenceId(String uniqueName, String sequenceId);
 
-    List<BenchmarkRun> findByName(String benchmarkName);
+    List<BenchmarkRun> findByUniqueNameOrderBySequenceIdDesc(String uniqueName);
 
     @Query(value = "" +
             "WITH summary AS ( " +
             "  SELECT " +
             "    b.id, " +
             "    b.name, " +
+            "    b.unique_name, " +
             "    b.sequence_id, " +
             "    b.status, " +
             "    b.version, " +
@@ -30,7 +31,7 @@ public interface BenchmarkRunRepo
             "    b.ended, " +
             "    b.environment_id, " +
             "    rank() " +
-            "    OVER (PARTITION BY b.name " +
+            "    OVER (PARTITION BY b.unique_name, b.environment_id " +
             "      ORDER BY b.sequence_id DESC) AS rk " +
             "  FROM benchmark_runs b " +
             ") " +
