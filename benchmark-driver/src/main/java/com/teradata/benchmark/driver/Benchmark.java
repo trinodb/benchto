@@ -7,10 +7,12 @@ import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.teradata.benchmark.driver.loader.BenchmarkDescriptor;
 
 import java.util.List;
 import java.util.Map;
 
+import static com.facebook.presto.jdbc.internal.guava.collect.Maps.newHashMap;
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class Benchmark
@@ -107,11 +109,19 @@ public class Benchmark
         return variables;
     }
 
+    public Map<String, String> getNonReservedKeywordVariables()
+    {
+        Map<String, String> nonReservedKeysVariables = newHashMap(getVariables());
+        BenchmarkDescriptor.RESERVED_KEYWORDS.stream().forEach(nonReservedKeysVariables::remove);
+        return nonReservedKeysVariables;
+    }
+
     @Override
     public String toString()
     {
         return MoreObjects.toStringHelper(this)
                 .add("name", name)
+                .add("uniqueName", uniqueName)
                 .add("sequenceId", sequenceId)
                 .add("dataSource", dataSource)
                 .add("environment", environment)

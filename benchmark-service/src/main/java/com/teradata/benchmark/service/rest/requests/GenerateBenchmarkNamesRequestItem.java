@@ -16,19 +16,19 @@ public class GenerateBenchmarkNamesRequestItem
 
     @NotNull
     @Size(min = 1, max = 255)
-    private final String benchmarkName;
+    private final String name;
     private final Map<String, String> variables;
 
     @JsonCreator
-    public GenerateBenchmarkNamesRequestItem(@JsonProperty("benchmarkName") String benchmarkName, @JsonProperty("variables") Map<String, String> variables)
+    public GenerateBenchmarkNamesRequestItem(@JsonProperty("name") String name, @JsonProperty("variables") Map<String, String> variables)
     {
-        this.benchmarkName = benchmarkName;
+        this.name = name;
         this.variables = variables;
     }
 
-    public String getBenchmarkName()
+    public String getName()
     {
-        return benchmarkName;
+        return name;
     }
 
     public Map<String, String> getVariables()

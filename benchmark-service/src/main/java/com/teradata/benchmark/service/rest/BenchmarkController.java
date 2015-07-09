@@ -33,10 +33,10 @@ public class BenchmarkController
     private BenchmarkService benchmarkService;
 
     @RequestMapping(value = "/v1/benchmark/generate-unique-names", method = POST)
-    public List<String> generateUniqueBenchmarkNames(List<GenerateBenchmarkNamesRequestItem> generateItems)
+    public List<String> generateUniqueBenchmarkNames(@RequestBody List<GenerateBenchmarkNamesRequestItem> generateItems)
     {
         return generateItems.stream()
-                .map(requestItem -> benchmarkService.generateUniqueBenchmarkName(requestItem.getBenchmarkName(), requestItem.getVariables()))
+                .map(requestItem -> benchmarkService.generateUniqueBenchmarkName(requestItem.getName(), requestItem.getVariables()))
                 .collect(toList());
     }
 

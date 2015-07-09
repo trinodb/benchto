@@ -260,7 +260,7 @@ public class BenchmarkLoader
     private void fillUniqueBenchmarkNames(List<Benchmark> includedBenchmarks)
     {
         List<GenerateUniqueNamesRequestItem> namesRequestItems = includedBenchmarks.stream()
-                .map(benchmark -> generateUniqueNamesRequestItem(benchmark.getName(), benchmark.getVariables()))
+                .map(benchmark -> generateUniqueNamesRequestItem(benchmark.getName(), benchmark.getNonReservedKeywordVariables()))
                 .collect(toList());
         String[] uniqueBenchmarkNames = benchmarkServiceClient.generateUniqueBenchmarkNames(namesRequestItems);
 

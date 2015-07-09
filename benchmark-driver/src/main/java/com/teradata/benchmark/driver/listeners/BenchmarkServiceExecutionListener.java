@@ -49,8 +49,7 @@ public class BenchmarkServiceExecutionListener
     public void benchmarkStarted(Benchmark benchmark)
     {
         BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder(benchmark.getName())
-                .environmentName(benchmark.getEnvironment())
-                .addVariable("concurrency", "" + benchmark.getConcurrency());
+                .environmentName(benchmark.getEnvironment());
 
         for (Map.Entry<String, String> variableEntry : benchmark.getVariables().entrySet()) {
             if (RESERVED_KEYWORDS.contains(variableEntry.getKey())) {
