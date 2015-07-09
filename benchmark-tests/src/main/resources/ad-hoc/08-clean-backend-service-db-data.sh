@@ -6,6 +6,7 @@ delete from execution_measurements;
 delete from execution_attributes;
 DELETE from executions;
 delete from benchmark_runs_attributes;
+delete from benchmark_runs_variables;
 delete from benchmark_runs;
 delete from measurements;
 EOF
