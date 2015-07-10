@@ -41,43 +41,10 @@
                         return benchmarkRun.status === 'ENDED';
                     });
                     var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
+                    $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart');
+                    $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart');
 
-                    var dataForQueryMeasurementKey = function (measurementKey) {
-                        var aggregatedMeasurements = benchmarkRunsHelper.extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
-                        return [
-                            _.pluck(aggregatedMeasurements, 'mean'),
-                            _.pluck(aggregatedMeasurements, 'min'),
-                            _.pluck(aggregatedMeasurements, 'max'),
-                            _.pluck(aggregatedMeasurements, 'stdDev')
-                        ];
-                    };
 
-                    $scope.aggregatedExecutionsMeasurementGraphsData = _.map(benchmarkRunsHelper.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
-                        return {
-                            name: measurementKey,
-                            unit: benchmarkRunsHelper.aggregatedExecutionsMeasurementUnit(measurementKey),
-                            data: dataForQueryMeasurementKey(measurementKey),
-                            labels: _.pluck(benchmarkRuns, 'sequenceId'),
-                            series: ['mean', 'min', 'max', 'stdDev']
-                        }
-                    });
-
-                    var dataForBenchmarkMeasurementKey = function (measurementKey) {
-                        var measurements = benchmarkRunsHelper.extractBenchmarkMeasurements(measurementKey);
-                        return [
-                            _.pluck(measurements, 'value')
-                        ];
-                    };
-
-                    $scope.benchmarkMeasurementGraphsData = _.map(benchmarkRunsHelper.benchmarkMeasurementKeys(), function (measurementKey) {
-                        return {
-                            name: measurementKey,
-                            unit: benchmarkRunsHelper.benchmarkMeasurementUnit(measurementKey),
-                            data: dataForBenchmarkMeasurementKey(measurementKey),
-                            labels: _.pluck(benchmarkRuns, 'sequenceId'),
-                            series: ['value']
-                        }
-                    });
                 });
         }])
         .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService',
@@ -192,58 +159,8 @@
                 }
 
                 var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns);
-
-                var dataForSingleMeasurementKey = function (aggregatedMeasurements, singleMeasurement) {
-                    return {
-                        "key": singleMeasurement,
-                        "values": _.zip(
-                            _.map(_.range($scope.benchmarkRuns.length), function (i) { return i + 1; }),
-                            _.pluck(aggregatedMeasurements, singleMeasurement)
-                        )
-                    }
-                };
-
-                var dataForAggregatedMeasurementKey = function (measurementKey) {
-                    var aggregatedMeasurements = benchmarkRunsHelper.extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
-                    return [
-                        dataForSingleMeasurementKey(aggregatedMeasurements, 'mean'),
-                        dataForSingleMeasurementKey(aggregatedMeasurements, 'min'),
-                        dataForSingleMeasurementKey(aggregatedMeasurements, 'max'),
-                        dataForSingleMeasurementKey(aggregatedMeasurements, 'stdDev')
-                    ];
-                };
-
-                $scope.aggregatedExecutionsMeasurementGraphsData = _.map(benchmarkRunsHelper.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
-                    return {
-                        name: measurementKey,
-                        unit: benchmarkRunsHelper.aggregatedExecutionsMeasurementUnit(measurementKey),
-                        data: dataForAggregatedMeasurementKey(measurementKey)
-                    }
-                });
-
-                var dataForBenchmarkMeasurementKey = function (measurementKey) {
-                    var measurements = benchmarkRunsHelper.extractBenchmarkMeasurements(measurementKey);
-                    return [dataForSingleMeasurementKey(measurements, "value")];
-                };
-
-                $scope.benchmarkMeasurementGraphsData = _.map(benchmarkRunsHelper.benchmarkMeasurementKeys(), function (measurementKey) {
-                    return {
-                        name: measurementKey,
-                        unit: benchmarkRunsHelper.benchmarkMeasurementUnit(measurementKey),
-                        data: dataForBenchmarkMeasurementKey(measurementKey)
-                    }
-                });
-
-                $scope.options = {
-                    chart: {
-                        type: 'multiBarChart',
-                        height: 400,
-                        width: 400,
-                        x: function (d) {return d[0];},
-                        y: function (d) {return d[1];},
-                        stacked: false
-                    }
-                };
+                $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart');
+                $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart');
             };
         }]);
 }());

@@ -5,7 +5,7 @@
     'use strict';
 
     angular.module('benchmarkServiceUI', ['ngRoute', 'benchmarkServiceUI.controllers', 'benchmarkServiceUI.services', 'benchmarkServiceUI.filters',
-                                          'ui.bootstrap', 'chart.js'])
+                                          'ui.bootstrap'])
         .config(['$routeProvider', function ($routeProvider) {
             $routeProvider
                 .when('/', {
