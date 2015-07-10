@@ -46,7 +46,12 @@
                     }
                     value /= 1000;
 
-                    return numberFilter(value, 3) + ' GB';
+                    if ((value / 1000) < 1) {
+                        return numberFilter(value, 3) + ' GB';
+                    }
+                    value /= 1000;
+
+                    return numberFilter(value, 3) + ' TB';
                 }
                 else if (unit === 'PERCENT') {
                     outputValueText += numberFilter(value, 2);
@@ -71,5 +76,19 @@
                 }
                 return input.substring(0, 1).toUpperCase() + input.substring(1);
             }
-        });
+        })
+        .filter('benchmarkListFilter', function () {
+            return function (benchmarkRuns, searchText) {
+                if (!searchText) {
+                    return benchmarkRuns;
+                }
+                var searchTokens = searchText.split(/\s+/);
+                return _.filter(benchmarkRuns, function (benchmarkRun) {
+                    var notMatch = _.find(searchTokens, function (searchToken) {
+                        return benchmarkRun.uniqueName.indexOf(searchToken) < 0;
+                    });
+                    return !notMatch;
+                });
+            };
+        })
 }());

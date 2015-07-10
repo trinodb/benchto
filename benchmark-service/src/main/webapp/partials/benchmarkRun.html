@@ -7,15 +7,21 @@
 
     <div class="col-sm-12">
         <div class="row">
-            <div class="col-sm-11">
-                <h2>Benchmark: {{::benchmarkRun.name}}</h2>
+            <div class="col-sm-9">
+                <h3>Benchmark: {{::benchmarkRun.name}}</h3>
             </div>
 
-            <div ng-switch on="isAddedToCompare(benchmarkRun)" class="col-sm-1">
+            <div ng-switch on="isAddedToCompare(benchmarkRun)" class="col-sm-3">
                 <div ng-switch-when="false">
-                    <button class="btn btn-primary pull-right" ng-click="addToCompare(benchmarkRun)">Add to compare</button>
+                    <button class="btn btn-primary pull-right" ng-click="addToCompare(benchmarkRun)">
+                        <i class="glyphicon glyphicon-shopping-cart"></i> Add to compare
+                    </button>
                 </div>
-                <div ng-switch-when="true">Already added to compare.</div>
+                <div ng-switch-when="true">
+                    <button class="btn btn-primary pull-right disabled" ng-click="addToCompare(benchmarkRun)">
+                        <i class="glyphicon glyphicon-shopping-cart"></i> Already added to compare
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -50,10 +56,10 @@
                     {{::benchmarkRun.environment.attributes.dashboardType}} dashboard
                 </a>
             </li>
-            <li ng-show="showBenchmarkDetails"  ng-repeat="(name, value) in benchmarkRun.variables">
+            <li ng-show="showBenchmarkDetails" ng-repeat="(name, value) in benchmarkRun.variables">
                 <strong>{{name}}:</strong> {{value}}
             </li>
-            <li ng-show="showBenchmarkDetails"  ng-repeat="(name, value) in benchmarkRun.attributes">
+            <li ng-show="showBenchmarkDetails" ng-repeat="(name, value) in benchmarkRun.attributes">
                 <span ng-if="name != 'sqlStatement'">
                     <strong>{{name}}:</strong> {{value}}
                 </span>
@@ -62,7 +68,7 @@
         </ul>
 
         <div ng-if="benchmarkRun.measurements > 0">
-            <h3 class="sub-header">Measurements</h3>
+            <h4 class="sub-header">Measurements</h4>
 
             <div class="table-responsive">
                 <table class="table table-striped table-condensed">
@@ -80,7 +86,7 @@
             </div>
         </div>
 
-        <h3 class="sub-header">Aggregated measurements</h3>
+        <h4 class="sub-header">Aggregated measurements</h4>
 
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
@@ -103,7 +109,7 @@
             </table>
         </div>
 
-        <h3 class="sub-header">Executions</h3>
+        <h4 class="sub-header">Executions</h4>
 
         <div class="table-responsive">
             <table class="table table-striped table-condensed">
