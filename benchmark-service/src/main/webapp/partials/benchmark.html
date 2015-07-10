@@ -66,6 +66,7 @@
             <table class="table table-striped table-condensed">
                 <thead>
                 <tr>
+                    <td><i class="glyphicon glyphicon-shopping-cart" data-toggle="tooltip" title="Compare cart items"></i></td>
                     <td>#</td>
                     <td>SequenceId</td>
                     <td>Status</td>
@@ -75,6 +76,7 @@
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in ::benchmarkRuns">
+                    <td><input type="checkbox" ng-model="benchmarkRun.addedToCompare" ng-change="addedToCompareChanged(benchmarkRun)"/></td>
                     <td>{{benchmarkRuns.length - $index}}</td>
                     <td><a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}/{{benchmarkRun.sequenceId}}">{{benchmarkRun.sequenceId}}</a></td>
                     <td>

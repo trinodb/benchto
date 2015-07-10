@@ -5,46 +5,78 @@
     'use strict';
 
     angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3'])
-        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
+        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService',
+                                          'CartCompareService', function ($scope, $routeParams, BenchmarkService, CartCompareService) {
 
-            BenchmarkService.loadLatestBenchmarkRuns()
-                .then(function (latestBenchmarkRuns) {
-                    $scope.availableVariables = _.chain(latestBenchmarkRuns)
-                        .map(function (benchmarkRun) { return _.keys(benchmarkRun.variables); })
-                        .flatten()
-                        .uniq()
-                        .map(function (variableName) { return {name: variableName, visible: false}})
-                        .value();
+                BenchmarkService.loadLatestBenchmarkRuns()
+                    .then(function (latestBenchmarkRuns) {
+                        $scope.availableVariables = _.chain(latestBenchmarkRuns)
+                            .map(function (benchmarkRun) { return _.keys(benchmarkRun.variables); })
+                            .flatten()
+                            .uniq()
+                            .map(function (variableName) { return {name: variableName, visible: false}})
+                            .value();
 
-                    // first three columns will be visible
-                    for (var i = 0; i < Math.max(4, $scope.availableVariables.length); ++i) {
-                        $scope.availableVariables[i].visible = true;
-                    }
-                    $scope.latestBenchmarkRuns = latestBenchmarkRuns;
-                });
-        }])
-        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', function ($scope, $routeParams, $location, $filter, BenchmarkService) {
-            $scope.uniqueName = $routeParams.uniqueName;
+                        // first three columns will be visible
+                        for (var i = 0; i < Math.max(4, $scope.availableVariables.length); ++i) {
+                            $scope.availableVariables[i].visible = true;
+                        }
 
-            $scope.onBenchmarkClick = function (points, evt) {
-                if (points) {
-                    var benchmarkRunSequenceId = points[0].label;
-                    $location.path('benchmark/' + $routeParams.uniqueName + '/' + benchmarkRunSequenceId);
-                }
-            };
+                        CartHelper.setCartAddedFlag(CartCompareService, latestBenchmarkRuns);
 
-            BenchmarkService.loadBenchmark($routeParams.uniqueName)
-                .then(function (runs) {
-                    $scope.benchmarkRuns = runs;
-                    // filter out benchmark runs which have not finished
-                    var benchmarkRuns = _.filter(runs.slice().reverse(), function (benchmarkRun) {
-                        return benchmarkRun.status === 'ENDED';
+                        $scope.latestBenchmarkRuns = latestBenchmarkRuns;
                     });
-                    var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
-                    $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter);
-                    $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter);
+
+                $scope.$on('cart:added', function (event, benchmarkRun) {
+                    CartHelper.toggleCartAddedFlag(CartCompareService, $scope.latestBenchmarkRuns, benchmarkRun, true);
                 });
-        }])
+
+                $scope.$on('cart:removed', function (event, benchmarkRun) {
+                    CartHelper.toggleCartAddedFlag(CartCompareService, $scope.latestBenchmarkRuns, benchmarkRun, false);
+                });
+
+                $scope.addedToCompareChanged = function (benchmarkRun) {
+                    CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
+                };
+            }])
+        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService',
+                                      'CartCompareService', function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {
+                $scope.uniqueName = $routeParams.uniqueName;
+
+                $scope.onBenchmarkClick = function (points, evt) {
+                    if (points) {
+                        var benchmarkRunSequenceId = points[0].label;
+                        $location.path('benchmark/' + $routeParams.uniqueName + '/' + benchmarkRunSequenceId);
+                    }
+                };
+
+                $scope.$on('cart:added', function (event, benchmarkRun) {
+                    CartHelper.toggleCartAddedFlag(CartCompareService, $scope.benchmarkRuns, benchmarkRun, true);
+                });
+
+                $scope.$on('cart:removed', function (event, benchmarkRun) {
+                    CartHelper.toggleCartAddedFlag(CartCompareService, $scope.benchmarkRuns, benchmarkRun, false);
+                });
+
+                $scope.addedToCompareChanged = function (benchmarkRun) {
+                    CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
+                };
+
+                BenchmarkService.loadBenchmark($routeParams.uniqueName)
+                    .then(function (runs) {
+                        $scope.benchmarkRuns = runs;
+
+                        CartHelper.setCartAddedFlag(CartCompareService, runs);
+
+                        // filter out benchmark runs which have not finished
+                        var benchmarkRuns = _.filter(runs.slice().reverse(), function (benchmarkRun) {
+                            return benchmarkRun.status === 'ENDED';
+                        });
+                        var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
+                        $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter);
+                        $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter);
+                    });
+            }])
         .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService',
                                          'CartCompareService', function ($scope, $routeParams, $modal, BenchmarkService, CartCompareService) {
                 BenchmarkService.loadBenchmarkRun($routeParams.uniqueName, $routeParams.benchmarkSequenceId)
@@ -107,11 +139,12 @@
             }
         }])
         .controller('CartCompareNavBarCtrl', ['$scope', '$location', 'CartCompareService', function ($scope, $location, CartCompareService) {
-            $scope.compareCartSize = CartCompareService.size();
-            $scope.benchmarkRuns = CartCompareService.getAll();
+            $scope.$on('cart:added', function () {
+                $scope.compareBenchmarkRuns = CartCompareService.getAll();
+            });
 
-            $scope.$on('cart:changed', function () {
-                $scope.compareCartSize = CartCompareService.size();
+            $scope.$on('cart:removed', function () {
+                $scope.compareBenchmarkRuns = CartCompareService.getAll();
             });
 
             $scope.remove = function (benchmarkRun) {
@@ -119,10 +152,10 @@
             };
 
             $scope.compare = function () {
-                var names = _.map($scope.benchmarkRuns, function (benchmarkRun) {
+                var names = _.map($scope.compareBenchmarkRuns, function (benchmarkRun) {
                     return benchmarkRun.uniqueName;
                 }).join();
-                var sequenceIds = _.map($scope.benchmarkRuns, function (benchmarkRun) {
+                var sequenceIds = _.map($scope.compareBenchmarkRuns, function (benchmarkRun) {
                     return benchmarkRun.sequenceId;
                 }).join();
                 $location.path('compare/' + names + '/' + sequenceIds);

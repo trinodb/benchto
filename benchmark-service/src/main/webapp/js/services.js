@@ -114,11 +114,11 @@
             return {
                 add: function (benchmarkRun) {
                     cart.push(benchmarkRun);
-                    $rootScope.$broadcast('cart:changed');
+                    $rootScope.$broadcast('cart:added', benchmarkRun);
                 },
                 remove: function (benchmarkRun) {
                     cart.splice(cart.indexOf(benchmarkRun), 1);
-                    $rootScope.$broadcast('cart:changed');
+                    $rootScope.$broadcast('cart:removed', benchmarkRun);
                 },
                 getAll: function () {
                     return cart;
@@ -126,13 +126,16 @@
                 size: function () {
                     return cart.length;
                 },
-                contains: function (benchmarkRun) {
-                    for (var i in cart) {
-                        if (benchmarkRun.name == cart[i].name && benchmarkRun.sequenceId == cart[i].sequenceId) {
-                            return true;
+                findInCollection: function (benchmarkRuns, searchBenchmarkRun) {
+                    for (var i in benchmarkRuns) {
+                        if (searchBenchmarkRun.uniqueName == benchmarkRuns[i].uniqueName && searchBenchmarkRun.sequenceId == benchmarkRuns[i].sequenceId) {
+                            return benchmarkRuns[i];
                         }
                     }
-                    return false;
+                    return undefined;
+                },
+                contains: function (benchmarkRun) {
+                    return this.findInCollection(cart, benchmarkRun) ? true : false;
                 }
             };
         }]);
