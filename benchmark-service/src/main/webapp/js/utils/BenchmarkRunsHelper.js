@@ -98,7 +98,7 @@ BenchmarkRunsHelper.prototype.benchmarkMeasurementGraphsData = function(chartTyp
         var data =[super_this.dataForSingleMeasurementKey(measurements, "value")];
         return {
             data: data,
-            options: super_this.optionsFor(data, chartType, measurementKey)
+            options: super_this.optionsFor(data, chartType, measurementKey, unit)
         };
     });
 }
@@ -109,62 +109,29 @@ BenchmarkRunsHelper.prototype.optionsFor = function(data, chartType, measurement
         .flatten()
         .max()
         .value();
-    if (chartType == 'lineChart')
-        return {
-            chart: {
-                type: 'lineChart',
-                height: 180,
-                margin : {
-                    top: 20,
-                    right: 20,
-                    bottom: 40,
-                    left: 55
-                },
-                x: function(d){ return d[0]; },
-                y: function(d){ return d[1]; },
-                yDomain: [0, maxY],
-                useInteractiveGuideline: true,
-                yAxis: {
-                    axisLabel: unit,
-                    tickFormat: function(d){
-                       return d3.format('.01f')(d);
-                    }
-                },
-                xAxis: {
-                    axisLabel: 'benchmark execution id',
+    return {
+        chart: {
+            type: chartType,
+            height: 400,
+            width: 400,
+            x: function(d){ return d[0]; },
+            y: function(d){ return d[1]; },
+            yDomain: [0, maxY],
+            useInteractiveGuideline: true,
+            stacked: false,
+            yAxis: {
+                axisLabel: unit,
+                tickFormat: function(d){
+                   return d3.format('.01f')(d);
                 }
             },
-            title: {
-                enable: true,
-                text: measurementKey
+            xAxis: {
+                axisLabel: 'benchmark execution id',
             }
-        };
-    else if (chartType == 'multiBarChart') {
-        return {
-            chart: {
-                type: 'multiBarChart',
-                height: 400,
-                width: 400,
-                x: function (d) {return d[0];},
-                y: function (d) {return d[1];},
-                stacked: false,
-                yDomain: [0, maxY],
-                yAxis: {
-                    axisLabel: unit,
-                    tickFormat: function(d){
-                       return d3.format('.01f')(d);
-                    }
-                },
-                xAxis: {
-                    axisLabel: 'benchmark execution id',
-                }
-            },
-            title: {
-                enable: true,
-                text: measurementKey
-            }
-        };
-    } else {
-        throw new Error("Unsupported chartType: " + chartType);
-    }
+        },
+        title: {
+            enable: true,
+            text: measurementKey
+        }
+    };
 }
