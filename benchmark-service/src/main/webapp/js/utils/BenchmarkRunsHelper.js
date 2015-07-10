@@ -76,7 +76,7 @@ BenchmarkRunsHelper.prototype.dataForAggregatedMeasurementKey = function (measur
     ];
 };
 
-BenchmarkRunsHelper.prototype.aggregatedExecutionsMeasurementGraphsData = function(chartType) {
+BenchmarkRunsHelper.prototype.aggregatedExecutionsMeasurementGraphsData = function(chartType, $filter) {
     var benchmarkRuns = this.benchmarkRuns;
     return _.map(this.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
         var super_this = new BenchmarkRunsHelper(benchmarkRuns);
@@ -84,12 +84,12 @@ BenchmarkRunsHelper.prototype.aggregatedExecutionsMeasurementGraphsData = functi
         var data = super_this.dataForAggregatedMeasurementKey(measurementKey);
         return {
             data: data,
-            options: super_this.optionsFor(data, chartType, measurementKey, unit)
+            options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter)
         }
     });
 };
 
-BenchmarkRunsHelper.prototype.benchmarkMeasurementGraphsData = function(chartType) {
+BenchmarkRunsHelper.prototype.benchmarkMeasurementGraphsData = function(chartType, $filter) {
     var benchmarkRuns = this.benchmarkRuns;
     return _.map(this.benchmarkMeasurementKeys(), function (measurementKey) {
         var super_this = new BenchmarkRunsHelper(benchmarkRuns);
@@ -98,25 +98,41 @@ BenchmarkRunsHelper.prototype.benchmarkMeasurementGraphsData = function(chartTyp
         var data =[super_this.dataForSingleMeasurementKey(measurements, "value")];
         return {
             data: data,
-            options: super_this.optionsFor(data, chartType, measurementKey, unit)
+            options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter)
         };
     });
 }
 
-BenchmarkRunsHelper.prototype.optionsFor = function(data, chartType, measurementKey, unit) {
+BenchmarkRunsHelper.prototype.optionsFor = function(data, chartType, measurementKey, unit, $filter) {
     var maxY = _.chain(data)
         .map(function(singleData) { return singleData.values; })
         .flatten()
         .max()
         .value();
+
+    var filteredMaxYWithUnit;
+    if (measurementKey == 'duration') {
+        filteredMaxYWithUnit = $filter('duration')(maxY);
+    } else {
+        filteredMaxYWithUnit = $filter('unit')(maxY, unit);
+    }
+
+    var filteredMaxY = parseFloat(filteredMaxYWithUnit);
+    var valueScaleFactor = filteredMaxY / maxY;
+    unit = filteredMaxYWithUnit.split(' ')[1];
+
     return {
         chart: {
             type: chartType,
             height: 400,
             width: 400,
-            x: function(d){ return d[0]; },
-            y: function(d){ return d[1]; },
-            yDomain: [0, maxY],
+            x: function(d){
+                return d[0];
+            },
+            y: function(d){
+                return d[1] * valueScaleFactor;
+            },
+            yDomain: [0, filteredMaxY],
             useInteractiveGuideline: true,
             stacked: false,
             yAxis: {

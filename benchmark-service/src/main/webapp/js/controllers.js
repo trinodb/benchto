@@ -23,7 +23,7 @@
                     $scope.latestBenchmarkRuns = latestBenchmarkRuns;
                 });
         }])
-        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', function ($scope, $routeParams, $location, BenchmarkService) {
+        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', function ($scope, $routeParams, $location, $filter, BenchmarkService) {
             $scope.uniqueName = $routeParams.uniqueName;
 
             $scope.onBenchmarkClick = function (points, evt) {
@@ -41,10 +41,8 @@
                         return benchmarkRun.status === 'ENDED';
                     });
                     var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
-                    $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart');
-                    $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart');
-
-
+                    $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter);
+                    $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter);
                 });
         }])
         .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService',
@@ -130,7 +128,7 @@
                 $location.path('compare/' + names + '/' + sequenceIds);
             }
         }])
-        .controller('CompareCtrl', ['$scope', '$routeParams', 'BenchmarkService', function ($scope, $routeParams, BenchmarkService) {
+        .controller('CompareCtrl', ['$scope', '$routeParams', '$filter', 'BenchmarkService', function ($scope, $routeParams, $filter, BenchmarkService) {
             $scope.benchmarkRuns = [];
 
             var benchmarkUniqueNames = $routeParams.benchmarkNames.split(',');
@@ -159,8 +157,8 @@
                 }
 
                 var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns);
-                $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart');
-                $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart');
+                $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart', $filter);
+                $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart', $filter);
             };
         }]);
 }());
