@@ -151,8 +151,8 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
         return {
             chart: {
                 type: chartType,
-                height: 400,
-                width: 400,
+                height: 250,
+                width: null,
                 x: function (d) {
                     return d[0];
                 },
