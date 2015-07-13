@@ -37,6 +37,7 @@ public class QueryExecutionResult
         return queryExecution.getBenchmark();
     }
 
+    @Override
     public boolean isSuccessful()
     {
         return failureCause == null;

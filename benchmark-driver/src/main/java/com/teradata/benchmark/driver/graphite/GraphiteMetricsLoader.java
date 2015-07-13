@@ -106,6 +106,9 @@ public class GraphiteMetricsLoader
 
     private boolean shouldLoadGraphiteMetrics(Measurable measurable)
     {
+        if (!measurable.isSuccessful()) {
+            return false;
+        }
         if (measurable instanceof QueryExecutionResult && measurable.getBenchmark().isSerial()) {
             return true;
         }

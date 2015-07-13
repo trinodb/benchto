@@ -34,8 +34,8 @@ public class BenchmarkExecutionResult
         return executions;
     }
 
+    @Override
     public boolean isSuccessful()
-
     {
         return !prewarmFailed && executions.stream().allMatch(QueryExecutionResult::isSuccessful);
     }

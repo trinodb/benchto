@@ -21,7 +21,7 @@ public class ThroughputMeasurementProvider
     @Override
     public List<Measurement> loadMeasurements(Measurable measurable)
     {
-        if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmark().isConcurrent()) {
+        if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmark().isConcurrent() && measurable.isSuccessful()) {
             return ImmutableList.of(measurement("throughput", "QUERY_PER_SECOND", calculateThroughput((BenchmarkExecutionResult) measurable)));
         }
         return emptyList();
