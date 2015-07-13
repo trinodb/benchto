@@ -131,7 +131,11 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
 
     this.optionsFor = function (data, chartType, measurementKey, unit, $filter) {
         var maxY = _.chain(data)
-            .map(function (singleData) { return singleData.values; })
+            .map(function (singleData) {
+                return _.map(singleData.values, function (values) {
+                    return values[1];
+                });
+            })
             .flatten()
             .max()
             .value();
