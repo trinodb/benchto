@@ -8,7 +8,7 @@ prewarm-runs: 10
 variables:
   1:
     selectivity: 10, 100
-    cconcurrency_level: 10
+    concurrency_level: 10
   2:
     selectivity: 10, 100
     concurrency_level: 20
