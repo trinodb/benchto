@@ -25,6 +25,7 @@ public class BenchmarkDescriptor
     public static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
     public static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
     public static final String VARIABLES_KEY = "variables";
+    public static final String QUARANTINE_KEY = "quarantine";
 
     public static final Set<String> RESERVED_KEYWORDS = ImmutableSet.of(
             DATA_SOURCE_KEY,
@@ -34,7 +35,8 @@ public class BenchmarkDescriptor
             CONCURRENCY_KEY,
             BEFORE_BENCHMARK_MACROS_KEY,
             AFTER_BENCHMARK_MACROS_KEY,
-            VARIABLES_KEY
+            VARIABLES_KEY,
+            QUARANTINE_KEY
     );
 
     private final Map<String, String> variables;
@@ -42,6 +44,7 @@ public class BenchmarkDescriptor
     public BenchmarkDescriptor(Map<String, String> variables)
     {
         this.variables = variables;
+        this.variables.putIfAbsent(QUARANTINE_KEY, "false");
     }
 
     public Map<String, String> getVariables()

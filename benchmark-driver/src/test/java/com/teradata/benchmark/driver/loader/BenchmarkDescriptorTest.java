@@ -120,17 +120,21 @@ public class BenchmarkDescriptorTest
         List<Benchmark> benchmarks = loadBenchmarkWithName("multi-variables-benchmark");
         assertThat(benchmarks).hasSize(5);
 
+        for (Benchmark benchmark : benchmarks) {
+            assertThat(benchmark.getDataSource()).isEqualTo("foo");
+            assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
+        }
+
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "1GB"), entry("format", "txt"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "txt"), entry("pattern", "1GB-txt"));
+                .containsOnly(entry("size", "1GB"), entry("format", "txt"), entry("pattern", "1GB-txt"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "1GB"), entry("format", "orc"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "1GB"), entry("format", "orc"), entry("pattern", "1GB-orc"));
+                .containsOnly(entry("size", "1GB"), entry("format", "orc"), entry("pattern", "1GB-orc"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "2GB"), entry("format", "txt"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "txt"), entry("pattern", "2GB-txt"));
+                .containsOnly(entry("size", "2GB"), entry("format", "txt"), entry("pattern", "2GB-txt"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "2GB"), entry("format", "orc"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "2GB"), entry("format", "orc"), entry("pattern", "2GB-orc"));
+                .containsOnly(entry("size", "2GB"), entry("format", "orc"), entry("pattern", "2GB-orc"));
         assertThatBenchmarkWithEntries(benchmarks, entry("size", "10GB"), entry("format", "parquet"))
-                .containsOnly(entry("datasource", "foo"), entry("query-names", "q1, q2, 1, 2"), entry("size", "10GB"), entry("format", "parquet"),
-                        entry("pattern", "10GB-parquet"));
+                .containsOnly(entry("size", "10GB"), entry("format", "parquet"), entry("pattern", "10GB-parquet"));
     }
 
     @Test
@@ -141,6 +145,45 @@ public class BenchmarkDescriptorTest
         thrown.expectMessage("Recursive value substitution is not supported, invalid a: ${b}");
 
         loadBenchmarkWithName("cycle-variables-benchmark", "unit-benchmarks-invalid");
+    }
+
+    @Test
+    public void quarantineBenchmark_no_quarantine_filtering()
+            throws IOException
+    {
+        List<Benchmark> benchmarks = loadBenchmarkWithName("quarantine-benchmark");
+        assertThat(benchmarks).hasSize(1);
+    }
+
+    @Test
+    public void quarantineBenchmark_quarantine_false_filtering()
+            throws IOException
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", "quarantine=false");
+
+        List<Benchmark> benchmarks = loadBenchmarkWithName("quarantine-benchmark");
+        assertThat(benchmarks).isEmpty();
+    }
+
+    @Test
+    public void allBenchmarks_no_quarantine_filtering()
+            throws IOException
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "unit-benchmarks");
+
+        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks("sequenceId");
+        assertThat(benchmarks).hasSize(8);
+    }
+
+    @Test
+    public void allBenchmarks_quarantine_false_filtering()
+            throws IOException
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "unit-benchmarks");
+        ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", "quarantine=false");
+
+        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks("sequenceId");
+        assertThat(benchmarks).hasSize(7);
     }
 
     private List<Benchmark> loadBenchmarkWithName(String benchmarkName)
@@ -162,7 +205,7 @@ public class BenchmarkDescriptorTest
                 .filter(benchmark -> {
                     boolean containsAllEntries = true;
                     for (MapEntry mapEntry : entries) {
-                        Object value = benchmark.getVariables().get(mapEntry.key);
+                        Object value = benchmark.getNonReservedKeywordVariables().get(mapEntry.key);
                         if (!mapEntry.value.equals(value)) {
                             containsAllEntries = false;
                             break;
@@ -172,6 +215,6 @@ public class BenchmarkDescriptorTest
                 })
                 .findFirst().get();
 
-        return assertThat(searchBenchmark.getVariables());
+        return assertThat(searchBenchmark.getNonReservedKeywordVariables());
     }
 }
