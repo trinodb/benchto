@@ -9,8 +9,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import java.io.Serializable;
 import java.util.Collection;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 public class AggregatedMeasurement
         implements Serializable
 {
@@ -24,7 +22,6 @@ public class AggregatedMeasurement
         this.mean = mean;
         this.max = max;
         this.min = min;
-        checkArgument(stdDevPercent >= 0.0 && stdDevPercent <= 100.0, "stdDevPercent value must be between 0 and 100 inclusive, invalid: %s", stdDevPercent);
         this.stdDevPercent = stdDevPercent;
     }
 
