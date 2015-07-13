@@ -2,8 +2,8 @@ datasource: teradata
 query-names: teradata/linear-scan/selectivity-${selectivity}.sql
 schema: tpch_100gb_orc
 database: hive
-concurrency: ${cconcurrency_level}
-runs: ${cconcurrency_level}
+concurrency: ${concurrency_level}
+runs: ${concurrency_level}
 prewarm-runs: 10
 variables:
   1:
@@ -11,4 +11,4 @@ variables:
     cconcurrency_level: 10
   2:
     selectivity: 10, 100
-    cconcurrency_level: 20
+    concurrency_level: 20
