@@ -110,7 +110,7 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
             var data = super_this.dataForAggregatedMeasurementKey(measurementKey);
             return {
                 data: data,
-                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter)
+                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, benchmarkRuns)
             }
         });
     };
@@ -124,12 +124,12 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
             var data = [super_this.dataForSingleMeasurementKey(measurements, "value")];
             return {
                 data: data,
-                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter)
+                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, benchmarkRuns)
             };
         });
     };
 
-    this.optionsFor = function (data, chartType, measurementKey, unit, $filter) {
+    this.optionsFor = function (data, chartType, measurementKey, unit, $filter, benchmarkRuns) {
         var maxY = _.chain(data)
             .map(function (singleData) {
                 return _.map(singleData.values, function (values) {
@@ -152,6 +152,15 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
         var valueScaleFactor = filteredMaxY / maxY;
         unit = filteredMaxYWithUnit.split(' ')[1];
 
+        var yAxisTickFormat = function(d) {
+            return d3.format('.01f')(d);
+        };
+        var scaleYValue = function(d) {
+            return d[1] * valueScaleFactor;
+        };
+        var valueFormatter = function(d) {
+            return yAxisTickFormat(scaleYValue(d)) + ' ' + unit;
+        }
         return {
             chart: {
                 type: chartType,
@@ -160,20 +169,26 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
                 x: function (d) {
                     return d[0];
                 },
-                y: function (d) {
-                    return d[1] * valueScaleFactor;
-                },
+                y: scaleYValue,
                 yDomain: [0, filteredMaxY],
-                useInteractiveGuideline: true,
                 stacked: false,
                 yAxis: {
                     axisLabel: unit,
-                    tickFormat: function (d) {
-                        return d3.format('.01f')(d);
-                    }
+                    tickFormat: yAxisTickFormat
                 },
                 xAxis: {
                     axisLabel: 'benchmark execution id',
+                },
+                tooltip: {
+                    enabled: true,
+                    contentGenerator: function(obj) {
+                        return Jaml.render('tooltip', {
+                            obj: obj,
+                            benchmarkRuns: benchmarkRuns,
+                            data: data,
+                            valueFormatter: valueFormatter
+                        });
+                    }
                 }
             },
             title: {
@@ -185,3 +200,31 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
 
     return this;
 };
+
+Jaml.register('tooltip_entry', function(entry) {
+    tr(td(entry.key), td(entry.value));
+});
+
+Jaml.register('tooltip', function(params) {
+    var index = params.obj.index;
+    if (index === null || index === undefined) {
+        index = params.obj.pointIndex;
+    }
+    var benchmarkRun = params.benchmarkRuns[index];
+    var entries = _.map(params.data, function (dataEntry) {
+        return {
+            key: dataEntry.key,
+            value: params.valueFormatter(dataEntry.values[index])
+        };
+    });
+    table(
+        thead(tr(
+            td({colspan: 2},
+                strong({class: 'x-value'}, benchmarkRun.name), " (" + benchmarkRun.sequenceId + ")"
+            )
+        )),
+        tbody(
+            Jaml.render('tooltip_entry', entries)
+        )
+    )
+});
