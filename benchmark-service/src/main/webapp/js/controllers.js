@@ -5,8 +5,8 @@
     'use strict';
 
     angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3'])
-        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService',
-                                          'CartCompareService', function ($scope, $routeParams, BenchmarkService, CartCompareService) {
+        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService', 'CartCompareService',
+            function ($scope, $routeParams, BenchmarkService, CartCompareService) {
 
                 BenchmarkService.loadLatestBenchmarkRuns()
                     .then(function (latestBenchmarkRuns) {
@@ -39,8 +39,8 @@
                     CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
                 };
             }])
-        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService',
-                                      'CartCompareService', function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {
+        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', 'CartCompareService',
+            function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {
                 $scope.uniqueName = $routeParams.uniqueName;
 
                 $scope.onBenchmarkClick = function (points, evt) {
@@ -73,12 +73,12 @@
                             return benchmarkRun.status === 'ENDED';
                         });
                         var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
-                        $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter);
-                        $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter);
+                        $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter, $location);
+                        $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter, $location);
                     });
             }])
-        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService',
-                                         'CartCompareService', function ($scope, $routeParams, $modal, BenchmarkService, CartCompareService) {
+        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CartCompareService',
+            function ($scope, $routeParams, $modal, BenchmarkService, CartCompareService) {
                 BenchmarkService.loadBenchmarkRun($routeParams.uniqueName, $routeParams.benchmarkSequenceId)
                     .then(function (benchmarkRun) {
                         $scope.benchmarkRun = benchmarkRun;
@@ -161,7 +161,7 @@
                 $location.path('compare/' + names + '/' + sequenceIds);
             }
         }])
-        .controller('CompareCtrl', ['$scope', '$routeParams', '$filter', 'BenchmarkService', function ($scope, $routeParams, $filter, BenchmarkService) {
+        .controller('CompareCtrl', ['$scope', '$routeParams', '$filter', '$location', 'BenchmarkService', function ($scope, $routeParams, $filter, $location, BenchmarkService) {
             $scope.benchmarkRuns = [];
 
             var benchmarkUniqueNames = $routeParams.benchmarkNames.split(',');
@@ -190,8 +190,8 @@
                 }
 
                 var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns);
-                $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart', $filter);
-                $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart', $filter);
+                $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart', $filter, $location);
+                $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart', $filter, $location);
             };
         }]);
 }());

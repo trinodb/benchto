@@ -102,7 +102,7 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
         ];
     };
 
-    this.aggregatedExecutionsMeasurementGraphsData = function (chartType, $filter) {
+    this.aggregatedExecutionsMeasurementGraphsData = function (chartType, $filter, $location) {
         var benchmarkRuns = this.benchmarkRuns;
         return _.map(this.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
             var super_this = new BenchmarkRunsHelper(benchmarkRuns);
@@ -110,12 +110,12 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
             var data = super_this.dataForAggregatedMeasurementKey(measurementKey);
             return {
                 data: data,
-                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, benchmarkRuns)
+                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns)
             }
         });
     };
 
-    this.benchmarkMeasurementGraphsData = function (chartType, $filter) {
+    this.benchmarkMeasurementGraphsData = function (chartType, $filter, $location) {
         var benchmarkRuns = this.benchmarkRuns;
         return _.map(this.benchmarkMeasurementKeys(), function (measurementKey) {
             var super_this = new BenchmarkRunsHelper(benchmarkRuns);
@@ -124,12 +124,12 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
             var data = [super_this.dataForSingleMeasurementKey(measurements, "value")];
             return {
                 data: data,
-                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, benchmarkRuns)
+                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns)
             };
         });
     };
 
-    this.optionsFor = function (data, chartType, measurementKey, unit, $filter, benchmarkRuns) {
+    this.optionsFor = function (data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns) {
         var maxY = _.chain(data)
             .map(function (singleData) {
                 return _.map(singleData.values, function (values) {
@@ -160,7 +160,21 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
         };
         var valueFormatter = function(d) {
             return yAxisTickFormat(scaleYValue(d)) + ' ' + unit;
-        }
+        };
+        var indexFromChartObject = function(chartObject) {
+            var index = chartObject.index;
+            if (index === null || index === undefined) {
+                index = chartObject.pointIndex;
+            }
+            return index;
+        };
+        var onElementClick = function(e) {
+            var benchmarkRun = benchmarkRuns[indexFromChartObject(e)];
+            var angular_root_element = document.getElementById('angular_root_element');
+            angular.element(angular_root_element).scope().$apply(function () {
+                $location.path('benchmark/' + benchmarkRun.uniqueName + "/" + benchmarkRun.sequenceId)
+            });
+        };
         return {
             chart: {
                 type: chartType,
@@ -183,13 +197,24 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
                     enabled: true,
                     contentGenerator: function(obj) {
                         return Jaml.render('tooltip', {
-                            obj: obj,
+                            index: indexFromChartObject(obj),
                             benchmarkRuns: benchmarkRuns,
                             data: data,
                             valueFormatter: valueFormatter
                         });
                     }
-                }
+                },
+                multibar: {
+                  dispatch: {
+                    elementClick: onElementClick
+                  }
+                },
+                lines: {
+                  dispatch: {
+                    elementClick: onElementClick
+                  }
+                },
+                callback: function(e){console.log('! callback !')}
             },
             title: {
                 enable: true,
@@ -206,15 +231,11 @@ Jaml.register('tooltip_entry', function(entry) {
 });
 
 Jaml.register('tooltip', function(params) {
-    var index = params.obj.index;
-    if (index === null || index === undefined) {
-        index = params.obj.pointIndex;
-    }
-    var benchmarkRun = params.benchmarkRuns[index];
+    var benchmarkRun = params.benchmarkRuns[params.index];
     var entries = _.map(params.data, function (dataEntry) {
         return {
             key: dataEntry.key,
-            value: params.valueFormatter(dataEntry.values[index])
+            value: params.valueFormatter(dataEntry.values[params.index])
         };
     });
     table(
