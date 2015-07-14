@@ -1,6 +1,6 @@
-# benchmark-service
+# Benchto-service
 
-Service for storing/showing benchmark results
+Service for storing/showing benchmark results.
 
 ## Prerequisites
 
@@ -17,14 +17,13 @@ $ docker run --name benchmark-postgres -e POSTGRES_PASSWORD=postgres -p 15432:54
 ## Running integration-tests
 
 ```
-$ mvn integration-test
+$ mvn verify
 ```
 
 ## Running service
 
 ```
-$ mvn clean package
-$ java -jar target/benchmark-service-*-SNAPSHOT.jar
+$ mvn spring-boot:run
 
 ------------------------------------------------------------------
 

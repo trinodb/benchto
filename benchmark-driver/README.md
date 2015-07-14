@@ -1,4 +1,4 @@
-# benchmark-driver
+# Benchto-driver
 
 Benchmark driver is standalone java application which sql statements using JDBC.
 
@@ -96,10 +96,6 @@ graphite:
     memory: collectd.CLOUD10HD01-2-*.memory
     network: sumSeries(collectd.TD_HDP-*.interface-*.if_octets.{rx,tx})
 ```
-
-## Define benchmarks
-
-TODO
 
 ## Properties
 
