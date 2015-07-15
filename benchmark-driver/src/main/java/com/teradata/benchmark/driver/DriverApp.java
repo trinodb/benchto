@@ -3,7 +3,7 @@
  */
 package com.teradata.benchmark.driver;
 
-import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
+import com.teradata.benchmark.driver.execution.ExecutionDriver;
 import freemarker.template.TemplateException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -36,11 +36,11 @@ public class DriverApp
     public static void main(String[] args)
     {
         ConfigurableApplicationContext ctx = SpringApplication.run(DriverApp.class, args);
-        BenchmarkExecutionDriver benchmarkExecutionDriver = ctx.getBean(BenchmarkExecutionDriver.class);
+        ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
 
         Thread.currentThread().setName("main");
 
-        boolean successful = benchmarkExecutionDriver.run();
+        boolean successful = executionDriver.execute();
         if (successful) {
             System.exit(0);
         }

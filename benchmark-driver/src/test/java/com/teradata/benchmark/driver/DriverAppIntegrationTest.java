@@ -4,7 +4,7 @@
 package com.teradata.benchmark.driver;
 
 import com.google.common.collect.ImmutableList;
-import com.teradata.benchmark.driver.execution.BenchmarkExecutionDriver;
+import com.teradata.benchmark.driver.execution.ExecutionDriver;
 import com.teradata.benchmark.driver.macro.MacroService;
 import org.hamcrest.Matcher;
 import org.junit.Test;
@@ -15,6 +15,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.RequestMatcher;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -47,7 +48,7 @@ public class DriverAppIntegrationTest
     private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
     @Autowired
-    private BenchmarkExecutionDriver benchmarkExecutionDriver;
+    private ExecutionDriver executionDriver;
 
     @Autowired
     private BenchmarkProperties benchmarkProperties;
@@ -215,15 +216,19 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
-        boolean successful = benchmarkExecutionDriver.run();
+        boolean successful = executionDriver.execute();
         assertThat(successful).isTrue();
 
         ArgumentCaptor<List> macroArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        verify(macroService, times(2)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Benchmark.class));
+        verify(macroService, times(5)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class));
 
         assertThat(macroArgumentCaptor.getAllValues()).isEqualTo(ImmutableList.of(
+                ImmutableList.of("no-op-before-all"),
+                ImmutableList.of("no-op-health-check"),
                 ImmutableList.of("no-op", "test_query.sql"),
-                ImmutableList.of("no-op-after")));
+                ImmutableList.of("no-op-after"),
+                ImmutableList.of("no-op-after-all")
+        ));
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)

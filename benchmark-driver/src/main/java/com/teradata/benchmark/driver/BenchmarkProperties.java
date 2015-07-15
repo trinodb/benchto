@@ -53,6 +53,15 @@ public class BenchmarkProperties
     @Value("${environment.name}")
     private String environmentName;
 
+    @Value("${macroExecutions.healthCheck:#{null}}")
+    private String healthCheckMacros;
+
+    @Value("${macroExecutions.beforeAll:#{null}}")
+    private String beforeAllMacros;
+
+    @Value("${macroExecutions.afterAll:#{null}}")
+    private String afterAllMacros;
+
     @Autowired
     private GraphiteProperties graphiteProperties;
 
@@ -111,14 +120,31 @@ public class BenchmarkProperties
                 .add("executionSequenceId", executionSequenceId)
                 .add("environmentName", environmentName)
                 .add("graphiteProperties", graphiteProperties);
-        Optional<List<String>> benchmarks = getActiveBenchmarks();
-        if (benchmarks.isPresent()) {
-            toStringHelper.add("activeBenchmarks", benchmarks.get());
-        }
-        Optional<Map<String, String>> variables = getActiveVariables();
-        if (variables.isPresent()) {
-            toStringHelper.add("activeVariables", variables.get());
-        }
+        addForToStringOptionalField(toStringHelper, "activeBenchmarks", getActiveBenchmarks());
+        addForToStringOptionalField(toStringHelper, "activeVariables", getActiveVariables());
+        addForToStringOptionalField(toStringHelper, "beforeAllMacros", getBeforeAllMacros());
+        addForToStringOptionalField(toStringHelper, "afterAllMacros", getAfterAllMacros());
+        addForToStringOptionalField(toStringHelper, "healthCheckMacros", getHealthCheckMacros());
         return toStringHelper.toString();
+    }
+
+    private void addForToStringOptionalField(MoreObjects.ToStringHelper toStringHelper, String fieldName, Optional optionalField)
+    {
+        optionalField.ifPresent(value -> toStringHelper.add(fieldName, value));
+    }
+
+    public Optional<List<String>> getHealthCheckMacros()
+    {
+        return splitProperty(this.healthCheckMacros);
+    }
+
+    public Optional<List<String>> getBeforeAllMacros()
+    {
+        return splitProperty(beforeAllMacros);
+    }
+
+    public Optional<List<String>> getAfterAllMacros()
+    {
+        return splitProperty(afterAllMacros);
     }
 }

@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -40,12 +41,12 @@ public class ShellMacroExecutionDriver
     }
 
     @Override
-    public void runBenchmarkMacro(String macroName, Benchmark benchmark)
+    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark)
     {
         runBenchmarkMacro(macroName, ImmutableMap.of(), benchmark);
     }
 
-    public void runBenchmarkMacro(String macroName, Map<String, String> environment, Benchmark benchmark)
+    public void runBenchmarkMacro(String macroName, Map<String, String> environment, Optional<Benchmark> benchmark)
     {
         try {
             String macroCommand = getMacroCommand(macroName);

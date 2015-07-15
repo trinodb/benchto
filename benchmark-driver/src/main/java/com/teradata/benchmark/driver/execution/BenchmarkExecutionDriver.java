@@ -8,39 +8,29 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkExecutionException;
-import com.teradata.benchmark.driver.BenchmarkProperties;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.concurrent.ExecutorServiceFactory;
 import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
 import com.teradata.benchmark.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import com.teradata.benchmark.driver.listeners.benchmark.BenchmarkStatusReporter;
-import com.teradata.benchmark.driver.loader.BenchmarkLoader;
 import com.teradata.benchmark.driver.macro.MacroService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
-import static java.util.stream.Collectors.toList;
 
 @Component
 public class BenchmarkExecutionDriver
 {
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss:SSS");
     private static final Logger LOG = LoggerFactory.getLogger(BenchmarkExecutionDriver.class);
-
-    @Autowired
-    private BenchmarkProperties properties;
-
-    @Autowired
-    private BenchmarkLoader benchmarkLoader;
 
     @Autowired
     private QueryExecutionDriver queryExecutionDriver;
@@ -57,49 +47,37 @@ public class BenchmarkExecutionDriver
     @Autowired
     private ExecutionSynchronizer executionSynchronizer;
 
-    /**
-     * @return true if all benchmark queries passed
-     */
-    public boolean run()
+    public BenchmarkExecutionResult execute(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount)
     {
-        String executionSequenceId = benchmarkExecutionSequenceId();
-        LOG.info("Running benchmarks(executionSequenceId={}) with properties: {}", executionSequenceId, properties);
+        LOG.info("[{} of {}] processing benchmark: {}", benchmarkOrdinalNumber, benchmarkTotalCount, benchmark);
 
-        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks(executionSequenceId);
-        LOG.info("Loaded {} benchmarks", benchmarks.size());
+        BenchmarkExecutionResult benchmarkExecutionResult = null;
+        try {
 
-        return run(benchmarks);
-    }
+            macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), Optional.of(benchmark));
 
-    private String benchmarkExecutionSequenceId()
-    {
-        return properties.getExecutionSequenceId().orElse(nowUtc().format(DATE_TIME_FORMATTER));
-    }
+            benchmarkExecutionResult = executeBenchmark(benchmark);
 
-    private boolean run(List<Benchmark> benchmarks)
-    {
-        List<BenchmarkExecutionResult> benchmarkExecutionResults = newArrayList();
-        int benchmarkOrdinalNumber = 1;
-        for (Benchmark benchmark : benchmarks) {
-            benchmarkExecutionResults.add(executePrewarmAndBenchmark(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
+            macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), Optional.of(benchmark));
+
+            return benchmarkExecutionResult;
         }
-
-        List<BenchmarkExecutionResult> failedBenchmarkResults = benchmarkExecutionResults.stream()
-                .filter(benchmarkExecutionResult -> !benchmarkExecutionResult.isSuccessful())
-                .collect(toList());
-
-        logFailedBenchmarks(failedBenchmarkResults);
-
-        return failedBenchmarkResults.isEmpty();
+        catch (Exception e) {
+            if (benchmarkExecutionResult == null || benchmarkExecutionResult.isSuccessful()) {
+                return failedBenchmarkResult(benchmark, e);
+            }
+            else {
+                checkState(!benchmarkExecutionResult.isSuccessful(), "Benchmark is already failed.");
+                LOG.error("Error while running after benchmark macros for successful benchmark({})",
+                        benchmark.getAfterBenchmarkMacros(), e);
+                return benchmarkExecutionResult;
+            }
+        }
     }
 
-    private BenchmarkExecutionResult executePrewarmAndBenchmark(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount)
+    private BenchmarkExecutionResult executeBenchmark(Benchmark benchmark)
     {
         try {
-            LOG.info("[{} of {}] processing benchmark: {}", benchmarkOrdinalNumber, benchmarkTotalCount, benchmark);
-
-            macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
-
             executePrewarm(benchmark);
 
             statusReporter.reportBenchmarkStarted(benchmark);
@@ -120,19 +98,16 @@ public class BenchmarkExecutionDriver
 
             return executionResult;
         }
-        catch (Exception e) {
-            return new BenchmarkExecutionResultBuilder(benchmark)
-                    .withUnexpectedException(e)
-                    .build();
+        catch (RuntimeException e) {
+            return failedBenchmarkResult(benchmark, e);
         }
-        finally {
-            try {
-                macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
-            }
-            catch (RuntimeException e) {
-                LOG.error("Error while running after benchmark macros ({})", benchmark.getAfterBenchmarkMacros(), e);
-            }
-        }
+    }
+
+    private BenchmarkExecutionResult failedBenchmarkResult(Benchmark benchmark, Exception e)
+    {
+        return new BenchmarkExecutionResultBuilder(benchmark)
+                .withUnexpectedException(e)
+                .build();
     }
 
     private void executePrewarm(Benchmark benchmark)
@@ -220,16 +195,5 @@ public class BenchmarkExecutionDriver
             }
         }
         return executionCallables;
-    }
-
-    private void logFailedBenchmarks(List<BenchmarkExecutionResult> failedBenchmarkResults)
-    {
-        for (BenchmarkExecutionResult failedBenchmarkResult : failedBenchmarkResults) {
-            LOG.error("Failed benchmark: {}", failedBenchmarkResult.getBenchmark().getUniqueName());
-            for (Exception failureCause : failedBenchmarkResult.getFailureCauses()) {
-                LOG.error("Cause: {}", failureCause.getMessage(), failureCause);
-            }
-            LOG.error("-----------------------------------------------------------------");
-        }
     }
 }

@@ -39,6 +39,17 @@ macros:
     command: exit 1
   no-command-macro:
     test: x
+  no-op-before-all:
+    command:
+  no-op-after-all:
+    command:
+  no-op-health-check:
+    command:
+
+macroExecutions:
+  healthCheck: no-op-health-check
+  beforeAll: no-op-before-all
+  afterAll: no-op-after-all
 
 benchmark:
   feature:

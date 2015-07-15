@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -20,7 +21,7 @@ public class MacroServiceImpl
     @Autowired
     private List<MacroExecutionDriver> macroExecutionDrivers;
 
-    public void runBenchmarkMacro(String macroName, Benchmark benchmark)
+    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark)
     {
         MacroExecutionDriver macroExecutionDriver = macroExecutionDrivers.stream()
                 .filter(executionDriver -> executionDriver.canExecuteBenchmarkMacro(macroName))

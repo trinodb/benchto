@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
+import java.util.Optional;
+
+import static com.google.common.base.Preconditions.checkArgument;
+
 @Component
 public class QueryMacroExecutionDriver
         implements MacroExecutionDriver
@@ -33,12 +37,13 @@ public class QueryMacroExecutionDriver
         return macroName.endsWith(".sql");
     }
 
-    public void runBenchmarkMacro(String macroName, Benchmark benchmark)
+    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark)
     {
-        Query query = queryLoader.loadFromFile(macroName, benchmark.getVariables());
+        checkArgument(benchmark.isPresent(), "Benchmark is required to run query based macro");
+        Query query = queryLoader.loadFromFile(macroName, benchmark.get().getVariables());
 
         LOGGER.info("Executing macro query: '{}'", query.getSql());
-        DataSource dataSource = applicationContext.getBean(benchmark.getDataSource(), DataSource.class);
+        DataSource dataSource = applicationContext.getBean(benchmark.get().getDataSource(), DataSource.class);
         new JdbcTemplate(dataSource).execute(query.getSql());
     }
 }
