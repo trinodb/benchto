@@ -8,6 +8,7 @@ table: tmp_insert_selectivity_${selectivity}_concurrency_${concurrency_level}
 runs: ${concurrency_level}
 concurrency: ${concurrency_level}
 prewarm-runs: 3
+quarantine: true
 variables:
   1:
     selectivity: 10, 100

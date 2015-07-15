@@ -37,7 +37,7 @@ public class BenchmarkExecutionResultTest
         sleep(500, MILLISECONDS);
         builder.endTimer();
 
-        BenchmarkExecutionResult benchmarkExecutionResult = builder.setExecutions(ImmutableList.of()).build();
+        BenchmarkExecutionResult benchmarkExecutionResult = builder.withExecutions(ImmutableList.of()).build();
 
         assertThat(benchmarkExecutionResult.isSuccessful()).isTrue();
         assertThat(benchmarkExecutionResult.getQueryDuration().toMillis()).isBetween(500L, 600L);

@@ -7,15 +7,17 @@ import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.Measurable;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 public class BenchmarkExecutionResult
         extends Measurable
 {
     private final Benchmark benchmark;
-    private boolean prewarmFailed;
+    private Optional<Exception> failure = Optional.empty();
     private List<QueryExecutionResult> executions;
 
     private BenchmarkExecutionResult(Benchmark benchmark)
@@ -37,7 +39,17 @@ public class BenchmarkExecutionResult
     @Override
     public boolean isSuccessful()
     {
-        return !prewarmFailed && executions.stream().allMatch(QueryExecutionResult::isSuccessful);
+        return !failure.isPresent() && executions.stream().allMatch(QueryExecutionResult::isSuccessful);
+    }
+
+    public List<Exception> getFailureCauses()
+    {
+        List<Exception> failureCauses = executions.stream()
+                .filter(queryExecutionResult -> !queryExecutionResult.isSuccessful())
+                .map(QueryExecutionResult::getFailureCause)
+                .collect(toList());
+        failure.ifPresent(failureCauses::add);
+        return failureCauses;
     }
 
     public static class BenchmarkExecutionResultBuilder
@@ -49,14 +61,14 @@ public class BenchmarkExecutionResult
             super(new BenchmarkExecutionResult(benchmark));
         }
 
-        public BenchmarkExecutionResultBuilder withPrewarmFailed()
+        public BenchmarkExecutionResultBuilder withUnexpectedException(Exception failure)
         {
-            object.prewarmFailed = true;
+            object.failure = Optional.of(failure);
             object.executions = emptyList();
             return this;
         }
 
-        public BenchmarkExecutionResultBuilder setExecutions(List<QueryExecutionResult> executions)
+        public BenchmarkExecutionResultBuilder withExecutions(List<QueryExecutionResult> executions)
         {
             object.executions = executions;
             return this;

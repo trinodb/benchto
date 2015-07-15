@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.teradata.benchmark.driver.utils.TimeUtils.nowUtc;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class BenchmarkExecutionDriver
@@ -83,8 +84,13 @@ public class BenchmarkExecutionDriver
             benchmarkExecutionResults.add(executePrewarmAndBenchmark(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
         }
 
-        return benchmarkExecutionResults.stream()
-                .allMatch(BenchmarkExecutionResult::isSuccessful);
+        List<BenchmarkExecutionResult> failedBenchmarkResults = benchmarkExecutionResults.stream()
+                .filter(benchmarkExecutionResult -> !benchmarkExecutionResult.isSuccessful())
+                .collect(toList());
+
+        logFailedBenchmarks(failedBenchmarkResults);
+
+        return failedBenchmarkResults.isEmpty();
     }
 
     private BenchmarkExecutionResult executePrewarmAndBenchmark(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount)
@@ -94,13 +100,7 @@ public class BenchmarkExecutionDriver
 
             macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
 
-            boolean prewarmSuccessful = executePrewarm(benchmark);
-            if (!prewarmSuccessful) {
-                LOG.error("Prewarm for benchmark {} failed, skipping this benchmark", benchmark);
-                return new BenchmarkExecutionResultBuilder(benchmark)
-                        .withPrewarmFailed()
-                        .build();
-            }
+            executePrewarm(benchmark);
 
             statusReporter.reportBenchmarkStarted(benchmark);
 
@@ -111,7 +111,7 @@ public class BenchmarkExecutionDriver
 
             BenchmarkExecutionResult executionResult = resultBuilder
                     .endTimer()
-                    .setExecutions(executions)
+                    .withExecutions(executions)
                     .build();
 
             executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
@@ -119,6 +119,11 @@ public class BenchmarkExecutionDriver
             statusReporter.reportBenchmarkFinished(executionResult);
 
             return executionResult;
+        }
+        catch (Exception e) {
+            return new BenchmarkExecutionResultBuilder(benchmark)
+                    .withUnexpectedException(e)
+                    .build();
         }
         finally {
             try {
@@ -130,15 +135,14 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private boolean executePrewarm(Benchmark benchmark)
+    private void executePrewarm(Benchmark benchmark)
     {
+        ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
         try {
             if (benchmark.getPrewarmRuns() < 1) {
-                return true;
+                return;
             }
-            LOG.info("Executing prewarm for benchmark: {}", benchmark);
-
-            ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
+            LOG.info("Executing prewarm for benchmark: {}", benchmark.getUniqueName());
 
             List<ListenableFuture<QueryExecutionResult>> executionFutures = newArrayList();
             for (Query query : benchmark.getQueries()) {
@@ -163,29 +167,29 @@ public class BenchmarkExecutionDriver
             LOG.info("Finished prewarm for benchmark: {}, successful: {}", benchmark, prewarmSuccessful);
 
             executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
-
-            return prewarmSuccessful;
         }
-        catch (ExecutionException e) {
-            LOG.error("Error while executing prewarm for benchmark {}", benchmark, e);
-            return false;
-        }
-        catch (InterruptedException e) {
+        catch (Exception e) {
             throw new BenchmarkExecutionException("Could not execute benchmark prewarm", e);
+        }
+        finally {
+            executorService.shutdown();
         }
     }
 
     @SuppressWarnings("unchecked")
     private List<QueryExecutionResult> executeBenchmarkQueries(Benchmark benchmark)
     {
+        ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
         try {
-            ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
             List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmark);
             List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
             return Futures.allAsList(executionFutures).get();
         }
         catch (InterruptedException | ExecutionException e) {
             throw new BenchmarkExecutionException("Could not execute benchmark", e);
+        }
+        finally {
+            executorService.shutdown();
         }
     }
 
@@ -216,5 +220,16 @@ public class BenchmarkExecutionDriver
             }
         }
         return executionCallables;
+    }
+
+    private void logFailedBenchmarks(List<BenchmarkExecutionResult> failedBenchmarkResults)
+    {
+        for (BenchmarkExecutionResult failedBenchmarkResult : failedBenchmarkResults) {
+            LOG.error("Failed benchmark: {}", failedBenchmarkResult.getBenchmark().getUniqueName());
+            for (Exception failureCause : failedBenchmarkResult.getFailureCauses()) {
+                LOG.error("Cause: {}", failureCause.getMessage(), failureCause);
+            }
+            LOG.error("-----------------------------------------------------------------");
+        }
     }
 }
