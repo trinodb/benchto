@@ -1,23 +1,21 @@
 SELECT
-  l.orderkey,
-  sum(l.extendedprice * (1 - l.discount)) AS revenue,
-  o.orderdate,
-  o.shippriority
+  l.returnflag,
+  l.linestatus,
+  sum(l.quantity)                                       AS sum_qty,
+  sum(l.extendedprice)                                  AS sum_base_price,
+  sum(l.extendedprice * (1 - l.discount))               AS sum_disc_price,
+  sum(l.extendedprice * (1 - l.discount) * (1 + l.tax)) AS sum_charge,
+  avg(l.quantity)                                       AS avg_qty,
+  avg(l.extendedprice)                                  AS avg_price,
+  avg(l.discount)                                       AS avg_disc,
+  count(*)                                              AS count_order
 FROM
-  "${database}"."${schema}"."customer" AS c,
-  "${database}"."${schema}"."orders" AS o,
   "${database}"."${schema}"."lineitem" AS l
 WHERE
-  c.mktsegment = 'BUILDING'
-  AND c.custkey = o.custkey
-  AND l.orderkey = o.orderkey
-  AND o.orderdate < DATE '1995-03-15'
-  AND l.shipdate > DATE '1995-03-15'
+  l.shipdate <= DATE '1998-12-01' - INTERVAL '90' DAY
 GROUP BY
-  l.orderkey,
-  o.orderdate,
-  o.shippriority
+l.returnflag,
+l.linestatus
 ORDER BY
-  revenue DESC,
-  o.orderdate
-LIMIT 10
+l.returnflag,
+l.linestatus

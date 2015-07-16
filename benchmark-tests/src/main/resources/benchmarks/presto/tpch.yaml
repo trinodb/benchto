@@ -4,10 +4,19 @@ runs: 3
 prewarm-runs: 3
 variables:
   1:
-    query: q1, q3, q5, q7, q8, q9, q10, q12, q14, q16, q18
-    schema: sf100, sf10
-    database: tpch
-  2:
-    query: q1, q3, q5, q7, q8, q9, q10, q12, q14, q16, q18
-    schema: tpch_100gb_orc, tpch_10gb_orc
+    query: q1, q3, q5, q7, q8, q10, q12, q14, q16, q18
+    schema: tpch_10gb_orc
     database: hive
+  2:
+    query: q1, q12, q14, q16
+    schema: tpch_100gb_orc
+    database: hive
+  3:
+    query: q1, q12, q16
+    schema: tpch_1tb_orc
+    database: hive
+  4:
+    query: q9
+    schema: tpch_10gb_orc
+    database: hive
+    quarantine: true

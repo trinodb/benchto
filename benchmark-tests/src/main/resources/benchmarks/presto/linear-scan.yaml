@@ -19,6 +19,6 @@ variables:
     prewarm-runs: 1
   3:
     selectivity: 0, 2, 10, 100
-    schema: tpch_10tb_orc, tpch_10tb_text
+    schema: tpch_10tb_orc
     database: hive
     prewarm-runs: 1
