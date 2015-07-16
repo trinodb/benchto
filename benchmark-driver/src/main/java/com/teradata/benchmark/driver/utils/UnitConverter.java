@@ -20,6 +20,7 @@ import static javax.measure.unit.SI.MICRO;
 import static javax.measure.unit.SI.MILLI;
 import static javax.measure.unit.SI.NANO;
 import static javax.measure.unit.SI.SECOND;
+import static javax.measure.unit.SI.TERA;
 
 /**
  * Helps converting between units.
@@ -65,11 +66,14 @@ public final class UnitConverter
             case "B":
                 return BYTE;
             case "kB":
+            case "KB":
                 return KILO(BYTE);
             case "MB":
                 return MEGA(BYTE);
             case "GB":
                 return GIGA(BYTE);
+            case "TB":
+                return TERA(BYTE);
             default:
                 throw new IllegalArgumentException(string + " unit is not supported");
         }
