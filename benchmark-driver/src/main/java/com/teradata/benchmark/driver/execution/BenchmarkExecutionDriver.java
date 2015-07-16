@@ -125,12 +125,12 @@ public class BenchmarkExecutionDriver
                     QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
                     executionFutures.add(executorService.submit(() -> {
                         try {
-                            LOG.info("Executing prewarm query: {} ({})", query, queryExecution.getRun());
+                            LOG.info("Executing prewarm query: {} ({})", query.getName(), queryExecution.getRun());
 
                             return queryExecutionDriver.execute(queryExecution);
                         }
                         finally {
-                            LOG.info("Executed prewarm query: {} ({})", query, queryExecution.getRun());
+                            LOG.info("Executed prewarm query: {} ({})", query.getName(), queryExecution.getRun());
                         }
                     }));
                 }
@@ -139,7 +139,7 @@ public class BenchmarkExecutionDriver
             boolean prewarmSuccessful = Futures.allAsList(executionFutures).get().stream()
                     .allMatch(QueryExecutionResult::isSuccessful);
 
-            LOG.info("Finished prewarm for benchmark: {}, successful: {}", benchmark, prewarmSuccessful);
+            LOG.info("Finished prewarm for benchmark: {}, successful: {}", benchmark.getUniqueName(), prewarmSuccessful);
 
             executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
         }
