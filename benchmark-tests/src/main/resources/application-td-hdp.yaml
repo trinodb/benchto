@@ -29,7 +29,12 @@ graphite:
 
 macros:
   drop-caches:
-    command: hfab -R all other:querygrid_hdp_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches" && hfab -R all other:querygrid_td_perf_cluster node.shell:"echo 3 > /proc/sys/vm/drop_caches"
+    command: hfab -P -R all other:querygrid_hdp_perf_cluster node.drop_caches && hfab -P -R all other:querygrid_td_perf_cluster node.drop_caches
+  disk-usage-check:
+    command: hfab -P -R all other:querygrid_hdp_perf_cluster node.shell:"! df -h | grep 100%" && hfab -P -R all other:querygrid_td_perf_cluster node.shell:"! df -h | grep 100%"
+
+macroExecutions:
+  healthCheck: disk-usage-check
 
 benchmark:
   feature:
