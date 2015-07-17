@@ -11,7 +11,7 @@ Service for storing/showing benchmark results.
 For local development use docker:
 
 ```
-$ docker run --name benchmark-postgres -e POSTGRES_PASSWORD=postgres -p 15432:5432 -d postgres
+$ docker run --name benchmark-postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 ```
 
 ## Running integration-tests
