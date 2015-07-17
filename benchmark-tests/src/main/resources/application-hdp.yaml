@@ -1,5 +1,5 @@
 benchmark-service:
-  url: http://10.25.17.79:18080
+  url: http://benchto.td.teradata.com
 
 data-sources:
   presto:
@@ -15,7 +15,7 @@ presto:
   url: http://10.25.17.79:8090
 
 graphite:
-  url: http://10.25.17.79:18088
+  url: http://benchto.td.teradata.com:8088
   resolution.seconds: 10
   metrics:
     cpu: asPercent(sumSeries(collectd.hadoop-r3*.cpu.percent-{user,system}.value), sumSeries(collectd.hadoop-r3*.cpu.*.value))
