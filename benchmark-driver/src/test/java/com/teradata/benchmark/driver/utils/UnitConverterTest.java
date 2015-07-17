@@ -30,7 +30,7 @@ public class UnitConverterTest
     public void testParseValueAsMilliseconds()
     {
         assertThat(parseValueAsUnit("50ns", MILLI(SECOND))).isCloseTo(0.00005, offset(0.00000000001));
-        assertThat(parseValueAsUnit("30us", MILLI(SECOND))).isCloseTo(0.003, offset(0.00000000001));
+        assertThat(parseValueAsUnit("30us", MILLI(SECOND))).isCloseTo(0.03, offset(0.00000000001));
         assertThat(parseValueAsUnit("10ms", MILLI(SECOND))).isEqualTo(10.0);
         assertThat(parseValueAsUnit("20s", MILLI(SECOND))).isEqualTo(20000.0);
         assertThat(parseValueAsUnit("30m", MILLI(SECOND))).isEqualTo(1800000.0);
