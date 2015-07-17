@@ -3,6 +3,8 @@
  */
 package com.teradata.presto.monitor.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,8 @@ import static java.util.stream.Collectors.toList;
 @ConfigurationProperties
 public class Environments
 {
+    private static final Logger LOG = LoggerFactory.getLogger(Environments.class);
+
     private Map<String, Object> environments = newHashMap();
 
     private List<Environment> environmentList = newArrayList();
@@ -29,6 +33,8 @@ public class Environments
         environmentList = environments.keySet().stream()
                 .map(this::getEnvironment)
                 .collect(toList());
+
+        LOG.info("Defined environments: {}", environments);
     }
 
     public List<Environment> getEnvironmentList()

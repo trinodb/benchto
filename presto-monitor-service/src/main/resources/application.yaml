@@ -1,8 +1,8 @@
 snapshot.interval: 5000
 
 environments:
-  test:
-    presto.url: http://10.25.17.79:8090
+  tdhdp:
+    presto.url: http://cloud10hd01-2-2.labs.teradata.com:8888
 
 spring:
   datasource:
