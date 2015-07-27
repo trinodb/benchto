@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Executes macros using bash defined in application yaml file.
@@ -56,9 +57,7 @@ public class ShellMacroExecutionDriver
             LOGGER.info("Executing macro: '{}'", macroCommand);
             printOutput(macroProcess);
             macroProcess.waitFor();
-            if (macroProcess.exitValue() != 0) {
-                throw new IllegalStateException(String.format("Macro %s exited with code %s", macroName, macroProcess.exitValue()));
-            }
+            checkState(macroProcess.exitValue() == 0, "Macro %s exited with code %s", macroName, macroProcess.exitValue());
         }
         catch (IOException | InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute macro " + macroName, e);

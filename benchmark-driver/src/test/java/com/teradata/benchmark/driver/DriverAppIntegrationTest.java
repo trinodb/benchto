@@ -216,8 +216,7 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
-        boolean successful = executionDriver.execute();
-        assertThat(successful).isTrue();
+        executionDriver.execute();
 
         ArgumentCaptor<List> macroArgumentCaptor = ArgumentCaptor.forClass(List.class);
         verify(macroService, times(5)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class));

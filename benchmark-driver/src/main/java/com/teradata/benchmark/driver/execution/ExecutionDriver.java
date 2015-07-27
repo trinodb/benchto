@@ -6,6 +6,7 @@ package com.teradata.benchmark.driver.execution;
 
 import com.teradata.benchmark.driver.Benchmark;
 import com.teradata.benchmark.driver.BenchmarkProperties;
+import com.teradata.benchmark.driver.FailedBenchmarkExecutionException;
 import com.teradata.benchmark.driver.loader.BenchmarkLoader;
 import com.teradata.benchmark.driver.macro.MacroService;
 import org.slf4j.Logger;
@@ -39,32 +40,20 @@ public class ExecutionDriver
     @Autowired
     private MacroService macroService;
 
-    /**
-     * @return true if all benchmark queries passed
-     */
-    public boolean execute()
+    public void execute()
     {
-
-        executeBeforeAllMacros();
-        Optional<Boolean> benchmarkStatus = Optional.empty();
-
         try {
-            benchmarkStatus = Optional.of(executeBenchmarks());
+            executeBeforeAllMacros();
+            executeBenchmarks();
         }
         finally {
             try {
                 executeAfterAllMacros();
             }
             catch (RuntimeException e) {
-                if (benchmarkStatus.isPresent()) {
-                    throw e;
-                }
-                else {
-                    LOG.error("Exception during execution of after-all macros: {}", e);
-                }
+                LOG.error("Exception during execution of after-all macros: {}", e);
             }
         }
-        return benchmarkStatus.get();
     }
 
     private void executeBeforeAllMacros()
@@ -85,7 +74,7 @@ public class ExecutionDriver
         }
     }
 
-    private boolean executeBenchmarks()
+    private void executeBenchmarks()
     {
         String executionSequenceId = benchmarkExecutionSequenceId();
         LOG.info("Running benchmarks(executionSequenceId={}) with properties: {}", executionSequenceId, properties);
@@ -93,7 +82,7 @@ public class ExecutionDriver
         List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks(executionSequenceId);
         LOG.info("Loaded {} benchmarks", benchmarks.size());
 
-        return executeBenchmarks(benchmarks);
+        executeBenchmarks(benchmarks);
     }
 
     private String benchmarkExecutionSequenceId()
@@ -101,42 +90,26 @@ public class ExecutionDriver
         return properties.getExecutionSequenceId().orElse(nowUtc().format(DATE_TIME_FORMATTER));
     }
 
-    private boolean executeBenchmarks(List<Benchmark> benchmarks)
+    private void executeBenchmarks(List<Benchmark> benchmarks)
     {
         List<BenchmarkExecutionResult> benchmarkExecutionResults = newArrayList();
-        boolean allBenchmarksRunSuccessfully = false;
-        try {
-            int benchmarkOrdinalNumber = 1;
-            for (Benchmark benchmark : benchmarks) {
-                executeHealthCheck();
-                benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
-            }
-        }
-        finally {
-            List<BenchmarkExecutionResult> failedBenchmarkResults = benchmarkExecutionResults.stream()
-                    .filter(benchmarkExecutionResult -> !benchmarkExecutionResult.isSuccessful())
-                    .collect(toList());
-
-            logFailedBenchmarks(failedBenchmarkResults);
-            allBenchmarksRunSuccessfully = failedBenchmarkResults.isEmpty();
+        int benchmarkOrdinalNumber = 1;
+        for (Benchmark benchmark : benchmarks) {
+            executeHealthCheck();
+            benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
         }
 
-        return allBenchmarksRunSuccessfully;
+        List<BenchmarkExecutionResult> failedBenchmarkResults = benchmarkExecutionResults.stream()
+                .filter(benchmarkExecutionResult -> !benchmarkExecutionResult.isSuccessful())
+                .collect(toList());
+
+        if (!failedBenchmarkResults.isEmpty()) {
+            throw new FailedBenchmarkExecutionException(failedBenchmarkResults);
+        }
     }
 
     private void executeHealthCheck()
     {
         runOptionalMacros(properties.getHealthCheckMacros(), "health check");
-    }
-
-    private void logFailedBenchmarks(List<BenchmarkExecutionResult> failedBenchmarkResults)
-    {
-        for (BenchmarkExecutionResult failedBenchmarkResult : failedBenchmarkResults) {
-            LOG.error("Failed benchmark: {}", failedBenchmarkResult.getBenchmark().getUniqueName());
-            for (Exception failureCause : failedBenchmarkResult.getFailureCauses()) {
-                LOG.error("Cause: {}", failureCause.getMessage(), failureCause);
-            }
-            LOG.error("-----------------------------------------------------------------");
-        }
     }
 }

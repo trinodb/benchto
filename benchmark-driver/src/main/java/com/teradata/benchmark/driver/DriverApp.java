@@ -3,8 +3,11 @@
  */
 package com.teradata.benchmark.driver;
 
+import com.teradata.benchmark.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchmark.driver.execution.ExecutionDriver;
 import freemarker.template.TemplateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
@@ -33,6 +36,8 @@ import java.io.IOException;
 public class DriverApp
 {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DriverApp.class);
+
     public static void main(String[] args)
     {
         ConfigurableApplicationContext ctx = SpringApplication.run(DriverApp.class, args);
@@ -40,11 +45,28 @@ public class DriverApp
 
         Thread.currentThread().setName("main");
 
-        boolean successful = executionDriver.execute();
-        if (successful) {
+        try {
+            executionDriver.execute();
             System.exit(0);
         }
-        System.exit(1);
+        catch (Throwable e) {
+            logException(e);
+            System.exit(1);
+        }
+    }
+
+    private static void logException(Throwable e)
+    {
+        LOG.error("Benchmark execution failed: {}", e.getMessage(), e);
+        if (e instanceof FailedBenchmarkExecutionException) {
+            for (BenchmarkExecutionResult failedBenchmarkResult : ((FailedBenchmarkExecutionException) e).getFailedBenchmarkResults()) {
+                LOG.error("--------------------------------------------------------------------------");
+                LOG.error("Failed benchmark: {}", failedBenchmarkResult.getBenchmark().getUniqueName());
+                for (Exception failureCause : failedBenchmarkResult.getFailureCauses()) {
+                    LOG.error("Cause: {}", failureCause.getMessage(), failureCause);
+                }
+            }
+        }
     }
 
     @Bean
