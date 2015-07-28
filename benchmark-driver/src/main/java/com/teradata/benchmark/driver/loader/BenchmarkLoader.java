@@ -151,7 +151,7 @@ public class BenchmarkLoader
             List<Benchmark> benchmarks = newArrayListWithCapacity(benchmarkDescriptors.size());
             for (BenchmarkDescriptor benchmarkDescriptor : benchmarkDescriptors) {
                 String benchmarkName = benchmarkName(benchmarkFile);
-                List<Query> queries = queryLoader.loadFromFiles(benchmarkDescriptor.getQueryNames(), benchmarkDescriptor.getVariables());
+                List<Query> queries = queryLoader.loadFromFiles(benchmarkDescriptor.getQueryNames());
 
                 benchmarks.add(new BenchmarkBuilder(benchmarkName, sequenceId, queries)
                         .withDataSource(benchmarkDescriptor.getDataSource())

@@ -43,8 +43,6 @@ public class DriverAppIntegrationTest
     private static final List<String> GRAPHITE_MEASUREMENT_NAMES = ImmutableList.of(
             "cluster-memory_max", "cluster-memory_mean", "cluster-cpu_max", "cluster-cpu_mean", "cluster-network_max", "cluster-network_mean", "cluster-network_total");
 
-    private static final String TEST_QUERY = "SELECT 1\nFROM \"INFORMATION_SCHEMA\".SYSTEM_USERS\n";
-
     private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
     @Autowired
@@ -60,7 +58,7 @@ public class DriverAppIntegrationTest
     public void simpleSelectBenchmark()
     {
         setBenchmark("simple_select_benchmark");
-        verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA", TEST_QUERY);
+        verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA");
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
         verifyComplete();
@@ -70,7 +68,7 @@ public class DriverAppIntegrationTest
     public void testBenchmark()
     {
         setBenchmark("test_benchmark");
-        verifyBenchmarkStart("test_benchmark", "test_benchmark", TEST_QUERY);
+        verifyBenchmarkStart("test_benchmark", "test_benchmark");
         verifySerialExecution("test_benchmark", "test_query", 0);
         verifySerialExecution("test_benchmark", "test_query", 1);
         verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
@@ -89,7 +87,7 @@ public class DriverAppIntegrationTest
 
         setBenchmark("test_concurrent_benchmark");
 
-        verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark", TEST_QUERY);
+        verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark");
         verifyExecutionStarted("test_concurrent_benchmark", 0);
         verifyExecutionFinished("test_concurrent_benchmark", 0, concurrentQueryMeasurementName);
         verifyExecutionStarted("test_concurrent_benchmark", 1);
@@ -104,7 +102,7 @@ public class DriverAppIntegrationTest
         ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", s);
     }
 
-    private void verifyBenchmarkStart(String benchmarkName, String uniqueBenchmarkName, String sql)
+    private void verifyBenchmarkStart(String benchmarkName, String uniqueBenchmarkName)
     {
         restServiceServer.expect(matchAll(
                 requestTo("http://benchmark-service:8080/v1/benchmark/generate-unique-names"),
@@ -116,8 +114,7 @@ public class DriverAppIntegrationTest
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/start"),
                 method(HttpMethod.POST),
                 jsonPath("$.name", is(benchmarkName)),
-                jsonPath("$.environmentName", is("TEST_ENV")),
-                jsonPath("$.attributes.sqlStatement", is(sql))
+                jsonPath("$.environmentName", is("TEST_ENV"))
         )).andRespond(withSuccess());
 
         restServiceServer.expect(matchAll(

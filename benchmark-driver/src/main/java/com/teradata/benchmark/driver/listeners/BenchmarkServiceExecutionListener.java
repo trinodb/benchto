@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.teradata.benchmark.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORDS;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
 import static com.teradata.benchmark.driver.service.BenchmarkServiceClient.FinishRequest.Status.FAILED;
@@ -58,10 +57,6 @@ public class BenchmarkServiceExecutionListener
             else {
                 requestBuilder.addVariable(variableEntry.getKey(), variableEntry.getValue());
             }
-        }
-
-        if (benchmark.getQueries().size() == 1) {
-            requestBuilder.addAttribute("sqlStatement", getOnlyElement(benchmark.getQueries()).getSql());
         }
 
         benchmarkServiceClient.startBenchmark(benchmark.getUniqueName(), benchmark.getSequenceId(), requestBuilder.build());

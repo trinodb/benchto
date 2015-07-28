@@ -8,6 +8,7 @@ import com.teradata.benchmark.driver.BenchmarkExecutionException;
 import com.teradata.benchmark.driver.IntegrationTest;
 import com.teradata.benchmark.driver.Query;
 import com.teradata.benchmark.driver.loader.QueryLoader;
+import com.teradata.benchmark.driver.loader.SqlStatementGenerator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,28 +30,28 @@ public class QueryLoaderTest
     @Autowired
     private QueryLoader queryLoader;
 
+    @Autowired
+    private SqlStatementGenerator sqlStatementGenerator;
+
     @Test
     public void shouldLoadPrestoQuery()
             throws Exception
     {
-        Query query = loadQuery("presto/simple_select.sql", "database", "schema");
+        Query query = queryLoader.loadFromFile("presto/simple_select.sql");
+        String sqlStatement = sqlStatementGenerator.generateQuerySqlStatement(query, createAttributes("database", "schema"));
         assertThat(query.getName()).isEqualTo("simple_select");
-        assertThat(trimSpaces(query.getSql().trim())).isEqualTo("SELECT 1 FROM \"schema\".SYSTEM_USERS");
-        assertThat(query.getSql()).doesNotContain("comment");
+        assertThat(trimSpaces(sqlStatement.trim())).isEqualTo("SELECT 1 FROM \"schema\".SYSTEM_USERS");
+        assertThat(sqlStatement).doesNotContain("comment");
     }
 
     @Test
     public void shouldFailsWhenRequiredAttributesAreAbsent()
             throws URISyntaxException
     {
-        expectedException.expect(BenchmarkExecutionException.class);
-        queryLoader.loadFromFile("presto/simple_select.sql", emptyMap());
-    }
+        Query query = queryLoader.loadFromFile("presto/simple_select.sql");
 
-    private Query loadQuery(String path, String database, String schema)
-            throws URISyntaxException
-    {
-        return queryLoader.loadFromFile(path, createAttributes(database, schema));
+        expectedException.expect(BenchmarkExecutionException.class);
+        sqlStatementGenerator.generateQuerySqlStatement(query, emptyMap());
     }
 
     private Map<String, String> createAttributes(String database, String schema)

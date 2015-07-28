@@ -22,7 +22,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
@@ -59,7 +58,7 @@ public class BenchmarkDescriptorTest
         return new QueryLoader()
         {
             @Override
-            public Query loadFromFile(String queryName, Map<String, ?> attributes)
+            public Query loadFromFile(String queryName)
             {
                 return new Query(queryName, "");
             }

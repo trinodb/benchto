@@ -63,11 +63,6 @@ public class QueryExecutionResult
         return queryExecution.getQueryName();
     }
 
-    public String getSql()
-    {
-        return queryExecution.getSql();
-    }
-
     @Override
     public String toString()
     {

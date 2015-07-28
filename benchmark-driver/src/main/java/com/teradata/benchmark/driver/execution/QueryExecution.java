@@ -32,9 +32,9 @@ public class QueryExecution
         return query.getName();
     }
 
-    public String getSql()
+    public Query getQuery()
     {
-        return query.getSql();
+        return query;
     }
 
     public int getRun()

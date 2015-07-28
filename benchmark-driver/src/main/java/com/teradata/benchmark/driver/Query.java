@@ -10,12 +10,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Query
 {
     private final String name;
-    private final String sql;
+    private final String sqlTemplate;
 
-    public Query(String name, String sql)
+    public Query(String name, String sqlTemplate)
     {
         this.name = checkNotNull(name);
-        this.sql = checkNotNull(sql);
+        this.sqlTemplate = checkNotNull(sqlTemplate);
     }
 
     public String getName()
@@ -23,9 +23,9 @@ public class Query
         return name;
     }
 
-    public String getSql()
+    public String getSqlTemplate()
     {
-        return sql;
+        return sqlTemplate;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class Query
     {
         return MoreObjects.toStringHelper(this)
                 .add("name", name)
-                .add("sql", sql)
+                .add("sqlTemplate", sqlTemplate)
                 .toString();
     }
 }
