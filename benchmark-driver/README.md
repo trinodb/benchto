@@ -156,7 +156,8 @@ List of keywords:
 ## SQL files
 
 SQL query files reside in `sql` directory. User defined variables from benchmark descriptor can be used as template
-variables in sql file. You can also use `execution_sequence_id` variable set automatically by driver. Example:
+variables in sql file. You can also use `execution_sequence_id` variable set automatically by driver. [Freemarker](http://freemarker.org/)
+library is used to render query templates. Example:
 
 ```
 SELECT 100.00 * sum(CASE
