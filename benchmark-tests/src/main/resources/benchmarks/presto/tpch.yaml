@@ -14,9 +14,11 @@ variables:
   3:
     query: q1, q12, q16
     schema: tpch_1tb_orc
+    prewarm-runs: 1
     database: hive
   4:
     query: q9
     schema: tpch_10gb_orc
     database: hive
+    prewarm-runs: 1
     quarantine: true
