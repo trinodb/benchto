@@ -20,6 +20,7 @@
                 if ((value / 60) < 1) {
                     return numberFilter(value, 3, 4) + ' m';
                 }
+                value /= 60;
 
                 return numberFilter(value, 3, 4) + ' h';
             }
