@@ -30,7 +30,7 @@ public class MultipleDataSourcesConfiguration
     private static final Logger LOGGER = LoggerFactory.getLogger(MultipleDataSourcesConfiguration.class);
 
     static final int INITIAL_POOL_SIZE = 1;
-    static final int MAX_POOL_SIZE = 100;
+    static final int MAX_POOL_SIZE = 500;
 
     private MultipleDataSourcesProperties multipleDataSourcesProperties;
 
