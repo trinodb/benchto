@@ -24,6 +24,8 @@ public class BenchmarkDescriptor
     public static final String CONCURRENCY_KEY = "concurrency";
     public static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
     public static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
+    public static final String BEFORE_EXECUTION_MACROS_KEY = "before-execution";
+    public static final String AFTER_EXECUTION_MACROS_KEY = "after-execution";
     public static final String VARIABLES_KEY = "variables";
     public static final String QUARANTINE_KEY = "quarantine";
 
@@ -35,6 +37,8 @@ public class BenchmarkDescriptor
             CONCURRENCY_KEY,
             BEFORE_BENCHMARK_MACROS_KEY,
             AFTER_BENCHMARK_MACROS_KEY,
+            BEFORE_EXECUTION_MACROS_KEY,
+            AFTER_EXECUTION_MACROS_KEY,
             VARIABLES_KEY,
             QUARANTINE_KEY
     );
@@ -85,6 +89,16 @@ public class BenchmarkDescriptor
     public List<String> getAfterBenchmarkMacros()
     {
         return asStringList(variables.getOrDefault(AFTER_BENCHMARK_MACROS_KEY, ""));
+    }
+
+    public List<String> getBeforeExecutionMacros()
+    {
+        return asStringList(variables.getOrDefault(BEFORE_EXECUTION_MACROS_KEY, ""));
+    }
+
+    public List<String> getAfterExecutionMacros()
+    {
+        return asStringList(variables.getOrDefault(AFTER_EXECUTION_MACROS_KEY, ""));
     }
 
     private Optional<Integer> getIntegerOptional(String key)

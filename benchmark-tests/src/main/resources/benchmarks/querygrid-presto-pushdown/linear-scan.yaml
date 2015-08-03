@@ -1,6 +1,7 @@
 datasource: teradata
 query-names: querygrid-presto-pushdown/linear-scan/selectivity-${selectivity}.sql
 runs: 3
+before-execution: drop-caches
 variables:
   1:
     selectivity: 0, 2, 10, 100

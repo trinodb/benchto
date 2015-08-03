@@ -161,6 +161,8 @@ public class BenchmarkLoader
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
                         .withBeforeBenchmarkMacros(benchmarkDescriptor.getBeforeBenchmarkMacros())
                         .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
+                        .withBeforeExecutionMacros(benchmarkDescriptor.getBeforeExecutionMacros())
+                        .withAfterExecutionMacros(benchmarkDescriptor.getAfterExecutionMacros())
                         .withVariables(benchmarkDescriptor.getVariables()).createBenchmark());
             }
 

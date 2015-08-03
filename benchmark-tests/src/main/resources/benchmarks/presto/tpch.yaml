@@ -2,6 +2,7 @@ datasource: presto
 query-names: presto/tpch/${query}.sql
 runs: 3
 prewarm-runs: 3
+before-execution: drop-caches
 variables:
   1:
     query: q1, q3, q5, q7, q8, q10, q12, q14, q16, q18

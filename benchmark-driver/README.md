@@ -150,6 +150,8 @@ List of keywords:
 | concurrency      | False | 1     | Number of concurrent workers - 1 sequential benchmark, >1 concurrency benchmark.   |
 | before-benchmark | False | none  | Names of macros executed before benchmark.                                         |
 | after-benchmark  | False | none  | Names of macros executed after benchmark.                                          |
+| before-execution | False | none  | Names of macros executed before benchmark executions.                              |
+| after-execution  | False | none  | Names of macros executed after benchmark executions.                               |
 | variables        | False | none  | Set of combinations of variables.                                                  |
 | quarantine       | False | false | Flag which can be used to quarantine benchmark using `--activeVariables` property. |
 

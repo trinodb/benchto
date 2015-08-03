@@ -60,6 +60,7 @@ public class DriverAppIntegrationTest
         setBenchmark("simple_select_benchmark");
         verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA");
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 1);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
         verifyComplete();
     }
@@ -216,12 +217,16 @@ public class DriverAppIntegrationTest
         executionDriver.execute();
 
         ArgumentCaptor<List> macroArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        verify(macroService, times(5)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class));
+        verify(macroService, times(9)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class));
 
         assertThat(macroArgumentCaptor.getAllValues()).isEqualTo(ImmutableList.of(
                 ImmutableList.of("no-op-before-all"),
                 ImmutableList.of("no-op-health-check"),
                 ImmutableList.of("no-op", "test_query.sql"),
+                ImmutableList.of("no-op"),
+                ImmutableList.of("no-op-after"),
+                ImmutableList.of("no-op"),
+                ImmutableList.of("no-op-after"),
                 ImmutableList.of("no-op-after"),
                 ImmutableList.of("no-op-after-all")
         ));

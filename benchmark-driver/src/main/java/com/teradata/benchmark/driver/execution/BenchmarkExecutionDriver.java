@@ -177,6 +177,8 @@ public class BenchmarkExecutionDriver
 
                 executionCallables.add(() -> {
                     QueryExecutionResult result;
+                    macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), Optional.of(benchmark));
+
                     statusReporter.reportExecutionStarted(queryExecution);
                     try {
                         result = queryExecutionDriver.execute(queryExecution);
@@ -190,6 +192,9 @@ public class BenchmarkExecutionDriver
                     executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(result);
 
                     statusReporter.reportExecutionFinished(result);
+
+                    macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), Optional.of(benchmark));
+
                     return result;
                 });
             }

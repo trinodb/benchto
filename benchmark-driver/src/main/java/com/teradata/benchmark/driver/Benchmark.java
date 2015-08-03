@@ -27,6 +27,8 @@ public class Benchmark
     private int concurrency;
     private List<String> beforeBenchmarkMacros;
     private List<String> afterBenchmarkMacros;
+    private List<String> beforeExecutionMacros;
+    private List<String> afterExecutionMacros;
     private Map<String, String> variables;
     private String uniqueName;
 
@@ -104,6 +106,16 @@ public class Benchmark
         return afterBenchmarkMacros;
     }
 
+    public List<String> getBeforeExecutionMacros()
+    {
+        return beforeExecutionMacros;
+    }
+
+    public List<String> getAfterExecutionMacros()
+    {
+        return afterExecutionMacros;
+    }
+
     public Map<String, String> getVariables()
     {
         return variables;
@@ -131,6 +143,8 @@ public class Benchmark
                 .add("concurrency", concurrency)
                 .add("beforeBenchmarkMacros", beforeBenchmarkMacros)
                 .add("afterBenchmarkMacros", afterBenchmarkMacros)
+                .add("beforeExecutionMacros", beforeExecutionMacros)
+                .add("afterExecutionMacros", afterExecutionMacros)
                 .add("variables", variables)
                 .toString();
     }
@@ -210,6 +224,18 @@ public class Benchmark
         public BenchmarkBuilder withAfterBenchmarkMacros(List<String> afterBenchmarkMacros)
         {
             this.benchmark.afterBenchmarkMacros = ImmutableList.copyOf(afterBenchmarkMacros);
+            return this;
+        }
+
+        public BenchmarkBuilder withBeforeExecutionMacros(List<String> beforeExecutionMacros)
+        {
+            this.benchmark.beforeExecutionMacros = ImmutableList.copyOf(beforeExecutionMacros);
+            return this;
+        }
+
+        public BenchmarkBuilder withAfterExecutionMacros(List<String> afterExecutionMacros)
+        {
+            this.benchmark.afterExecutionMacros = ImmutableList.copyOf(afterExecutionMacros);
             return this;
         }
 

@@ -7,6 +7,7 @@ table: tmp_insert_selectivity_${selectivity}_concurrency_${concurrency_level}
 runs: ${concurrency_level}
 concurrency: ${concurrency_level}
 prewarm-runs: 3
+before-benchmark: drop-caches
 variables:
   1:
     selectivity: 10, 100

@@ -5,6 +5,7 @@ database: hive
 concurrency: ${concurrency_level}
 runs: ${concurrency_level}
 prewarm-runs: 10
+before-benchmark: drop-caches
 variables:
   1:
     selectivity: 10, 100
