@@ -126,6 +126,12 @@ public class BenchmarkRun
     @CollectionTable(name = "benchmark_runs_attributes", joinColumns = @JoinColumn(name = "benchmark_run_id"))
     private Map<String, String> attributes = newHashMap();
 
+    @Column(name = "executions_mean_duration")
+    private double executionsMeanDuration = -1.0;
+
+    @Column(name = "executions_stddev_duration")
+    private double executionStdDevDuration = -1.0;
+
     @Transient
     private Map<String, AggregatedMeasurement> aggregatedMeasurements;
 
@@ -236,6 +242,26 @@ public class BenchmarkRun
         this.attributes = attributes;
     }
 
+    public double getExecutionsMeanDuration()
+    {
+        return executionsMeanDuration;
+    }
+
+    public void setExecutionsMeanDuration(double executionsMeanDuration)
+    {
+        this.executionsMeanDuration = executionsMeanDuration;
+    }
+
+    public double getExecutionStdDevDuration()
+    {
+        return executionStdDevDuration;
+    }
+
+    public void setExecutionStdDevDuration(double executionStdDevDuration)
+    {
+        this.executionStdDevDuration = executionStdDevDuration;
+    }
+
     public Map<String, AggregatedMeasurement> getAggregatedMeasurements()
     {
         if (aggregatedMeasurements == null && Hibernate.isInitialized(executions)) {
@@ -287,6 +313,8 @@ public class BenchmarkRun
                 .add("measurements", measurements)
                 .add("started", started)
                 .add("ended", ended)
+                .add("executionsMeanDuration", executionsMeanDuration)
+                .add("executionStdDevDuration", executionStdDevDuration)
                 .toString();
     }
 }

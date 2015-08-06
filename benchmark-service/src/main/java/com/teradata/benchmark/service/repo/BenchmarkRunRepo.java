@@ -30,6 +30,8 @@ public interface BenchmarkRunRepo
             "    b.started, " +
             "    b.ended, " +
             "    b.environment_id, " +
+            "    b.executions_mean_duration, " +
+            "    b.executions_stddev_duration, " +
             "    rank() " +
             "    OVER (PARTITION BY b.unique_name, b.environment_id " +
             "      ORDER BY b.sequence_id DESC) AS rk " +

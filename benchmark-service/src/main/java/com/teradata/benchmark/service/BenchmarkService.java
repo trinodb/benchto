@@ -3,6 +3,7 @@
  */
 package com.teradata.benchmark.service;
 
+import com.teradata.benchmark.service.model.AggregatedMeasurement;
 import com.teradata.benchmark.service.model.BenchmarkRun;
 import com.teradata.benchmark.service.model.BenchmarkRunExecution;
 import com.teradata.benchmark.service.model.Environment;
@@ -28,6 +29,7 @@ import static com.teradata.benchmark.service.model.Environment.DEFAULT_ENVIRONME
 import static com.teradata.benchmark.service.model.Status.STARTED;
 import static com.teradata.benchmark.service.utils.BenchmarkUniqueNameUtils.generateBenchmarkUniqueName;
 import static com.teradata.benchmark.service.utils.TimeUtils.currentDateTime;
+import static java.lang.String.format;
 
 @Service
 public class BenchmarkService
@@ -73,6 +75,11 @@ public class BenchmarkService
         benchmarkRun.getAttributes().putAll(attributes);
         benchmarkRun.setEnded(currentDateTime());
         benchmarkRun.setStatus(status);
+        AggregatedMeasurement durationAggregatedMeasurement = benchmarkRun.getAggregatedMeasurements().get("duration");
+        if (durationAggregatedMeasurement != null) {
+            benchmarkRun.setExecutionsMeanDuration(durationAggregatedMeasurement.getMean());
+            benchmarkRun.setExecutionStdDevDuration(durationAggregatedMeasurement.getStdDev());
+        }
         LOG.debug("Finishing benchmark - {}", benchmarkRun);
     }
 
@@ -81,6 +88,7 @@ public class BenchmarkService
     public void startExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
+        verifyBenchmarkRunInStartedStatus(benchmarkRun);
 
         boolean executionPresent = benchmarkRun.getExecutions().stream()
                 .filter(e -> executionSequenceId.equals(e.getSequenceId()))
@@ -107,6 +115,8 @@ public class BenchmarkService
             List<Measurement> measurements, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
+        verifyBenchmarkRunInStartedStatus(benchmarkRun);
+
         BenchmarkRunExecution execution = benchmarkRun.getExecutions().stream()
                 .filter(e -> executionSequenceId.equals(e.getSequenceId()))
                 .findAny().get();
@@ -148,5 +158,12 @@ public class BenchmarkService
     {
         LOG.debug("Generating unique benchmark name for: name = {}, variables = {}", name, variables);
         return generateBenchmarkUniqueName(name, variables);
+    }
+
+    private void verifyBenchmarkRunInStartedStatus(BenchmarkRun benchmarkRun)
+    {
+        if (benchmarkRun.getStatus() != STARTED) {
+            throw new IllegalArgumentException(format("Benchmark run %s - %s in %s status", benchmarkRun.getName(), benchmarkRun.getSequenceId(), benchmarkRun.getStatus()));
+        }
     }
 }

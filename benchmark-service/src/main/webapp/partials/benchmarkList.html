@@ -40,7 +40,7 @@
                         {{::variable.name | capitalize}}
                     </td>
                     <td>Started</td>
-                    <td>Duration</td>
+                    <td>Mean duration</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in latestBenchmarkRuns | benchmarkListFilter:query">
@@ -62,7 +62,11 @@
                         {{benchmarkRun.variables[variable.name]}}
                     </td>
                     <td>{{benchmarkRun.started | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
-                    <td>{{benchmarkRun.ended ? ((benchmarkRun.ended - benchmarkRun.started) | duration) : 'Not finished'}}</td>
+                    <td>
+                        <span ng-if="benchmarkRun.executionsMeanDuration > 0">
+                            <strong>{{benchmarkRun.executionsMeanDuration | duration}}</strong> &#177; {{benchmarkRun.executionStdDevDuration | duration}}
+                        </span>
+                    </td>
                 </tr>
             </table>
         </div>

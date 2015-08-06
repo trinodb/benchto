@@ -18,7 +18,7 @@
                             .value();
 
                         // first three columns will be visible
-                        for (var i = 0; i < Math.max(4, $scope.availableVariables.length); ++i) {
+                        for (var i = 0; i < Math.min(4, $scope.availableVariables.length); ++i) {
                             $scope.availableVariables[i].visible = true;
                         }
 
