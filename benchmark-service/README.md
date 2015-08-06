@@ -48,3 +48,14 @@ $ curl -X POST -H 'Content-Type: application/json' -d '{
     "prestoURL": "http://10.25.17.79:8090/"
 }' http://localhost:8080/v1/environment/HDP-r3
 ```
+
+## Building docker image
+
+```
+$ mvn docker:build
+$ docker images
+REPOSITORY                             TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+teradata-labs/benchmark-service        latest              427f3e1f4777        13 seconds ago      879.3 MB
+...
+$ docker save teradata-labs/benchmark-service | gzip > /tmp/benchmark-service.tar.gz
+```
