@@ -32,6 +32,8 @@ macros:
     command: hfab -P -R all other:querygrid_hdp_perf_cluster node.drop_caches && hfab -P -R all other:querygrid_td_perf_cluster node.drop_caches
   disk-usage-check:
     command: hfab -P -R all other:querygrid_hdp_perf_cluster node.shell:"! df -h | grep 100%" && hfab -P -R all other:querygrid_td_perf_cluster node.shell:"! df -h | grep 100%"
+  sleep-rand-upto-2s:
+    command: SLEEP=`awk -vmin=50 -vmax=2000 'BEGIN{srand(); print (min+rand()*(max-min+1))/1000}'` && echo "Sleeping for $SLEEP ms" && sleep $SLEEP
 
 macroExecutions:
   healthCheck: disk-usage-check
