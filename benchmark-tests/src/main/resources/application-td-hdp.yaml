@@ -44,4 +44,4 @@ benchmark:
       event.reporting.enabled: true
       metrics.collection.enabled: true
     presto:
-      metrics.collection.enabled: true
+      metrics.collection.enabled: false
