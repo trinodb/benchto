@@ -1,1 +1,1 @@
-DROP TABLE hive.default.${table}
+DROP TABLE IF EXISTS hive.default.${table}
