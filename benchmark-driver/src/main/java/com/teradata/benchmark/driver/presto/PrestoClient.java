@@ -63,7 +63,7 @@ public class PrestoClient
         URI uri = buildQueryInfoURI(queryId);
         ResponseEntity<QueryInfoResponseItem> response = restTemplate.getForEntity(uri, QueryInfoResponseItem.class);
 
-        Map<String, String> queryStats = response.getBody().getQueryStats();
+        Map<String, Object> queryStats = response.getBody().getQueryStats();
         return queryStats.keySet()
                 .stream()
                 .filter(requiredStatistics::containsKey)
@@ -82,9 +82,9 @@ public class PrestoClient
         return URI.create(uriBuilder.toUriString());
     }
 
-    private Measurement parseQueryStatistic(String name, String statistic, Unit requiredUnit)
+    private Measurement parseQueryStatistic(String name, Object statistic, Unit requiredUnit)
     {
-        double value = UnitConverter.parseValueAsUnit(statistic, requiredUnit);
+        double value = UnitConverter.parseValueAsUnit(statistic.toString(), requiredUnit);
         return measurement("prestoQuery-" + name, UnitConverter.format(requiredUnit), value);
     }
 
@@ -92,9 +92,9 @@ public class PrestoClient
     @JsonAutoDetect(fieldVisibility = ANY)
     public static class QueryInfoResponseItem
     {
-        private Map<String, String> queryStats;
+        private Map<String, Object> queryStats;
 
-        Map<String, String> getQueryStats()
+        Map<String, Object> getQueryStats()
         {
             return queryStats;
         }

@@ -45,7 +45,9 @@
     "processedInputDataSize" : "739.61MB",
     "processedInputPositions" : 16633144,
     "outputDataSize" : "6.90kB",
-    "outputPositions" : 175
+    "outputPositions" : 175,
+    "blockedReasons": [ ],
+    "fullyBlocked": false
   },
   "setSessionProperties" : { },
   "resetSessionProperties" : [ ],
