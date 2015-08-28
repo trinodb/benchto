@@ -34,9 +34,12 @@ macros:
     command: hfab -P -R all other:querygrid_hdp_perf_cluster node.shell:"! df -h | grep 100%" && hfab -P -R all other:querygrid_td_perf_cluster node.shell:"! df -h | grep 100%"
   sleep-rand-upto-2s:
     command: SLEEP=`awk -vmin=50 -vmax=2000 'BEGIN{srand(); print (min+rand()*(max-min+1))/1000}'` && echo "Sleeping for $SLEEP ms" && sleep $SLEEP
+  restart-presto:
+    command: hfab other:querygrid_hdp_perf_cluster presto.restart_presto && sleep 60
 
 macroExecutions:
   healthCheck: disk-usage-check
+  beforeAll: restart-presto
 
 benchmark:
   feature:
