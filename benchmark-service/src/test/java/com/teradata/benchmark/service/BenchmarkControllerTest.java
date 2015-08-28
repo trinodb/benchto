@@ -123,7 +123,7 @@ public class BenchmarkControllerTest
 
         ZonedDateTime testEnd = currentDateTime();
 
-        mvc.perform(get("/v1/benchmark/{uniqueName}", uniqueName))
+        mvc.perform(get("/v1/benchmark/{uniqueName}?environment={environment}", uniqueName, environmentName))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].name", is(benchmarkName)))
                 .andExpect(jsonPath("$.[0].uniqueName", is(uniqueName)))

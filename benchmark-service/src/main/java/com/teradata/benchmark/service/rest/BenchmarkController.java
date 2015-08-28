@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -105,9 +106,10 @@ public class BenchmarkController
 
     @RequestMapping(value = "/v1/benchmark/{uniqueName}", method = GET)
     public List<BenchmarkRun> findBenchmarks(
-            @PathVariable("uniqueName") String uniqueName)
+            @PathVariable("uniqueName") String uniqueName,
+            @RequestParam("environment") String environmentName)
     {
-        return benchmarkService.findBenchmark(uniqueName);
+        return benchmarkService.findBenchmark(uniqueName, environmentName);
     }
 
     @RequestMapping(value = "/v1/benchmark/latest", method = GET)

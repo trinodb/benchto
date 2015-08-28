@@ -59,11 +59,14 @@
                     });
                     return deferredBenchmark.promise;
                 },
-                loadBenchmark: function (uniqueName) {
+                loadBenchmark: function (uniqueName, environmentName) {
                     var deferredBenchmark = $q.defer();
                     $http({
                         method: 'GET',
-                        url: '/v1/benchmark/' + uniqueName
+                        url: '/v1/benchmark/' + uniqueName,
+                        params: {
+                            environment: environmentName
+                        }
                     }).then(function (response) {
                         var runs = response.data;
                         runs.forEach(function (benchmarkRun) {

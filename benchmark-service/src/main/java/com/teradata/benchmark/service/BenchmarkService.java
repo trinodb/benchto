@@ -139,9 +139,14 @@ public class BenchmarkService
     }
 
     @Transactional(readOnly = true)
-    public List<BenchmarkRun> findBenchmark(String uniqueName)
+    public List<BenchmarkRun> findBenchmark(String uniqueName, String environmentName)
     {
-        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByUniqueNameOrderBySequenceIdDesc(uniqueName);
+        Environment environment = environmentService.findEnvironment(environmentName);
+        if (environment == null) {
+            throw new IllegalArgumentException("Could not find environment " + environmentName);
+        }
+
+        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(uniqueName, environment);
         for (BenchmarkRun benchmarkRun : benchmarkRuns) {
             Hibernate.initialize(benchmarkRun.getExecutions());
         }

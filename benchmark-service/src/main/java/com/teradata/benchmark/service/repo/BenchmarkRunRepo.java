@@ -4,6 +4,7 @@
 package com.teradata.benchmark.service.repo;
 
 import com.teradata.benchmark.service.model.BenchmarkRun;
+import com.teradata.benchmark.service.model.Environment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ public interface BenchmarkRunRepo
 {
     BenchmarkRun findByUniqueNameAndSequenceId(String uniqueName, String sequenceId);
 
-    List<BenchmarkRun> findByUniqueNameOrderBySequenceIdDesc(String uniqueName);
+    List<BenchmarkRun> findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(String uniqueName, Environment environment);
 
     @Query(value = "" +
             "WITH summary AS ( " +

@@ -62,7 +62,7 @@
                     CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
                 };
 
-                BenchmarkService.loadBenchmark($routeParams.uniqueName)
+                BenchmarkService.loadBenchmark($routeParams.uniqueName, $routeParams.environment)
                     .then(function (runs) {
                         $scope.benchmarkRuns = runs;
 
