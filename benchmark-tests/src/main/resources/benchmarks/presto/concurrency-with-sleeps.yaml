@@ -11,3 +11,4 @@ variables:
   1:
     selectivity: 10, 100
     concurrency_level: 10
+    quarantine: true
