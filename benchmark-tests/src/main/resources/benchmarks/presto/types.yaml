@@ -1,0 +1,21 @@
+datasource: presto
+query-names: presto/types/${query}.sql
+runs: 3
+before-execution: drop-caches
+variables:
+  1:
+    query: scan-not-null
+    schema: types_100m_text, types_100m_orc
+    type: boolean, int, bigint, double, varchar_255, binary, date, timestamp
+    prewarm-runs: 3
+  2:
+    query: scan-not-null
+    schema: types_1b_text, types_1b_orc
+    type: boolean, int, bigint, double, varchar_255, binary, date, timestamp
+    prewarm-runs: 3
+  3:
+    query: scan-not-null
+    schema: types_100m_text, types_100m_orc, types_1b_text, types_1b_orc
+    type: decimal_38_8
+    prewarm-runs: 3
+    quarantine: true
