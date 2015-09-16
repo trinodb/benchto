@@ -9,9 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import static com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module.Feature.USE_TRANSIENT_ANNOTATION;
 
+@EnableScheduling
 @EnableRetry
 @SpringBootApplication
 public class ServiceApp

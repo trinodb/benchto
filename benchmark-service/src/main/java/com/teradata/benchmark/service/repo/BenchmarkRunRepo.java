@@ -7,8 +7,10 @@ import com.teradata.benchmark.service.model.BenchmarkRun;
 import com.teradata.benchmark.service.model.Environment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
@@ -44,4 +46,9 @@ public interface BenchmarkRunRepo
             "ORDER BY s.started DESC ",
             nativeQuery = true)
     List<BenchmarkRun> findLatest();
+
+    @Query("SELECT br FROM BenchmarkRun br WHERE " +
+            "br.status = 'STARTED' AND " +
+            "br.started <= :startDate")
+    List<BenchmarkRun> findSartedBefore(@Param("startDate") ZonedDateTime startDate);
 }

@@ -59,3 +59,7 @@ teradata-labs/benchmark-service        latest              427f3e1f4777        1
 ...
 $ docker save teradata-labs/benchmark-service | gzip > /tmp/benchmark-service.tar.gz
 ```
+
+## Cleaning up stale benchmark runs
+
+Benchmark runs that are older then 24 hours and have not finished will be periodcally cleaned up and automatically failed.
