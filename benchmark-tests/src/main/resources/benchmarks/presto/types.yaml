@@ -9,8 +9,13 @@ variables:
     type: boolean, int, bigint, double, varchar_255, binary, date, timestamp
     prewarm-runs: 2
   2:
-    query: scan-not-null
+    query: scan-not-null, decimal-add, decimal-subtract, decimal-multiply, decimal-divide
     schema: types_1b_text, types_1b_orc,  types_10b_text, types_10b_orc
     type: decimal_38_8, decimal_38_19, decimal_12_4
     prewarm-runs: 2
     quarantine: true
+  3:
+    query: double-add, double-subtract, double-multiply, double-divide
+    schema: types_1b_text, types_1b_orc,  types_10b_text, types_10b_orc
+    type: double
+    prewarm-runs: 2
