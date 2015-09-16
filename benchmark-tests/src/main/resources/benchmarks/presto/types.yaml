@@ -5,17 +5,12 @@ before-execution: drop-caches
 variables:
   1:
     query: scan-not-null
-    schema: types_100m_text, types_100m_orc
+    schema: types_1b_text, types_1b_orc,  types_10b_text, types_10b_orc
     type: boolean, int, bigint, double, varchar_255, binary, date, timestamp
-    prewarm-runs: 3
+    prewarm-runs: 2
   2:
     query: scan-not-null
-    schema: types_1b_text, types_1b_orc
-    type: boolean, int, bigint, double, varchar_255, binary, date, timestamp
-    prewarm-runs: 3
-  3:
-    query: scan-not-null
-    schema: types_100m_text, types_100m_orc, types_1b_text, types_1b_orc
-    type: decimal_38_8
-    prewarm-runs: 3
+    schema: types_1b_text, types_1b_orc,  types_10b_text, types_10b_orc
+    type: decimal_38_8, decimal_38_19, decimal_12_4
+    prewarm-runs: 2
     quarantine: true
