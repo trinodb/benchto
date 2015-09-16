@@ -18,6 +18,10 @@
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
         <hadoop-core.version>2.6.0-cdh5.4.5</hadoop-core.version>
         <hive-apache.version>0.14</hive-apache.version>
+        <mrunit.version>1.1.0</mrunit.version>
+        <powermock.version>1.6.2</powermock.version>
+        <javassist.version>3.19.0-GA</javassist.version>
+        <objenesis.version>2.1</objenesis.version>
     </properties>
 
     <dependencyManagement>
@@ -93,6 +97,50 @@
         <dependency>
             <groupId>com.facebook.presto.hive</groupId>
             <artifactId>hive-apache</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mrunit</groupId>
+            <artifactId>mrunit</artifactId>
+            <version>${mrunit.version}</version>
+            <classifier>hadoop2</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>${powermock.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-core</artifactId>
+            <version>${powermock.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>${objenesis.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Downgrade guava: https://issues.apache.org/jira/browse/HADOOP-10961 - tests are failing due to API changes -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>15.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

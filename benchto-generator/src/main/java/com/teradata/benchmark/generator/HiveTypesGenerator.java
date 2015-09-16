@@ -7,6 +7,7 @@ import com.teradata.benchmark.generator.HiveObjectsGenerator.HiveObjectsGenerato
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.orc.OrcNewInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcNewOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
@@ -28,6 +29,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -63,7 +65,7 @@ public class HiveTypesGenerator
     /**
      * An input format that assigns longs from 0 to rowCount to each mapper.
      */
-    static class CounterInputFormat
+    public static class CounterInputFormat
             extends InputFormat<LongWritable, NullWritable>
     {
 
@@ -195,14 +197,14 @@ public class HiveTypesGenerator
         private SerDe serDe;
         private StructObjectInspector objectInspector;
         private HiveObjectsGenerator hiveObjectsGenerator;
-        private List<Object> struct = new ArrayList<>(1);
+        private List<Object> struct;
 
         public void map(LongWritable row, NullWritable ignored,
                 Mapper.Context context)
                 throws IOException, InterruptedException
         {
             try {
-                struct.add(0, hiveObjectsGenerator.getNext((int) row.get()));
+                struct.set(0, hiveObjectsGenerator.getNext((int) row.get()));
                 Writable serializedRow = serDe.serialize(struct, objectInspector);
                 context.write(NullWritable.get(), serializedRow);
             }
@@ -238,6 +240,9 @@ public class HiveTypesGenerator
                         .withCardinality(DEFAULT_CARDINALITY)
                         .withType(hiveType)
                         .build();
+
+                struct = new ArrayList<>(1);
+                struct.add(0, null);
             }
             catch (SerDeException e) {
                 throw new IOException(e);
@@ -283,7 +288,7 @@ public class HiveTypesGenerator
     }
 
     @SuppressWarnings("deprecated")
-    private static SerDe getSerDeForFormat(String format)
+    public static SerDe getSerDeForFormat(String format)
             throws SerDeException
     {
         if ("text".equals(format)) {
@@ -298,7 +303,7 @@ public class HiveTypesGenerator
         throw new IllegalArgumentException("Unsupported format " + format);
     }
 
-    private Class<? extends OutputFormat> getOutputFormatClass(String format)
+    public static Class<? extends OutputFormat> getOutputFormatClass(String format)
     {
         if ("text".equals(format)) {
             return TextOutputFormat.class;
@@ -308,6 +313,20 @@ public class HiveTypesGenerator
         }
         else if ("parquet".equals(format)) {
             // return ParquetOutputFormat.class; // not working!
+        }
+        throw new IllegalArgumentException("Unsupported format " + format);
+    }
+
+    public static Class<? extends InputFormat> getInputFormatClass(String format)
+    {
+        if ("text".equals(format)) {
+            return TextInputFormat.class;
+        }
+        else if ("orc".equals(format)) {
+            return OrcNewInputFormat.class;
+        }
+        else if ("parquet".equals(format)) {
+            // return ParquetInputFormat.class; // not working!
         }
         throw new IllegalArgumentException("Unsupported format " + format);
     }
