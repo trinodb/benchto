@@ -12,6 +12,11 @@ data-sources:
     username: test_presto_user
     password: test_presto_password
     driver-class-name: com.teradata.jdbc.TeraDriver
+  hive:
+    url: jdbc:hive2://10.25.22.84:10000/default
+    username: hdfs
+    password: na
+    driver-class-name: org.apache.hive.jdbc.HiveDriver
 
 environment:
   name: TD-HDP
