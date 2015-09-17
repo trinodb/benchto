@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -40,7 +41,7 @@ public class DriverApp
 
     public static void main(String[] args)
     {
-        ConfigurableApplicationContext ctx = SpringApplication.run(DriverApp.class, args);
+        ConfigurableApplicationContext ctx = new SpringApplicationBuilder(DriverApp.class).web(false).run(args);
         ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
 
         Thread.currentThread().setName("main");
