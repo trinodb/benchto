@@ -44,9 +44,9 @@ Go to: [http://localhost:8080/](http://localhost:8080/)
 ```
 $ curl -X POST -H 'Content-Type: application/json' -d '{
     "dashboardType": "grafana",
-    "dashboardURL": "http://10.25.17.79:3000/dashboard/db/hdp-cluster",
-    "prestoURL": "http://10.25.17.79:8090/"
-}' http://localhost:8080/v1/environment/HDP-r3
+    "dashboardURL": "http://localhost:3000/dashboard/db/presto-devenv",
+    "prestoURL": "http://presto-master:8080/"
+}' http://localhost:8080/v1/environment/PRESTO-DEVENV
 ```
 
 ## Building docker image

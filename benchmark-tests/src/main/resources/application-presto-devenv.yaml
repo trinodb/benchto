@@ -1,0 +1,32 @@
+benchmark-service:
+  url: http://localhost:8080
+
+data-sources:
+  presto:
+    url: jdbc:presto://presto-master
+    username: hdfs
+    password: na
+    driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+  hive:
+    url: jdbc:hive2://hadoop-master:10000/default
+    username: hdfs
+    password: na
+    driver-class-name: org.apache.hive.jdbc.HiveDriver
+
+environment:
+  name: PRESTO-DEVENV
+
+presto:
+  url: http://presto-master:8080
+
+macros:
+  drop-caches:
+    command: echo "Dropping caches"
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: false
+      metrics.collection.enabled: false
+    presto:
+      metrics.collection.enabled: false
