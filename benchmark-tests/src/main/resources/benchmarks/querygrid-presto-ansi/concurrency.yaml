@@ -15,3 +15,8 @@ variables:
     selectivity: 10, 100
     concurrency_level: 20
     serverType: greyhound, hdfs
+  3:
+    selectivity: 10, 100
+    concurrency_level: 30
+    serverType: greyhound
+    quarantine: true
