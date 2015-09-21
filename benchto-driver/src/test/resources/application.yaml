@@ -1,0 +1,60 @@
+data-sources:
+  test_datasource:
+    url: jdbc:hsqldb:mem:.
+    username: sa
+    password:
+    driver-class-name: org.hsqldb.jdbcDriver
+  test_datasource_2:
+    url: jdbc:hsqldb:mem:.
+    username: sa
+    password:
+    driver-class-name: org.hsqldb.jdbcDriver
+
+
+benchmark-service:
+  url: http://benchmark-service:8080
+
+environment:
+  name: TEST_ENV
+
+presto:
+  url: http://presto-test-master:8090
+
+graphite:
+  url: http://graphite:18088
+  resolution.seconds: 1
+  metrics:
+    cpu: TARGET_CPU
+    memory: TARGET_MEMORY
+    network: TARGET_NETWORK
+
+macros:
+  no-op:
+    command:
+  no-op-after:
+    command:
+  create-file:
+    command: touch ${FILENAME}${USER}
+  error-macro:
+    command: exit 1
+  no-command-macro:
+    test: x
+  no-op-before-all:
+    command:
+  no-op-after-all:
+    command:
+  no-op-health-check:
+    command:
+
+macroExecutions:
+  healthCheck: no-op-health-check
+  beforeAll: no-op-before-all
+  afterAll: no-op-after-all
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: true
+      metrics.collection.enabled: true
+    presto:
+      metrics.collection.enabled: true

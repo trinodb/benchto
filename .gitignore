@@ -1,13 +1,7 @@
-application.yaml
 *.iml
-service.iml
 
 .idea/
 target/
 
-deploy.sh
-
-benchmark-tests-presto/application.yaml
-benchmark-tests-querygrid/application.yaml
-
 benchto-generator/dependency-reduced-pom.xml
+
