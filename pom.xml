@@ -27,7 +27,6 @@
     <modules>
         <module>benchmark-service</module>
         <module>benchmark-driver</module>
-        <module>benchmark-tests</module>
         <module>benchto-generator</module>
     </modules>
 
@@ -70,7 +69,6 @@
         <dep.jackson.hibernate>2.5.4</dep.jackson.hibernate>
         <dep.spring.boot.version>1.2.3.RELEASE</dep.spring.boot.version>
         <dep.spring.retry.version>1.1.2.RELEASE</dep.spring.retry.version>
-        <dep.reactor.bus.version>2.0.2.RELEASE</dep.reactor.bus.version>
         <dep.freemarker>2.3.22</dep.freemarker>
         <dep.mockito.version>1.10.19</dep.mockito.version>
         <dep.javax.validation.api.version>1.1.0.Final</dep.javax.validation.api.version>
@@ -138,11 +136,6 @@
                         <artifactId>jackson-databind</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.projectreactor</groupId>
-                <artifactId>reactor-bus</artifactId>
-                <version>${dep.reactor.bus.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
