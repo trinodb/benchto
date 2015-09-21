@@ -2,11 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.teradata.benchmark</groupId>
-    <artifactId>benchmark</artifactId>
+    <groupId>com.teradata.benchto</groupId>
+    <artifactId>benchto-base</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>benchmark</name>
+    <name>benchto-base</name>
 
     <parent>
         <groupId>io.airlift</groupId>
@@ -25,8 +25,8 @@
     </licenses>
 
     <modules>
-        <module>benchmark-service</module>
-        <module>benchmark-driver</module>
+        <module>benchto-service</module>
+        <module>benchto-driver</module>
         <module>benchto-generator</module>
     </modules>
 
