@@ -1,8 +1,0 @@
-
-------------------------------------------------------------------
-
-      Copyright 2013-2015, Teradata, Inc. All rights reserved.
-
-               Presto-monitor-service ${application.formatted-version}
-
-------------------------------------------------------------------
