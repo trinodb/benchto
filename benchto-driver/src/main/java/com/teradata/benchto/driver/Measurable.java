@@ -33,6 +33,8 @@ public abstract class Measurable
 
     public abstract Benchmark getBenchmark();
 
+    public abstract String getEnvironment();
+
     public abstract boolean isSuccessful();
 
     @Override

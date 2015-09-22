@@ -31,6 +31,12 @@ public class BenchmarkExecutionResult
         return benchmark;
     }
 
+    @Override
+    public String getEnvironment()
+    {
+        return benchmark.getEnvironment();
+    }
+
     public List<QueryExecutionResult> getExecutions()
     {
         return executions;

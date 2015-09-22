@@ -38,6 +38,12 @@ public class QueryExecutionResult
     }
 
     @Override
+    public String getEnvironment()
+    {
+        return getBenchmark().getEnvironment();
+    }
+
+    @Override
     public boolean isSuccessful()
     {
         return failureCause == null;

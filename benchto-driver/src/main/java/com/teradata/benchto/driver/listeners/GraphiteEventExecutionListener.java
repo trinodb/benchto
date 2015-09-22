@@ -31,7 +31,7 @@ public class GraphiteEventExecutionListener
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s started", benchmark.getUniqueName()))
-                .tags("benchmark", "started")
+                .tags("benchmark", "started", benchmark.getEnvironment())
                 .build();
 
         graphiteClient.storeEvent(request);
@@ -42,7 +42,7 @@ public class GraphiteEventExecutionListener
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s ended", benchmarkExecutionResult.getBenchmark().getUniqueName()))
-                .tags("benchmark ended")
+                .tags("benchmark", "ended", benchmarkExecutionResult.getEnvironment())
                 .data(format("successful %b", benchmarkExecutionResult.isSuccessful()))
                 .when(benchmarkExecutionResult.getUtcEnd())
                 .build();
@@ -59,7 +59,7 @@ public class GraphiteEventExecutionListener
 
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s, query %s (%d) started", execution.getBenchmark().getUniqueName(), execution.getQueryName(), execution.getRun()))
-                .tags("execution", "started")
+                .tags("execution", "started", execution.getBenchmark().getEnvironment())
                 .build();
 
         graphiteClient.storeEvent(request);
@@ -75,7 +75,7 @@ public class GraphiteEventExecutionListener
         QueryExecution queryExecution = executionResult.getQueryExecution();
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s, query %s (%d) ended", queryExecution.getBenchmark().getUniqueName(), executionResult.getQueryName(), queryExecution.getRun()))
-                .tags("execution", "ended")
+                .tags("execution", "ended", executionResult.getEnvironment())
                 .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
                 .when(executionResult.getUtcEnd())
                 .build();

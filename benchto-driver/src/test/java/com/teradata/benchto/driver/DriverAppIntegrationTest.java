@@ -122,7 +122,7 @@ public class DriverAppIntegrationTest
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
                 jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + " started")),
-                jsonPath("$.tags", is("benchmark started")),
+                jsonPath("$.tags", is("benchmark started TEST_ENV")),
                 jsonPath("$.data", is(""))
         )).andRespond(withSuccess());
     }
@@ -140,7 +140,7 @@ public class DriverAppIntegrationTest
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
                 jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + " ended")),
-                jsonPath("$.tags", is("benchmark ended")),
+                jsonPath("$.tags", is("benchmark ended TEST_ENV")),
                 jsonPath("$.data", startsWith("successful"))
         )).andRespond(withSuccess());
     }
@@ -164,7 +164,7 @@ public class DriverAppIntegrationTest
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
                 jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + ", query " + queryName + " (" + executionNumber + ") started")),
-                jsonPath("$.tags", is("execution started")),
+                jsonPath("$.tags", is("execution started TEST_ENV")),
                 jsonPath("$.data", is(""))
         )).andRespond(withSuccess());
     }
@@ -185,7 +185,7 @@ public class DriverAppIntegrationTest
                 requestTo("http://graphite:18088/events/"),
                 method(HttpMethod.POST),
                 jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + ", query " + queryName + " (" + executionNumber + ") ended")),
-                jsonPath("$.tags", is("execution ended")),
+                jsonPath("$.tags", is("execution ended TEST_ENV")),
                 jsonPath("$.data", startsWith("duration: "))
         )).andRespond(withSuccess());
     }
