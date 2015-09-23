@@ -11,6 +11,7 @@ import com.teradata.benchto.driver.BenchmarkProperties;
 import com.teradata.benchto.driver.DriverApp;
 import com.teradata.benchto.driver.Query;
 import com.teradata.benchto.driver.service.BenchmarkServiceClient;
+import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import org.assertj.core.api.MapAssert;
 import org.assertj.core.data.MapEntry;
@@ -60,7 +61,7 @@ public class BenchmarkDescriptorTest
             @Override
             public Query loadFromFile(String queryName)
             {
-                return new Query(queryName, "");
+                return new Query(queryName, ImmutableList.of("test query"), ImmutableMap.of());
             }
         };
     }

@@ -175,3 +175,14 @@ WHERE
   AND l.shipdate >= DATE '1995-09-01'
   AND l.shipdate < DATE '1995-09-01' + INTERVAL '1' MONTH
 ```
+
+SQL query files used to setup data before benchmarks can be executed on different data source then the benchmark it self, by defining
+query file property named `datasource`. Example:
+
+```
+-- datasource: presto
+DROP TABLE IF EXISTS blackhole.default.lineitem_${splits_count}m;
+CREATE TABLE blackhole.default.lineitem_${splits_count}m
+    WITH (splits_count=${splits_count},pages_per_split=1000,rows_per_page=1000)
+    AS SELECT * FROM tpch.tiny.lineitem;
+```

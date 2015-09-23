@@ -19,7 +19,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @Component
 public class QueryExecutionDriver
@@ -74,6 +77,8 @@ public class QueryExecutionDriver
                 .put("execution_sequence_id", "" + queryExecution.getRun())
                 .putAll(queryExecution.getBenchmark().getNonReservedKeywordVariables())
                 .build();
-        return sqlStatementGenerator.generateQuerySqlStatement(queryExecution.getQuery(), variables);
+        List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(queryExecution.getQuery(), variables);
+        checkState(sqlQueries.size() == 1);
+        return sqlQueries.get(0);
     }
 }

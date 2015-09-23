@@ -17,14 +17,15 @@ import static com.google.common.io.Files.getNameWithoutExtension;
 import static com.teradata.benchto.driver.utils.ResourceUtils.asPath;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.io.FileUtils.readFileToString;
 
 @Component
 public class QueryLoader
 {
-
     @Autowired
     private BenchmarkProperties properties;
+
+    @Autowired
+    private AnnotatedQueryParser annotatedQueryParser;
 
     /**
      * Loads query from given {@link Path}
@@ -37,8 +38,7 @@ public class QueryLoader
         Path queryPath = sqlFilesPath().resolve(queryName);
         try {
             String queryNameWithoutExtension = getNameWithoutExtension(queryPath.toString());
-            String sqlTemplate = readFileToString(queryPath.toFile());
-            return new Query(queryNameWithoutExtension, sqlTemplate);
+            return annotatedQueryParser.parseFile(queryNameWithoutExtension, queryPath.toFile());
         }
         catch (IOException e) {
             throw new BenchmarkExecutionException(format("Error during loading query from path %s", queryPath), e);
@@ -49,7 +49,7 @@ public class QueryLoader
     {
         return queryNames
                 .stream()
-                .map(queryName -> loadFromFile(queryName))
+                .map(this::loadFromFile)
                 .collect(toList());
     }
 

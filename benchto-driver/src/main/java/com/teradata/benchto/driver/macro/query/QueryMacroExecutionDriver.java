@@ -3,9 +3,9 @@
  */
 package com.teradata.benchto.driver.macro.query;
 
-import com.google.common.base.Splitter;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Query;
+import com.teradata.benchto.driver.loader.BenchmarkDescriptor;
 import com.teradata.benchto.driver.loader.QueryLoader;
 import com.teradata.benchto.driver.loader.SqlStatementGenerator;
 import com.teradata.benchto.driver.macro.MacroExecutionDriver;
@@ -27,7 +27,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class QueryMacroExecutionDriver
         implements MacroExecutionDriver
 {
-    private static final Splitter SQL_STATEMENT_SPLITTER = Splitter.on(";").trimResults().omitEmptyStrings();
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryMacroExecutionDriver.class);
 
     @Autowired
@@ -49,10 +48,11 @@ public class QueryMacroExecutionDriver
         checkArgument(benchmark.isPresent(), "Benchmark is required to run query based macro");
         Query macroQuery = queryLoader.loadFromFile(macroName);
 
-        String generatedSqlStatement = sqlStatementGenerator.generateQuerySqlStatement(macroQuery, benchmark.get().getNonReservedKeywordVariables());
-        List<String> sqlStatements = SQL_STATEMENT_SPLITTER.splitToList(generatedSqlStatement);
+        List<String> sqlStatements = sqlStatementGenerator.generateQuerySqlStatement(macroQuery, benchmark.get().getNonReservedKeywordVariables());
 
-        DataSource dataSource = applicationContext.getBean(benchmark.get().getDataSource(), DataSource.class);
+        String dataSourceName = macroQuery.getProperty(BenchmarkDescriptor.DATA_SOURCE_KEY, benchmark.get().getDataSource());
+
+        DataSource dataSource = applicationContext.getBean(dataSourceName, DataSource.class);
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         for (String sqlStatement : sqlStatements) {

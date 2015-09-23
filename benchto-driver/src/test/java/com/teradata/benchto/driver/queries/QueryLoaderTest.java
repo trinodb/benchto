@@ -15,6 +15,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
@@ -38,10 +39,9 @@ public class QueryLoaderTest
             throws Exception
     {
         Query query = queryLoader.loadFromFile("presto/simple_select.sql");
-        String sqlStatement = sqlStatementGenerator.generateQuerySqlStatement(query, createAttributes("database", "schema"));
+        List<String> sqlStatements = sqlStatementGenerator.generateQuerySqlStatement(query, createAttributes("database", "schema"));
         assertThat(query.getName()).isEqualTo("simple_select");
-        assertThat(trimSpaces(sqlStatement.trim())).isEqualTo("SELECT 1 FROM \"schema\".SYSTEM_USERS");
-        assertThat(sqlStatement).doesNotContain("comment");
+        assertThat(sqlStatements).containsExactly("SELECT 1 FROM \"schema\".SYSTEM_USERS");
     }
 
     @Test
