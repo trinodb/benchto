@@ -33,6 +33,6 @@ public class FilterUtilsTest
     private Benchmark benchmarkWithName(String name)
     {
         return new Benchmark.BenchmarkBuilder(name, "", emptyList())
-                .createBenchmark();
+                .build();
     }
 }

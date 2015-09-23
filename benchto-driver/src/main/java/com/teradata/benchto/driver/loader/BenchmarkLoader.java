@@ -153,7 +153,7 @@ public class BenchmarkLoader
                 String benchmarkName = benchmarkName(benchmarkFile);
                 List<Query> queries = queryLoader.loadFromFiles(benchmarkDescriptor.getQueryNames());
 
-                benchmarks.add(new BenchmarkBuilder(benchmarkName, sequenceId, queries)
+                Benchmark benchmark = new BenchmarkBuilder(benchmarkName, sequenceId, queries)
                         .withDataSource(benchmarkDescriptor.getDataSource())
                         .withEnvironment(properties.getEnvironmentName())
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
@@ -163,7 +163,9 @@ public class BenchmarkLoader
                         .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
                         .withBeforeExecutionMacros(benchmarkDescriptor.getBeforeExecutionMacros())
                         .withAfterExecutionMacros(benchmarkDescriptor.getAfterExecutionMacros())
-                        .withVariables(benchmarkDescriptor.getVariables()).createBenchmark());
+                        .withVariables(benchmarkDescriptor.getVariables())
+                        .build();
+                benchmarks.add(benchmark);
             }
 
             return benchmarks;

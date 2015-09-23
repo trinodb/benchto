@@ -251,7 +251,7 @@ public class Benchmark
             return this;
         }
 
-        public Benchmark createBenchmark()
+        public Benchmark build()
         {
             return benchmark;
         }

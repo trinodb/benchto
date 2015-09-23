@@ -30,7 +30,7 @@ public class BenchmarkExecutionResultTest
                 .withBeforeBenchmarkMacros(emptyList())
                 .withAfterBenchmarkMacros(emptyList())
                 .withVariables(emptyMap())
-                .createBenchmark();
+                .build();
         BenchmarkExecutionResultBuilder builder = new BenchmarkExecutionResultBuilder(benchmark);
 
         builder.startTimer();

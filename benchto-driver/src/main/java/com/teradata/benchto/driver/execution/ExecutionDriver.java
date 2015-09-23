@@ -58,19 +58,19 @@ public class ExecutionDriver
 
     private void executeBeforeAllMacros()
     {
-        runOptionalMacros(properties.getBeforeAllMacros(), "before all");
+        runOptionalMacros(properties.getBeforeAllMacros(), "before all", Optional.empty());
     }
 
     private void executeAfterAllMacros()
     {
-        runOptionalMacros(properties.getAfterAllMacros(), "after all");
+        runOptionalMacros(properties.getAfterAllMacros(), "after all", Optional.empty());
     }
 
-    private void runOptionalMacros(Optional<List<String>> macros, String kind)
+    private void runOptionalMacros(Optional<List<String>> macros, String kind, Optional<Benchmark> benchmark)
     {
         if (macros.isPresent()) {
             LOG.info("Running {} macros: {}", kind, macros.get());
-            macroService.runBenchmarkMacros(macros.get());
+            macroService.runBenchmarkMacros(macros.get(), benchmark);
         }
     }
 
@@ -95,7 +95,7 @@ public class ExecutionDriver
         List<BenchmarkExecutionResult> benchmarkExecutionResults = newArrayList();
         int benchmarkOrdinalNumber = 1;
         for (Benchmark benchmark : benchmarks) {
-            executeHealthCheck();
+            executeHealthCheck(benchmark);
             benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
         }
 
@@ -108,8 +108,8 @@ public class ExecutionDriver
         }
     }
 
-    private void executeHealthCheck()
+    private void executeHealthCheck(Benchmark benchmark)
     {
-        runOptionalMacros(properties.getHealthCheckMacros(), "health check");
+        runOptionalMacros(properties.getHealthCheckMacros(), "health check", Optional.of(benchmark));
     }
 }
