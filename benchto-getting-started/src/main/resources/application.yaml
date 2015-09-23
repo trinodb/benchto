@@ -1,0 +1,32 @@
+benchmark-service:
+  url: http://localhost:8080
+
+data-sources:
+  hive:
+    url: jdbc:hive2://localhost:10000/default
+    username: hdfs
+    password: na
+    driver-class-name: org.apache.hive.jdbc.HiveDriver
+
+environment:
+  name: DEMO
+
+macros:
+  drop-caches:
+    command: echo "Dropping caches"
+
+graphite:
+  url: http://localhost:8088
+  resolution.seconds: 10
+  metrics:
+    cpu: asPercent(sumSeries(collectd.localhost.cpu.percent-{user,system}.value), sumSeries(collectd.localhost.cpu.*.value))
+    memory: collectd.localhost.memory
+    network: sumSeries(collectd.localhost.interface-*.if_octets.{rx,tx})
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: true
+      metrics.collection.enabled: true
+    presto:
+      metrics.collection.enabled: false
