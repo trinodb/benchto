@@ -5,8 +5,8 @@
     'use strict';
 
     angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3'])
-        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', 'BenchmarkService', 'CartCompareService',
-            function ($scope, $routeParams, BenchmarkService, CartCompareService) {
+        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', 'CartCompareService',
+            function ($scope, $routeParams, $location, BenchmarkService, CartCompareService) {
 
                 BenchmarkService.loadLatestBenchmarkRuns()
                     .then(function (latestBenchmarkRuns) {
@@ -38,6 +38,15 @@
                 $scope.addedToCompareChanged = function (benchmarkRun) {
                     CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
                 };
+
+                $scope.updateQueryInAddress = function () {
+                    $location.search('query', $scope.query);
+                    $location.replace();
+                }
+                var query = $location.search()['query'];
+                if (query) {
+                    $scope.query = $location.search()['query'];
+                }
             }])
         .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', 'CartCompareService',
             function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {

@@ -10,7 +10,8 @@
             $routeProvider
                 .when('/', {
                     templateUrl: 'partials/benchmarkList.html',
-                    controller: 'BenchmarkListCtrl'
+                    controller: 'BenchmarkListCtrl',
+                    reloadOnSearch: false
                 })
                 .when('/benchmark/:uniqueName', {
                     templateUrl: 'partials/benchmark.html',
