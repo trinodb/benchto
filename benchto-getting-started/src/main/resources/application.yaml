@@ -20,7 +20,7 @@ graphite:
   resolution.seconds: 10
   metrics:
     cpu: asPercent(sumSeries(collectd.localhost.cpu.percent-{user,system}.value), sumSeries(collectd.localhost.cpu.*.value))
-    memory: collectd.localhost.memory
+    memory: asPercent(sumSeries(collectd.localhost.memory.{memory-used,memory-buffered,memory-cached}.value), sumSeries(collectd.localhost.memory.memory-*.value))
     network: sumSeries(collectd.localhost.interface-*.if_octets.{rx,tx})
 
 benchmark:

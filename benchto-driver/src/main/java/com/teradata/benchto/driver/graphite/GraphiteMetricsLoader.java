@@ -84,7 +84,7 @@ public class GraphiteMetricsLoader
         }
 
         if (graphiteProperties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("memory")) {
-            addMeanMaxMeasurements(loadedMetrics, measurements, "memory", "BYTES");
+            addMeanMaxMeasurements(loadedMetrics, measurements, "memory", "PERCENT");
         }
 
         if (graphiteProperties.getMemoryGraphiteExpr().isPresent() && loadedMetrics.containsKey("network")) {
