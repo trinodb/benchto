@@ -12,15 +12,22 @@ public class FailedBenchmarkExecutionException
 {
 
     private final List<BenchmarkExecutionResult> failedBenchmarkResults;
+    private final int benchmarksCount;
 
-    public FailedBenchmarkExecutionException(List<BenchmarkExecutionResult> failedBenchmarkResults)
+    public FailedBenchmarkExecutionException(List<BenchmarkExecutionResult> failedBenchmarkResults, int benchmarksCount)
     {
         super("" + failedBenchmarkResults.size() + " benchmarks failed");
         this.failedBenchmarkResults = failedBenchmarkResults;
+        this.benchmarksCount = benchmarksCount;
     }
 
     public List<BenchmarkExecutionResult> getFailedBenchmarkResults()
     {
         return failedBenchmarkResults;
+    }
+
+    public int getBenchmarksCount()
+    {
+        return benchmarksCount;
     }
 }

@@ -59,13 +59,17 @@ public class DriverApp
     {
         LOG.error("Benchmark execution failed: {}", e.getMessage(), e);
         if (e instanceof FailedBenchmarkExecutionException) {
-            for (BenchmarkExecutionResult failedBenchmarkResult : ((FailedBenchmarkExecutionException) e).getFailedBenchmarkResults()) {
+            FailedBenchmarkExecutionException failedBenchmarkExecutionException = (FailedBenchmarkExecutionException) e;
+            for (BenchmarkExecutionResult failedBenchmarkResult : failedBenchmarkExecutionException.getFailedBenchmarkResults()) {
                 LOG.error("--------------------------------------------------------------------------");
                 LOG.error("Failed benchmark: {}", failedBenchmarkResult.getBenchmark().getUniqueName());
                 for (Exception failureCause : failedBenchmarkResult.getFailureCauses()) {
                     LOG.error("Cause: {}", failureCause.getMessage(), failureCause);
                 }
             }
+            LOG.error("Total benchmarks failed {} out of {}",
+                    failedBenchmarkExecutionException.getFailedBenchmarkResults().size(),
+                    failedBenchmarkExecutionException.getBenchmarksCount());
         }
     }
 

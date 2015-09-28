@@ -104,7 +104,7 @@ public class ExecutionDriver
                 .collect(toList());
 
         if (!failedBenchmarkResults.isEmpty()) {
-            throw new FailedBenchmarkExecutionException(failedBenchmarkResults);
+            throw new FailedBenchmarkExecutionException(failedBenchmarkResults,  benchmarks.size());
         }
     }
 
