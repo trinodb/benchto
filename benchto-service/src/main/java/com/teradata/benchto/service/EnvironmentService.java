@@ -39,6 +39,8 @@ public class EnvironmentService
             environment.setAttributes(attributes);
             environment.setStarted(currentDateTime());
             environmentOptional = Optional.of(environmentRepo.save(environment));
+        } else {
+            environmentOptional.get().setAttributes(attributes);
         }
         LOG.debug("Starting environment - {}", environmentOptional.get());
     }

@@ -119,6 +119,7 @@
                     <td>Status</td>
                     <td>Measurements</td>
                     <td>Query monitoring</td>
+                    <td>Query history</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="execution in benchmarkRun.executions">
@@ -150,6 +151,10 @@
                     <td>
                         <a target="_blank" ng-if="execution.attributes.prestoQueryId"
                            ng-href="{{::benchmarkRun.environment.attributes.prestoURL}}query.html?{{execution.attributes.prestoQueryId}}">{{execution.attributes.prestoQueryId}}</a>
+                    </td>
+                    <td>
+                        <a target="_blank" ng-if="execution.attributes.prestoQueryId"
+                           ng-href="{{::benchmarkRun.environment.attributes.prestoMonitorService}}history/{{::benchmarkRun.environment.name}}/query/{{execution.attributes.prestoQueryId}}">{{execution.attributes.prestoQueryId}}</a>
                     </td>
                 </tr>
             </table>
