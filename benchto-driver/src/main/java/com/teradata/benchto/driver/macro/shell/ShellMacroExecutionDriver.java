@@ -14,9 +14,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -55,9 +57,10 @@ public class ShellMacroExecutionDriver
             processBuilder.environment().putAll(environment);
             Process macroProcess = processBuilder.start();
             LOGGER.info("Executing macro: '{}'", macroCommand);
-            printOutput(macroProcess);
             macroProcess.waitFor();
-            checkState(macroProcess.exitValue() == 0, "Macro %s exited with code %s", macroName, macroProcess.exitValue());
+            boolean completedSuccessfully = macroProcess.exitValue() == 0;
+            printOutput(macroProcess, !completedSuccessfully);
+            checkState(completedSuccessfully, "Macro %s exited with code %s", macroName, macroProcess.exitValue());
         }
         catch (IOException | InterruptedException e) {
             throw new BenchmarkExecutionException("Could not execute macro " + macroName, e);
@@ -70,22 +73,28 @@ public class ShellMacroExecutionDriver
         return checkNotNull(macros.getMacros().get(macroName).getCommand(), "Macro %s has no command defined", macroName);
     }
 
-    private void printOutput(Process process)
+    private void printOutput(Process process, boolean stdoutAsError)
+            throws IOException
+    {
+        logStream(process.getInputStream(), line -> {
+            line = "stdout: " + line;
+            if (stdoutAsError) {
+                LOGGER.error(line);
+            }
+            else {
+                LOGGER.debug(line);
+            }
+        });
+        logStream(process.getErrorStream(), line -> LOGGER.error("stderr: " + line));
+    }
+
+    private void logStream(InputStream inputStream, Consumer<String> logger)
             throws IOException
     {
         String line;
-
-        LOGGER.info("std output:");
-        try (BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader input = new BufferedReader(new InputStreamReader(inputStream))) {
             while ((line = input.readLine()) != null) {
-                LOGGER.info(line);
-            }
-        }
-
-        LOGGER.info("std error:");
-        try (BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-            while ((line = error.readLine()) != null) {
-                LOGGER.error(line);
+                logger.accept(line);
             }
         }
     }
