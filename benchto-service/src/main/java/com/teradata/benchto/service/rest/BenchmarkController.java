@@ -112,9 +112,11 @@ public class BenchmarkController
         return benchmarkService.findBenchmark(uniqueName, environmentName);
     }
 
-    @RequestMapping(value = "/v1/benchmark/latest", method = GET)
-    public List<BenchmarkRun> findLatestBenchmarkRuns()
+    @RequestMapping(value = "/v1/benchmark/latest/{environmentName}", method = GET)
+    public List<BenchmarkRun> findLatestBenchmarkRuns(
+            @PathVariable("environmentName") String environmentName
+    )
     {
-        return benchmarkService.findLatest();
+        return benchmarkService.findLatest(environmentName);
     }
 }

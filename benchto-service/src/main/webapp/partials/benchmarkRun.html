@@ -1,6 +1,7 @@
 <div class="row">
     <ol class="breadcrumb">
         <li><a href="#/">Home</a></li>
+        <li><a ng-href="#/{{::benchmarkRun.environment.name}}">{{::benchmarkRun.environment.name}}</a></li>
         <li><a ng-href="#/benchmark/{{benchmarkRun.uniqueName}}?environment={{::benchmarkRun.environment.name}}">{{::benchmarkRun.uniqueName}}</a></li>
         <li class="active">{{::benchmarkRun.sequenceId}}</li>
     </ol>

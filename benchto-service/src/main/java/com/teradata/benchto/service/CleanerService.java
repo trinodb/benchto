@@ -35,7 +35,7 @@ public class CleanerService
 
         ZonedDateTime currentDate = currentDateTime();
         ZonedDateTime startDate = currentDate.minusHours(BENCHMARK_TIMEOUT_HOURS);
-        for (BenchmarkRun benchmarkRun : benchmarkRunRepo.findSartedBefore(startDate)) {
+        for (BenchmarkRun benchmarkRun : benchmarkRunRepo.findStartedBefore(startDate)) {
             LOG.info("Failing stale benchmark - {}", benchmarkRun);
             benchmarkRun.setEnded(currentDate);
             benchmarkRun.setStatus(FAILED);

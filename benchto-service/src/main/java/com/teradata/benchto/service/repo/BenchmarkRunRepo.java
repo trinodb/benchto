@@ -39,16 +39,17 @@ public interface BenchmarkRunRepo
             "    OVER (PARTITION BY b.unique_name, b.environment_id " +
             "      ORDER BY b.sequence_id DESC) AS rk " +
             "  FROM benchmark_runs b " +
+            "  WHERE b.environment_id = :environment_id " +
             ") " +
             "SELECT s.* " +
             "FROM summary s " +
             "WHERE s.rk = 1 " +
             "ORDER BY s.started DESC ",
             nativeQuery = true)
-    List<BenchmarkRun> findLatest();
+    List<BenchmarkRun> findLatest(@Param("environment_id") long environmentId);
 
     @Query("SELECT br FROM BenchmarkRun br WHERE " +
             "br.status = 'STARTED' AND " +
             "br.started <= :startDate")
-    List<BenchmarkRun> findSartedBefore(@Param("startDate") ZonedDateTime startDate);
+    List<BenchmarkRun> findStartedBefore(@Param("startDate") ZonedDateTime startDate);
 }

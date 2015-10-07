@@ -141,22 +141,26 @@ public class BenchmarkService
     @Transactional(readOnly = true)
     public List<BenchmarkRun> findBenchmark(String uniqueName, String environmentName)
     {
-        Environment environment = environmentService.findEnvironment(environmentName);
-        if (environment == null) {
-            throw new IllegalArgumentException("Could not find environment " + environmentName);
-        }
-
-        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(uniqueName, environment);
+        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(uniqueName, getEnvironment(environmentName));
         for (BenchmarkRun benchmarkRun : benchmarkRuns) {
             Hibernate.initialize(benchmarkRun.getExecutions());
         }
         return benchmarkRuns;
     }
 
-    @Transactional(readOnly = true)
-    public List<BenchmarkRun> findLatest()
+    private Environment getEnvironment(String environmentName)
     {
-        return benchmarkRunRepo.findLatest();
+        Environment environment = environmentService.findEnvironment(environmentName);
+        if (environment == null) {
+            throw new IllegalArgumentException("Could not find environment " + environmentName);
+        }
+        return environment;
+    }
+
+    @Transactional(readOnly = true)
+    public List<BenchmarkRun> findLatest(String environmentName)
+    {
+        return benchmarkRunRepo.findLatest(getEnvironment(environmentName).getId());
     }
 
     public String generateUniqueBenchmarkName(String name, Map<String, String> variables)

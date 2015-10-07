@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -33,5 +34,11 @@ public class EnvironmentController
     public Environment findEnvironment(@PathVariable("name") String name)
     {
         return environmentService.findEnvironment(name);
+    }
+
+    @RequestMapping(value = "/v1/environments/", method = GET)
+    public List<Environment> findEnvironment()
+    {
+        return environmentService.findEnvironments();
     }
 }

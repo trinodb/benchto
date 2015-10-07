@@ -14,6 +14,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,5 +60,10 @@ public class EnvironmentService
     public Optional<Environment> tryFindEnvironment(String name)
     {
         return ofNullable(environmentRepo.findByName(name));
+    }
+
+    public List<Environment> findEnvironments()
+    {
+        return environmentRepo.findAll();
     }
 }

@@ -9,6 +9,10 @@
         .config(['$routeProvider', function ($routeProvider) {
             $routeProvider
                 .when('/', {
+                    templateUrl: 'partials/environmentList.html',
+                    controller: 'EnvironmentListCtrl'
+                })
+                .when('/:environmentName', {
                     templateUrl: 'partials/benchmarkList.html',
                     controller: 'BenchmarkListCtrl',
                     reloadOnSearch: false

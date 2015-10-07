@@ -8,7 +8,9 @@
         .controller('BenchmarkListCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', 'CartCompareService',
             function ($scope, $routeParams, $location, BenchmarkService, CartCompareService) {
 
-                BenchmarkService.loadLatestBenchmarkRuns()
+                $scope.environmentName = $routeParams.environmentName
+
+                BenchmarkService.loadLatestBenchmarkRuns($scope.environmentName)
                     .then(function (latestBenchmarkRuns) {
                         $scope.availableVariables = _.chain(latestBenchmarkRuns)
                             .map(function (benchmarkRun) { return _.keys(benchmarkRun.variables); })
@@ -51,6 +53,7 @@
         .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', 'CartCompareService',
             function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {
                 $scope.uniqueName = $routeParams.uniqueName;
+                $scope.environmentName = $routeParams.environment;
 
                 $scope.onBenchmarkClick = function (points, evt) {
                     if (points) {
@@ -133,6 +136,13 @@
                 $scope.isAddedToCompare = function (benchmarkRun) {
                     return CartCompareService.contains(benchmarkRun);
                 }
+            }])
+        .controller('EnvironmentListCtrl', ['$scope', 'EnvironmentService',
+            function ($scope, EnvironmentService) {
+                EnvironmentService.loadEnvironments()
+                    .then(function (environments) {
+                        $scope.environments = environments;
+                    });
             }])
         .controller('EnvironmentCtrl', ['$scope', '$routeParams', 'EnvironmentService', function ($scope, $routeParams, EnvironmentService) {
             EnvironmentService.loadEnvironment($routeParams.environmentName)

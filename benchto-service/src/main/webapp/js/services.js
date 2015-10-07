@@ -78,21 +78,21 @@
                     });
                     return deferredBenchmark.promise;
                 },
-                loadLatestBenchmarkRuns: function () {
-                    var deferredBenchmark = $q.defer();
+                loadLatestBenchmarkRuns: function (environmentName) {
+                    var deferredBenchmarks = $q.defer();
                     $http({
                         method: 'GET',
-                        url: '/v1/benchmark/latest'
+                        url: '/v1/benchmark/latest/' + environmentName
                     }).then(function (response) {
                         var benchmarkRuns = response.data;
                         benchmarkRuns.forEach(function (benchmarkRun) {
                             postProcessBenchmarkRun(benchmarkRun);
                         });
-                        deferredBenchmark.resolve(benchmarkRuns);
+                        deferredBenchmarks.resolve(benchmarkRuns);
                     }, function (reason) {
-                        deferredBenchmark.reject(reason);
+                        deferredBenchmarks.reject(reason);
                     });
-                    return deferredBenchmark.promise;
+                    return deferredBenchmarks.promise;
                 }
             };
         }])
@@ -109,6 +109,18 @@
                         deferredEnvironment.reject(reason);
                     });
                     return deferredEnvironment.promise;
+                },
+                loadEnvironments: function () {
+                    var deferredEnvironments = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: '/v1/environments/'
+                    }).then(function (response) {
+                        deferredEnvironments.resolve(response.data);
+                    }, function (reason) {
+                        deferredEnvironments.reject(reason);
+                    });
+                    return deferredEnvironments.promise;
                 }
             };
         }])
