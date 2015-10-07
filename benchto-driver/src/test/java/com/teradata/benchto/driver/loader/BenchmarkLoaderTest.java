@@ -5,13 +5,13 @@ package com.teradata.benchto.driver.loader;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.BenchmarkExecutionException;
 import com.teradata.benchto.driver.BenchmarkProperties;
 import com.teradata.benchto.driver.DriverApp;
 import com.teradata.benchto.driver.Query;
 import com.teradata.benchto.driver.service.BenchmarkServiceClient;
-import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import org.assertj.core.api.MapAssert;
 import org.assertj.core.data.MapEntry;
@@ -27,7 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
-public class BenchmarkDescriptorTest
+public class BenchmarkLoaderTest
 {
 
     @Rule
@@ -35,7 +35,7 @@ public class BenchmarkDescriptorTest
 
     private BenchmarkProperties benchmarkProperties;
 
-    private BenchmarkLoader benchmarkLoader;
+    private BenchmarkLoader loader;
 
     @Before
     public void setupBenchmarkLoader()
@@ -46,12 +46,13 @@ public class BenchmarkDescriptorTest
         BenchmarkServiceClient benchmarkServiceClient = mockBenchmarkServiceClient();
         Configuration freemarkerConfiguration = new DriverApp().freemarkerConfiguration().createConfiguration();
 
-        benchmarkLoader = new BenchmarkLoader();
+        loader = new BenchmarkLoader();
+        ReflectionTestUtils.setField(loader, "properties", benchmarkProperties);
+        ReflectionTestUtils.setField(loader, "queryLoader", queryLoader);
+        ReflectionTestUtils.setField(loader, "benchmarkServiceClient", benchmarkServiceClient);
+        ReflectionTestUtils.setField(loader, "freemarkerConfiguration", freemarkerConfiguration);
 
-        ReflectionTestUtils.setField(benchmarkLoader, "properties", benchmarkProperties);
-        ReflectionTestUtils.setField(benchmarkLoader, "queryLoader", queryLoader);
-        ReflectionTestUtils.setField(benchmarkLoader, "benchmarkServiceClient", benchmarkServiceClient);
-        ReflectionTestUtils.setField(benchmarkLoader, "freemarkerConfiguration", freemarkerConfiguration);
+        withBenchmarksDir("unit-benchmarks");
     }
 
     private QueryLoader mockQueryLoader()
@@ -84,10 +85,9 @@ public class BenchmarkDescriptorTest
     public void shouldLoadSimpleBenchmark()
             throws IOException
     {
-        List<Benchmark> benchmarks = loadBenchmarkWithName("simple-benchmark");
-        assertThat(benchmarks).hasSize(1);
+        withActiveBenchmarks("simple-benchmark");
 
-        Benchmark benchmark = benchmarks.get(0);
+        Benchmark benchmark = assertLoadedBenchmarksCount(1).get(0);
         assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
         assertThat(benchmark.getDataSource()).isEqualTo("foo");
         assertThat(benchmark.getRuns()).isEqualTo(3);
@@ -101,10 +101,9 @@ public class BenchmarkDescriptorTest
     public void shouldLoadConcurrentBenchmark()
             throws IOException
     {
-        List<Benchmark> benchmarks = loadBenchmarkWithName("concurrent-benchmark");
-        assertThat(benchmarks).hasSize(1);
+        withActiveBenchmarks("concurrent-benchmark");
 
-        Benchmark benchmark = benchmarks.get(0);
+        Benchmark benchmark = assertLoadedBenchmarksCount(1).get(0);
         assertThat(benchmark.getDataSource()).isEqualTo("foo");
         assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
         assertThat(benchmark.getRuns()).isEqualTo(10);
@@ -117,8 +116,9 @@ public class BenchmarkDescriptorTest
     public void shouldLoadBenchmarkWithVariables()
             throws IOException
     {
-        List<Benchmark> benchmarks = loadBenchmarkWithName("multi-variables-benchmark");
-        assertThat(benchmarks).hasSize(5);
+        withActiveBenchmarks("multi-variables-benchmark");
+
+        List<Benchmark> benchmarks = assertLoadedBenchmarksCount(5);
 
         for (Benchmark benchmark : benchmarks) {
             assertThat(benchmark.getDataSource()).isEqualTo("foo");
@@ -144,59 +144,45 @@ public class BenchmarkDescriptorTest
         thrown.expect(BenchmarkExecutionException.class);
         thrown.expectMessage("Recursive value substitution is not supported, invalid a: ${b}");
 
-        loadBenchmarkWithName("cycle-variables-benchmark", "unit-benchmarks-invalid");
+        withBenchmarksDir("unit-benchmarks-invalid");
+        withActiveBenchmarks("cycle-variables-benchmark");
+
+        loader.loadBenchmarks("sequenceId");
     }
 
     @Test
     public void quarantineBenchmark_no_quarantine_filtering()
             throws IOException
     {
-        List<Benchmark> benchmarks = loadBenchmarkWithName("quarantine-benchmark");
-        assertThat(benchmarks).hasSize(1);
+        withActiveBenchmarks("quarantine-benchmark");
+
+        assertLoadedBenchmarksCount(1);
     }
 
     @Test
     public void quarantineBenchmark_quarantine_false_filtering()
             throws IOException
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", "quarantine=false");
+        withActiveBenchmarks("quarantine-benchmark");
+        withActiveVariables("quarantine=false");
 
-        List<Benchmark> benchmarks = loadBenchmarkWithName("quarantine-benchmark");
-        assertThat(benchmarks).isEmpty();
+        assertLoadedBenchmarksCount(0);
     }
 
     @Test
     public void allBenchmarks_no_quarantine_filtering()
             throws IOException
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "unit-benchmarks");
-
-        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks("sequenceId");
-        assertThat(benchmarks).hasSize(8);
+        assertLoadedBenchmarksCount(8);
     }
 
     @Test
     public void allBenchmarks_quarantine_false_filtering()
             throws IOException
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "unit-benchmarks");
-        ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", "quarantine=false");
+        withActiveVariables("quarantine=false");
 
-        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks("sequenceId");
-        assertThat(benchmarks).hasSize(7);
-    }
-
-    private List<Benchmark> loadBenchmarkWithName(String benchmarkName)
-    {
-        return loadBenchmarkWithName(benchmarkName, "unit-benchmarks");
-    }
-
-    private List<Benchmark> loadBenchmarkWithName(String benchmarkName, String benchmarksDir)
-    {
-        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", benchmarksDir);
-        ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", benchmarkName);
-
-        return benchmarkLoader.loadBenchmarks("sequenceId");
+        assertLoadedBenchmarksCount(7);
     }
 
     private MapAssert<String, String> assertThatBenchmarkWithEntries(List<Benchmark> benchmarks, MapEntry<String, String>... entries)
@@ -216,5 +202,39 @@ public class BenchmarkDescriptorTest
                 .findFirst().get();
 
         return assertThat(searchBenchmark.getNonReservedKeywordVariables());
+    }
+
+    @Test
+    public void loadByVariableWithRegex()
+    {
+        withActiveVariables("format=(rc)|(tx)");
+
+        assertLoadedBenchmarksCount(4).forEach(benchmark ->
+                        assertThat(benchmark.getVariables().get("format")).isIn("orc", "txt")
+        );
+    }
+
+    private List<Benchmark> assertLoadedBenchmarksCount(int expected)
+    {
+        List<Benchmark> benchmarks = loader.loadBenchmarks("sequenceId");
+
+        assertThat(benchmarks).hasSize(expected);
+
+        return benchmarks;
+    }
+
+    private void withBenchmarksDir(String benchmarksDir)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", benchmarksDir);
+    }
+
+    private void withActiveBenchmarks(String benchmarkName)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", benchmarkName);
+    }
+
+    private void withActiveVariables(String activeVariables)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", activeVariables);
     }
 }

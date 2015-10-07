@@ -133,7 +133,7 @@ public class BenchmarkLoader
     {
         return benchmarks.stream()
                 .filter(activeBenchmarksByName())
-                .filter(activeBenchmarksByProperties())
+                .filter(activeBenchmarksByActiveVariables())
                 .collect(toList());
     }
 
@@ -256,7 +256,7 @@ public class BenchmarkLoader
         return path -> true;
     }
 
-    private Predicate<Benchmark> activeBenchmarksByProperties()
+    private Predicate<Benchmark> activeBenchmarksByActiveVariables()
     {
         return new BenchmarkByActiveVariablesFilter(properties);
     }
