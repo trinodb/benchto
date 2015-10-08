@@ -3,6 +3,7 @@
  */
 package com.teradata.benchto.driver.service;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.MoreObjects;
@@ -17,11 +18,13 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.google.common.collect.Lists.asList;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -37,10 +40,19 @@ public class BenchmarkServiceClient
     private RestTemplate restTemplate;
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
-    public String[] generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
+    public List<String> generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
     {
         Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
-        return postForObject("{serviceUrl}/v1/benchmark/generate-unique-names", generateUniqueNamesRequestItems, String[].class, requestParams);
+        String[] uniqueNames = postForObject("{serviceUrl}/v1/benchmark/generate-unique-names", generateUniqueNamesRequestItems, String[].class, requestParams);
+        return ImmutableList.copyOf(uniqueNames);
+    }
+
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
+    public List<Duration> getBenchmarkSuccessfulExecutionAges(List<String> benchmarkUniqueNames)
+    {
+        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
+        Duration[] ages = postForObject("{serviceUrl}/v1/benchmark/get-successful-execution-ages", benchmarkUniqueNames, Duration[].class, requestParams);
+        return ImmutableList.copyOf(ages);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))

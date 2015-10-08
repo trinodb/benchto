@@ -28,6 +28,7 @@ public class BenchmarkDescriptor
     public static final String AFTER_EXECUTION_MACROS_KEY = "after-execution";
     public static final String VARIABLES_KEY = "variables";
     public static final String QUARANTINE_KEY = "quarantine";
+    public static final String FREQUENCY_KEY = "frequency";
 
     public static final Set<String> RESERVED_KEYWORDS = ImmutableSet.of(
             DATA_SOURCE_KEY,
@@ -40,7 +41,8 @@ public class BenchmarkDescriptor
             BEFORE_EXECUTION_MACROS_KEY,
             AFTER_EXECUTION_MACROS_KEY,
             VARIABLES_KEY,
-            QUARANTINE_KEY
+            QUARANTINE_KEY,
+            FREQUENCY_KEY
     );
 
     private final Map<String, String> variables;
@@ -79,6 +81,11 @@ public class BenchmarkDescriptor
     public Optional<Integer> getConcurrency()
     {
         return getIntegerOptional(CONCURRENCY_KEY);
+    }
+
+    public Optional<Integer> getFrequency()
+    {
+        return getIntegerOptional(FREQUENCY_KEY);
     }
 
     public List<String> getBeforeBenchmarkMacros()

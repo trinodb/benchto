@@ -3,6 +3,7 @@
  */
 package com.teradata.benchto.driver.loader;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Benchmark.BenchmarkBuilder;
 import com.teradata.benchto.driver.BenchmarkExecutionException;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.facebook.presto.jdbc.internal.guava.base.Preconditions.checkState;
 import static com.facebook.presto.jdbc.internal.guava.collect.Lists.newArrayListWithCapacity;
@@ -97,7 +100,12 @@ public class BenchmarkLoader
 
             fillUniqueBenchmarkNames(includedBenchmarks);
 
+            List<Benchmark> freshBenchmarks = filterFreshBenchmarks(includedBenchmarks);
+            LOGGER.info("Recently tested benchmarks:");
+            printFormattedBenchmarksInfo(formatString, freshBenchmarks);
+
             LOGGER.info("Selected Benchmarks:");
+            includedBenchmarks.removeAll(freshBenchmarks);
             printFormattedBenchmarksInfo(formatString, includedBenchmarks);
 
             return includedBenchmarks;
@@ -159,6 +167,7 @@ public class BenchmarkLoader
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
                         .withPrewarmRuns(benchmarkDescriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
+                        .withFrequency(benchmarkDescriptor.getFrequency().map(frequency -> Duration.ofDays(frequency)))
                         .withBeforeBenchmarkMacros(benchmarkDescriptor.getBeforeBenchmarkMacros())
                         .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
                         .withBeforeExecutionMacros(benchmarkDescriptor.getBeforeExecutionMacros())
@@ -261,17 +270,45 @@ public class BenchmarkLoader
         return new BenchmarkByActiveVariablesFilter(properties);
     }
 
-    private void fillUniqueBenchmarkNames(List<Benchmark> includedBenchmarks)
+    private void fillUniqueBenchmarkNames(List<Benchmark> benchmarks)
     {
-        List<GenerateUniqueNamesRequestItem> namesRequestItems = includedBenchmarks.stream()
+        List<GenerateUniqueNamesRequestItem> namesRequestItems = benchmarks.stream()
                 .map(benchmark -> generateUniqueNamesRequestItem(benchmark.getName(), benchmark.getNonReservedKeywordVariables()))
                 .collect(toList());
-        String[] uniqueBenchmarkNames = benchmarkServiceClient.generateUniqueBenchmarkNames(namesRequestItems);
+        List<String> uniqueBenchmarkNames = benchmarkServiceClient.generateUniqueBenchmarkNames(namesRequestItems);
 
-        checkState(uniqueBenchmarkNames.length == includedBenchmarks.size());
-        for (int i = 0; i < uniqueBenchmarkNames.length; i++) {
-            includedBenchmarks.get(i).setUniqueName(uniqueBenchmarkNames[i]);
+        checkState(uniqueBenchmarkNames.size() == benchmarks.size());
+        for (int i = 0; i < uniqueBenchmarkNames.size(); i++) {
+            benchmarks.get(i).setUniqueName(uniqueBenchmarkNames.get(i));
         }
+    }
+
+    private List<Benchmark> filterFreshBenchmarks(List<Benchmark> benchmarks)
+    {
+        List<Benchmark> benchmarksWithFrequencySet = benchmarks.stream()
+                .filter(benchmark -> benchmark.getFrequency().isPresent())
+                .collect(toList());
+
+        if (benchmarksWithFrequencySet.isEmpty()) {
+            return ImmutableList.of();
+        }
+
+        List<String> benchmarkUniqueNames = benchmarksWithFrequencySet.stream()
+                .map(benchmark -> benchmark.getUniqueName())
+                .collect(toList());
+        List<Duration> successfulExecutionAges = benchmarkServiceClient.getBenchmarkSuccessfulExecutionAges(benchmarkUniqueNames);
+
+        return IntStream.range(0, benchmarksWithFrequencySet.size())
+                .mapToObj(i -> {
+                    Benchmark benchmark = benchmarksWithFrequencySet.get(i);
+                    if (successfulExecutionAges.get(i).compareTo(benchmark.getFrequency().get()) <= 0) {
+                        return benchmark;
+                    }
+                    else {
+                        return null;
+                    }
+                }).filter(benchmark -> benchmark != null)
+                .collect(toList());
     }
 
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)

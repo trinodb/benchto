@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -52,4 +53,11 @@ public interface BenchmarkRunRepo
             "br.status = 'STARTED' AND " +
             "br.started <= :startDate")
     List<BenchmarkRun> findStartedBefore(@Param("startDate") ZonedDateTime startDate);
+
+    @Query(value = "" +
+            "SELECT MAX(ended) " +
+            "FROM benchmark_runs " +
+            "WHERE unique_name = :uniqueName and status = 'ENDED'",
+            nativeQuery = true)
+    Timestamp findTimeOfLatestSuccessfulExecution(@Param("uniqueName") String uniqueName);
 }

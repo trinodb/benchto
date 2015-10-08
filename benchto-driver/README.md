@@ -154,6 +154,7 @@ List of keywords:
 | after-execution  | False | none  | Names of macros executed after benchmark executions.                               |
 | variables        | False | none  | Set of combinations of variables.                                                  |
 | quarantine       | False | false | Flag which can be used to quarantine benchmark using `--activeVariables` property. |
+| frequency        | False | none  | tells how frequent given benchmark can be executed (in days). 1 - once per day, 7 once per week. |
 
 ## SQL files
 

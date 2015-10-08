@@ -9,8 +9,10 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.teradata.benchto.driver.loader.BenchmarkDescriptor;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.facebook.presto.jdbc.internal.guava.collect.Maps.newHashMap;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -32,6 +34,7 @@ public class Benchmark
     private List<String> afterExecutionMacros;
     private Map<String, String> variables;
     private String uniqueName;
+    private Optional<Duration> frequency;
 
     private Benchmark()
     {
@@ -129,6 +132,11 @@ public class Benchmark
         return nonReservedKeysVariables;
     }
 
+    public Optional<Duration> getFrequency()
+    {
+        return frequency;
+    }
+
     @Override
     public String toString()
     {
@@ -142,6 +150,7 @@ public class Benchmark
                 .add("runs", runs)
                 .add("prewarmRuns", prewarmRuns)
                 .add("concurrency", concurrency)
+                .add("frequency", frequency)
                 .add("beforeBenchmarkMacros", beforeBenchmarkMacros)
                 .add("afterBenchmarkMacros", afterBenchmarkMacros)
                 .add("beforeExecutionMacros", beforeExecutionMacros)
@@ -248,6 +257,12 @@ public class Benchmark
         public BenchmarkBuilder withVariables(Map<String, String> variables)
         {
             this.benchmark.variables = ImmutableMap.copyOf(variables);
+            return this;
+        }
+
+        public BenchmarkBuilder withFrequency(Optional<Duration> frequency)
+        {
+            this.benchmark.frequency = frequency;
             return this;
         }
 

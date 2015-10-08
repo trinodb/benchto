@@ -22,8 +22,11 @@ import org.junit.rules.ExpectedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -36,6 +39,8 @@ public class BenchmarkLoaderTest
     private BenchmarkProperties benchmarkProperties;
 
     private BenchmarkLoader loader;
+
+    private Duration benchmarkExecutionAge = Duration.ofDays(Integer.MAX_VALUE);
 
     @Before
     public void setupBenchmarkLoader()
@@ -72,11 +77,19 @@ public class BenchmarkLoaderTest
         return new BenchmarkServiceClient()
         {
             @Override
-            public String[] generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
+            public List<String> generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
             {
                 return generateUniqueNamesRequestItems.stream()
                         .map(requestItem -> requestItem.getName() + "_" + Joiner.on("_").withKeyValueSeparator("=").join(requestItem.getVariables().entrySet()))
-                        .toArray(String[]::new);
+                        .collect(toList());
+            }
+
+            @Override
+            public List<Duration> getBenchmarkSuccessfulExecutionAges(List<String> benchmarkUniqueNames)
+            {
+                return benchmarkUniqueNames.stream()
+                        .map(benchmark -> benchmarkExecutionAge)
+                        .collect(toList());
             }
         };
     }
@@ -185,6 +198,30 @@ public class BenchmarkLoaderTest
         assertLoadedBenchmarksCount(7);
     }
 
+    @Test
+    public void getAllBenchmarks_activeVariables_with_regex()
+    {
+        withActiveVariables("format=(rc)|(tx)");
+
+        assertLoadedBenchmarksCount(4).forEach(benchmark ->
+                        assertThat(benchmark.getVariables().get("format")).isIn("orc", "txt")
+        );
+    }
+
+    @Test
+    public void allBenchmarks_load_only_not_executed_within_two_days() {
+        Duration executionAge = Duration.ofDays(2);
+        withBenchamrkExecutionAge(executionAge);
+
+        assertLoadedBenchmarksCount(6).forEach(benchmark -> {
+                    Optional<Duration> frequency = benchmark.getFrequency();
+                    if (frequency.isPresent()) {
+                        assertThat(frequency.get()).isLessThanOrEqualTo(executionAge);
+                    }
+                }
+        );
+    }
+
     private MapAssert<String, String> assertThatBenchmarkWithEntries(List<Benchmark> benchmarks, MapEntry<String, String>... entries)
     {
         Benchmark searchBenchmark = benchmarks.stream()
@@ -202,16 +239,6 @@ public class BenchmarkLoaderTest
                 .findFirst().get();
 
         return assertThat(searchBenchmark.getNonReservedKeywordVariables());
-    }
-
-    @Test
-    public void loadByVariableWithRegex()
-    {
-        withActiveVariables("format=(rc)|(tx)");
-
-        assertLoadedBenchmarksCount(4).forEach(benchmark ->
-                        assertThat(benchmark.getVariables().get("format")).isIn("orc", "txt")
-        );
     }
 
     private List<Benchmark> assertLoadedBenchmarksCount(int expected)
@@ -236,5 +263,9 @@ public class BenchmarkLoaderTest
     private void withActiveVariables(String activeVariables)
     {
         ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", activeVariables);
+    }
+
+    private void withBenchamrkExecutionAge(Duration executionAge) {
+        this.benchmarkExecutionAge = executionAge;
     }
 }

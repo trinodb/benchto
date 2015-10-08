@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.time.Duration;
 import java.util.List;
 
 import static com.teradata.benchto.service.utils.CollectionUtils.failSafeEmpty;
@@ -38,6 +39,14 @@ public class BenchmarkController
     {
         return generateItems.stream()
                 .map(requestItem -> benchmarkService.generateUniqueBenchmarkName(requestItem.getName(), requestItem.getVariables()))
+                .collect(toList());
+    }
+
+    @RequestMapping(value = "/v1/benchmark/get-successful-execution-ages", method = POST)
+    public List<Duration> getExecutionAges(@RequestBody List<String> uniqueBenchmarkNames)
+    {
+        return uniqueBenchmarkNames.stream()
+                .map(uniqueName -> benchmarkService.getSuccessfulExecutionAge(uniqueName))
                 .collect(toList());
     }
 

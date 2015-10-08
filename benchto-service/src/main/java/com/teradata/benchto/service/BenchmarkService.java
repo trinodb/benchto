@@ -20,6 +20,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,14 +145,14 @@ public class BenchmarkService
     @Transactional(readOnly = true)
     public List<BenchmarkRun> findBenchmark(String uniqueName, String environmentName)
     {
-        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(uniqueName, getEnvironment(environmentName));
+        List<BenchmarkRun> benchmarkRuns = benchmarkRunRepo.findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(uniqueName, findEnvironment(environmentName));
         for (BenchmarkRun benchmarkRun : benchmarkRuns) {
             Hibernate.initialize(benchmarkRun.getExecutions());
         }
         return benchmarkRuns;
     }
 
-    private Environment getEnvironment(String environmentName)
+    private Environment findEnvironment(String environmentName)
     {
         Environment environment = environmentService.findEnvironment(environmentName);
         if (environment == null) {
@@ -160,7 +164,7 @@ public class BenchmarkService
     @Transactional(readOnly = true)
     public List<BenchmarkRun> findLatest(String environmentName)
     {
-        return benchmarkRunRepo.findLatest(getEnvironment(environmentName).getId());
+        return benchmarkRunRepo.findLatest(findEnvironment(environmentName).getId());
     }
 
     public String generateUniqueBenchmarkName(String name, Map<String, String> variables)
@@ -174,5 +178,15 @@ public class BenchmarkService
         if (benchmarkRun.getStatus() != STARTED) {
             throw new IllegalArgumentException(format("Benchmark run %s - %s in %s status", benchmarkRun.getName(), benchmarkRun.getSequenceId(), benchmarkRun.getStatus()));
         }
+    }
+
+    public Duration getSuccessfulExecutionAge(String uniqueName)
+    {
+        Timestamp ended = benchmarkRunRepo.findTimeOfLatestSuccessfulExecution(uniqueName);
+        if (ended == null) {
+            return Duration.ofDays(Integer.MAX_VALUE);
+        }
+        ZonedDateTime endedAsZDT = ZonedDateTime.of(ended.toLocalDateTime(), ZoneId.systemDefault());
+        return Duration.between(endedAsZDT, currentDateTime());
     }
 }

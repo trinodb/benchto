@@ -4,3 +4,4 @@ before-benchmark: no-op, test_query.sql
 after-benchmark: no-op-after
 runs: 2
 quarantine: true
+frequency: 4

@@ -1,5 +1,6 @@
 datasource: foo
 query-names: q1, q2, 1, 2
+frequency: 1
 variables:
   combinations1:
     size: [1GB, 2GB]
