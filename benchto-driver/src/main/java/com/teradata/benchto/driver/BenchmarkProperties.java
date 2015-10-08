@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +63,9 @@ public class BenchmarkProperties
     @Value("${macroExecutions.afterAll:#{null}}")
     private String afterAllMacros;
 
+    @Value("${timeLimit:#{null}}")
+    private String timeLimit;
+
     @Autowired
     private GraphiteProperties graphiteProperties;
 
@@ -111,6 +115,16 @@ public class BenchmarkProperties
         return Optional.of(variablesMap);
     }
 
+    public Optional<Duration> getTimeLimit()
+    {
+        if (timeLimit != null) {
+            return Optional.of(Duration.parse(timeLimit));
+        }
+        else {
+            return Optional.empty();
+        }
+    }
+
     @Override
     public String toString()
     {
@@ -125,6 +139,7 @@ public class BenchmarkProperties
         addForToStringOptionalField(toStringHelper, "beforeAllMacros", getBeforeAllMacros());
         addForToStringOptionalField(toStringHelper, "afterAllMacros", getAfterAllMacros());
         addForToStringOptionalField(toStringHelper, "healthCheckMacros", getHealthCheckMacros());
+        addForToStringOptionalField(toStringHelper, "timiLimit", getTimeLimit());
         return toStringHelper.toString();
     }
 

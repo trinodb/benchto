@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,6 +44,13 @@ public class BenchmarkPropertiesTest
         activeVariables("ala=kot=pies");
     }
 
+    @Test
+    public void parseTimeLimit()
+    {
+        assertThat(benchmarkPropertiesWithTimeLimit(null).getTimeLimit()).isEmpty();
+        assertThat(benchmarkPropertiesWithTimeLimit("P1D").getTimeLimit().get()).isEqualTo(Duration.ofDays(1));
+    }
+
     private Optional<Map<String, String>> activeVariables(String activeVariables)
     {
         BenchmarkProperties benchmarkProperties = benchmarkPropertiesWithActiveVariables(activeVariables);
@@ -54,6 +62,13 @@ public class BenchmarkPropertiesTest
     {
         BenchmarkProperties benchmarkProperties = new BenchmarkProperties();
         ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", activeVariables);
+        return benchmarkProperties;
+    }
+
+    public static BenchmarkProperties benchmarkPropertiesWithTimeLimit(String timeLimit)
+    {
+        BenchmarkProperties benchmarkProperties = new BenchmarkProperties();
+        ReflectionTestUtils.setField(benchmarkProperties, "timeLimit", timeLimit);
         return benchmarkProperties;
     }
 }

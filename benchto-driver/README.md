@@ -114,6 +114,7 @@ benchmark:
 --activeBenchmarks BENCHMARK_NAME,... - list of active benchmarks (default: all benchmarks)
 --activeVariables VARIABLE_NAME=VARIABLE_VALUE,... - list of active variables (default: no filtering by variables)
 --executionSequenceId SEQUENCE_ID - sequence id of benchmark execution
+--timeLimit DURATION - amount of time while benchmarks will be executed
 ```
 
 ## Benchmark descriptor

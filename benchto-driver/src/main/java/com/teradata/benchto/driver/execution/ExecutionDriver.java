@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +42,11 @@ public class ExecutionDriver
     @Autowired
     private MacroService macroService;
 
+    private ZonedDateTime startTime;
+
     public void execute()
     {
+        startTime = nowUtc();
         try {
             executeBeforeAllMacros();
             executeBenchmarks();
@@ -95,6 +100,10 @@ public class ExecutionDriver
         List<BenchmarkExecutionResult> benchmarkExecutionResults = newArrayList();
         int benchmarkOrdinalNumber = 1;
         for (Benchmark benchmark : benchmarks) {
+            if (isTimeLimitEnded()) {
+                break;
+            }
+
             executeHealthCheck(benchmark);
             benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
         }
@@ -104,8 +113,14 @@ public class ExecutionDriver
                 .collect(toList());
 
         if (!failedBenchmarkResults.isEmpty()) {
-            throw new FailedBenchmarkExecutionException(failedBenchmarkResults,  benchmarks.size());
+            throw new FailedBenchmarkExecutionException(failedBenchmarkResults, benchmarks.size());
         }
+    }
+
+    private boolean isTimeLimitEnded()
+    {
+        Optional<Duration> timeLimit = properties.getTimeLimit();
+        return timeLimit.isPresent() && timeLimit.get().compareTo(Duration.between(startTime, nowUtc())) < 0;
     }
 
     private void executeHealthCheck(Benchmark benchmark)
