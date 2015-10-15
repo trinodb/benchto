@@ -1,7 +1,8 @@
 # benchto-generator
 
 Map reduce Hive types data generator. Generator creates separate hdfs files for each type. You can
-configure types, format and number of files. Data is generated under `/benchmarks/benchto/types` directory. 
+configure types, format and number of files. By default data is generated under `/benchmarks/benchto/types` directory.
+The directory can be changed using `-path` parameter.
 
 Supported types:
 * int, bigint, decimal(X,Y)
@@ -21,7 +22,7 @@ Sample usage:
 
 ```
 $ hdfs dfs -rm -r /benchmarks/benchto/types/
-$ hadoop jar benchto-generator-1.0.0-SNAPSHOT.jar text bigint 1000000 4
+$ hadoop jar benchto-generator-1.0.0-SNAPSHOT.jar -format text -type bigint -rows 1000000 -mappers 4
 $ hdfs dfs -ls -R /benchmarks/benchto/types
 drwxr-xr-x   - hdfs supergroup          0 2015-09-10 13:24 /benchmarks/benchto/types/orc-bigint
 drwxr-xr-x   - hdfs supergroup          0 2015-09-10 13:24 /benchmarks/benchto/types/orc-bigint/1000000
@@ -31,6 +32,13 @@ drwxr-xr-x   - hdfs supergroup          0 2015-09-10 13:24 /benchmarks/benchto/t
 -rw-r--r--   1 hdfs supergroup    2001736 2015-09-10 13:24 /benchmarks/benchto/types/orc-bigint/1000000/part-m-00002
 -rw-r--r--   1 hdfs supergroup    2001758 2015-09-10 13:24 /benchmarks/benchto/types/orc-bigint/1000000/part-m-00003
 ...
+```
+
+For varchar type rows can be generated from a regular expression. Rows will be randomized strings matching 
+the regular expression. This can be enabled by providing `-regex pattern min_row_length max_row_length` parameter, e.g:
+
+```
+-regex "a*" 100 120
 ```
 
 ## Hive schema

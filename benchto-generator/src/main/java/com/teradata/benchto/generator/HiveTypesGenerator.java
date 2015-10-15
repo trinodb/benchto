@@ -3,7 +3,13 @@
  */
 package com.teradata.benchto.generator;
 
+import com.google.common.base.Optional;
 import com.teradata.benchto.generator.HiveObjectsGenerator.HiveObjectsGeneratorBuilder;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -44,7 +50,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static com.facebook.presto.hive.$internal.com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.getStructTypeInfo;
@@ -61,6 +68,9 @@ public class HiveTypesGenerator
     public static final String FORMAT_PROPERTY_NAME = "mapreduce.hive-types-generator.format";
     public static final String HIVE_TYPE_PROPERTY_NAME = "mapreduce.hive-types-generator.type";
     public static final String NUM_ROWS_PROPERTY_NAME = "mapreduce.hive-types-generator.num-rows";
+    public static final String REGEX_PATTERN = "mapreduce.hive-types-generator.regex-pattern";
+    public static final String REGEX_MIN_LENGTH = "mapreduce.hive-types-generator.regex-min-length";
+    public static final String REGEX_MAX_LENGTH = "mapreduce.hive-types-generator.regex-max-length";
 
     /**
      * An input format that assigns longs from 0 to rowCount to each mapper.
@@ -192,6 +202,7 @@ public class HiveTypesGenerator
     {
 
         private int DEFAULT_CARDINALITY = 100000;
+        private int REGEX_CARDINALITY = 1000;
 
         @SuppressWarnings("deprecated")
         private SerDe serDe;
@@ -204,7 +215,7 @@ public class HiveTypesGenerator
                 throws IOException, InterruptedException
         {
             try {
-                struct.set(0, hiveObjectsGenerator.getNext((int) row.get()));
+                struct.set(0, hiveObjectsGenerator.getNext(row.get()));
                 Writable serializedRow = serDe.serialize(struct, objectInspector);
                 context.write(NullWritable.get(), serializedRow);
             }
@@ -217,8 +228,9 @@ public class HiveTypesGenerator
         protected void setup(Context context)
                 throws IOException, InterruptedException
         {
-            String format = context.getConfiguration().get(FORMAT_PROPERTY_NAME);
-            String hiveType = context.getConfiguration().get(HIVE_TYPE_PROPERTY_NAME);
+            Configuration configuration = context.getConfiguration();
+            String format = configuration.get(FORMAT_PROPERTY_NAME);
+            String hiveType = configuration.get(HIVE_TYPE_PROPERTY_NAME);
 
             try {
                 List<String> columns = singletonList("value");
@@ -229,18 +241,26 @@ public class HiveTypesGenerator
                 tableProperties.setProperty("columns", columns.get(0));
                 tableProperties.setProperty("columns.types", columnTypes.get(0).getTypeName());
 
-                serDe.initialize(context.getConfiguration(), tableProperties);
+                serDe.initialize(configuration, tableProperties);
 
                 LOG.info("Initialized SerDe (" + serDe.getClass() + ") with properties: " + tableProperties);
 
                 TypeInfo rowTypeInfo = getStructTypeInfo(columns, columnTypes);
                 objectInspector = (StructObjectInspector) getStandardJavaObjectInspectorFromTypeInfo(rowTypeInfo);
 
-                hiveObjectsGenerator = new HiveObjectsGeneratorBuilder()
+                HiveObjectsGeneratorBuilder builder = new HiveObjectsGeneratorBuilder()
                         .withCardinality(DEFAULT_CARDINALITY)
-                        .withType(hiveType)
-                        .build();
+                        .withType(hiveType);
 
+                if (configuration.get(REGEX_PATTERN) != null) {
+                    builder.withStringProducer(new RegexMatchingStringProducer(
+                            configuration.get(REGEX_PATTERN),
+                            configuration.getInt(REGEX_MIN_LENGTH, 0),
+                            configuration.getInt(REGEX_MAX_LENGTH, 0)
+                    )).withCardinality(REGEX_CARDINALITY);
+                }
+
+                hiveObjectsGenerator = builder.build();
                 struct = new ArrayList<>(1);
                 struct.add(0, null);
             }
@@ -254,15 +274,67 @@ public class HiveTypesGenerator
     public int run(String[] args)
             throws Exception
     {
-        checkArgument(args[0] != null && args[1] != null && args[2] != null && args[3] != null,
-                "usage: hadoop jar benchto-generator-1.0.0-SNAPSHOT.jar FORMAT TYPE ROW_COUNT MAPPERS_COUNT");
+        Options options = new Options();
+        options.addOption(Option.builder("format")
+                .required()
+                .hasArg()
+                .desc("file format (orc, parquet or text)")
+                .build());
+        options.addOption(Option.builder("type")
+                .required()
+                .hasArg()
+                .desc("hive type to be generated (bigint, int, boolean, double, binary, date, timestamp, decimal or varchar)")
+                .build());
+        options.addOption(Option.builder("rows")
+                .required()
+                .hasArg()
+                .desc("total row count")
+                .build());
+        options.addOption(Option.builder("mappers")
+                .required()
+                .hasArg()
+                .desc("total mappers count")
+                .build());
+        options.addOption(Option.builder("path")
+                .hasArg()
+                .desc("base path for generating files, default is: /benchmarks/benchto/types")
+                .build());
+        options.addOption(Option.builder("regex")
+                .numberOfArgs(3)
+                .desc("generate varchars from regex pattern, arguments are: pattern, min length, max length")
+                .build());
 
-        String format = args[0];
-        String hiveType = args[1];
-        long numberOfRows = Long.parseLong(args[2]);
-        long numberOfFiles = Long.parseLong(args[3]);
+        CommandLine line;
+        String format;
+        String hiveType;
+        long numberOfRows;
+        long numberOfFiles;
+        String basePath;
+        Optional<String> regexPattern = Optional.absent();
+        Optional<Integer> regexMinLength = Optional.absent();
+        Optional<Integer> regexMaxLength = Optional.absent();
+        try {
+            line = new DefaultParser().parse(options, args);
+            format = line.getOptionValue("format");
+            hiveType = line.getOptionValue("type");
+            numberOfRows = parseLong(line.getOptionValue("rows"));
+            numberOfFiles = parseLong(line.getOptionValue("mappers"));
+            basePath = line.getOptionValue("path", "/benchmarks/benchto/types");
+            if (line.hasOption("regex")) {
+                String[] values = line.getOptionValues("regex");
+                regexPattern = Optional.of(values[0]);
+                regexMinLength = Optional.of(parseInt(values[1]));
+                regexMaxLength = Optional.of(parseInt(values[2]));
+            }
+        }
+        catch (Exception e) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("benchto-generator", options);
+            throw e;
+        }
+
         String jobName = format("GenerateData-%s-%s-%d", format, hiveType, numberOfRows);
-        Path outputDir = new Path(format("/benchmarks/benchto/types/%s-%s/%d", format, hiveType, numberOfRows));
+        Path outputDir = new Path(format("%s/%s-%s/%d", basePath, format, hiveType, numberOfRows));
         Class<? extends OutputFormat> outputFormatClass = getOutputFormatClass(format);
 
         LOG.info("Generating " + numberOfRows + " " + hiveType + "s, directory: " + outputDir + ", number of files: " + numberOfFiles);
@@ -272,6 +344,11 @@ public class HiveTypesGenerator
         configuration.set(HIVE_TYPE_PROPERTY_NAME, hiveType);
         configuration.setLong(NUM_ROWS_PROPERTY_NAME, numberOfRows);
         configuration.setLong(NUM_MAPS, numberOfFiles);
+        if (regexPattern.isPresent()) {
+            configuration.set(REGEX_PATTERN, regexPattern.get());
+            configuration.setInt(REGEX_MIN_LENGTH, regexMinLength.get());
+            configuration.setInt(REGEX_MAX_LENGTH, regexMaxLength.get());
+        }
 
         Job generatorJob = Job.getInstance(configuration, jobName);
         FileOutputFormat.setOutputPath(generatorJob, outputDir);

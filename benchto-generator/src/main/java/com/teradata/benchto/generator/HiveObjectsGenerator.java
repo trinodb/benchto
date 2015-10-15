@@ -23,9 +23,9 @@ class HiveObjectsGenerator
         this.values = values;
     }
 
-    public Object getNext(int index)
+    public Object getNext(long index)
     {
-        return values[index % values.length];
+        return values[(int) (index % values.length)];
     }
 
     public static class HiveObjectsGeneratorBuilder
@@ -34,6 +34,14 @@ class HiveObjectsGenerator
         private Random random = new Random(1410L);
         private int cardinality;
         private String hiveType;
+        private ObjectProducer<HiveVarchar> hiveVarcharProducer = new ObjectProducer<HiveVarchar>()
+        {
+            @Override
+            public HiveVarchar generateNext()
+            {
+                return new HiveVarchar(UUID.randomUUID().toString(), -1);
+            }
+        };
 
         public HiveObjectsGeneratorBuilder withType(String type)
         {
@@ -47,11 +55,24 @@ class HiveObjectsGenerator
             return this;
         }
 
+        public HiveObjectsGeneratorBuilder withStringProducer(final ObjectProducer<String> stringProducer)
+        {
+            hiveVarcharProducer = new ObjectProducer<HiveVarchar>()
+            {
+                @Override
+                public HiveVarchar generateNext()
+                {
+                    return new HiveVarchar(stringProducer.generateNext(), -1);
+                }
+            };
+            return this;
+        }
+
         public HiveObjectsGenerator build()
         {
             Object[] values;
             if ("bigint".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -61,7 +82,7 @@ class HiveObjectsGenerator
                 });
             }
             else if ("int".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -71,7 +92,7 @@ class HiveObjectsGenerator
                 });
             }
             else if ("boolean".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -81,7 +102,7 @@ class HiveObjectsGenerator
                 });
             }
             else if ("double".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -91,7 +112,7 @@ class HiveObjectsGenerator
                 });
             }
             else if ("binary".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -101,7 +122,7 @@ class HiveObjectsGenerator
                 });
             }
             else if ("date".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -111,7 +132,7 @@ class HiveObjectsGenerator
                 });
             }
             else if ("timestamp".equals(hiveType)) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -121,7 +142,7 @@ class HiveObjectsGenerator
                 });
             }
             else if (hiveType.startsWith("decimal")) {
-                values = generateRandomArray(new RandomObjectProducer()
+                values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
@@ -131,14 +152,7 @@ class HiveObjectsGenerator
                 });
             }
             else if (hiveType.startsWith("varchar")) {
-                values = generateRandomArray(new RandomObjectProducer()
-                {
-                    @Override
-                    public Object generateNext()
-                    {
-                        return new HiveVarchar(UUID.randomUUID().toString(), -1);
-                    }
-                });
+                values = generateRandomArray(hiveVarcharProducer);
             }
             else {
                 throw new IllegalArgumentException("Unsupported type " + hiveType);
@@ -146,11 +160,11 @@ class HiveObjectsGenerator
             return new HiveObjectsGenerator(values);
         }
 
-        private Object[] generateRandomArray(RandomObjectProducer randomObjectProducer)
+        private Object[] generateRandomArray(ObjectProducer objectProducer)
         {
             Object[] values = new Object[cardinality];
             for (int i = 0; i < values.length; ++i) {
-                values[i] = randomObjectProducer.generateNext();
+                values[i] = objectProducer.generateNext();
             }
             return values;
         }
@@ -165,11 +179,6 @@ class HiveObjectsGenerator
         private long randomTimestampMillis()
         {
             return (long) random.nextInt(1581724800) * 1000L; // 1970-2020
-        }
-
-        private interface RandomObjectProducer
-        {
-            Object generateNext();
         }
     }
 }
