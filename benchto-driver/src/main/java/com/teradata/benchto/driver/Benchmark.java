@@ -7,7 +7,6 @@ import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.teradata.benchto.driver.loader.BenchmarkDescriptor;
 
 import java.time.Duration;
 import java.util.List;
@@ -17,6 +16,7 @@ import java.util.Optional;
 import static com.facebook.presto.jdbc.internal.guava.collect.Maps.newHashMap;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORDS;
 
 public class Benchmark
 {
@@ -128,7 +128,8 @@ public class Benchmark
     public Map<String, String> getNonReservedKeywordVariables()
     {
         Map<String, String> nonReservedKeysVariables = newHashMap(getVariables());
-        BenchmarkDescriptor.RESERVED_KEYWORDS.stream().forEach(nonReservedKeysVariables::remove);
+        RESERVED_KEYWORDS.stream()
+                .forEach(nonReservedKeysVariables::remove);
         return nonReservedKeysVariables;
     }
 
@@ -168,18 +169,40 @@ public class Benchmark
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
-        Benchmark that = (Benchmark) o;
-
-        return Objects.equal(this.name, that.name) &&
-                Objects.equal(this.sequenceId, that.sequenceId) &&
-                Objects.equal(this.environment, that.environment);
+        Benchmark benchmark = (Benchmark) o;
+        return Objects.equal(runs, benchmark.runs) &&
+                Objects.equal(prewarmRuns, benchmark.prewarmRuns) &&
+                Objects.equal(concurrency, benchmark.concurrency) &&
+                Objects.equal(name, benchmark.name) &&
+                Objects.equal(sequenceId, benchmark.sequenceId) &&
+                Objects.equal(dataSource, benchmark.dataSource) &&
+                Objects.equal(environment, benchmark.environment) &&
+                Objects.equal(queries, benchmark.queries) &&
+                Objects.equal(beforeBenchmarkMacros, benchmark.beforeBenchmarkMacros) &&
+                Objects.equal(afterBenchmarkMacros, benchmark.afterBenchmarkMacros) &&
+                Objects.equal(beforeExecutionMacros, benchmark.beforeExecutionMacros) &&
+                Objects.equal(afterExecutionMacros, benchmark.afterExecutionMacros) &&
+                Objects.equal(variables, benchmark.variables) &&
+                Objects.equal(frequency, benchmark.frequency);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(name, sequenceId, environment);
+        return Objects.hashCode(name,
+                sequenceId,
+                dataSource,
+                environment,
+                queries,
+                runs,
+                prewarmRuns,
+                concurrency,
+                beforeBenchmarkMacros,
+                afterBenchmarkMacros,
+                beforeExecutionMacros,
+                afterExecutionMacros,
+                variables,
+                frequency);
     }
 
     public static class BenchmarkBuilder
@@ -191,8 +214,7 @@ public class Benchmark
             this.benchmark.name = name;
             this.benchmark.sequenceId = sequenceId;
             this.benchmark.queries = ImmutableList.copyOf(queries);
-            for (Query query : this.benchmark.queries)
-            {
+            for (Query query : this.benchmark.queries) {
                 checkState(query.getSqlTemplates().size() == 1,
                         "Multiple statements in one query file are not supported");
             }

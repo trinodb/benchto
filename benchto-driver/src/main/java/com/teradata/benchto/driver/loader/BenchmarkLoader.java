@@ -108,6 +108,8 @@ public class BenchmarkLoader
             includedBenchmarks.removeAll(freshBenchmarks);
             printFormattedBenchmarksInfo(formatString, includedBenchmarks);
 
+            checkState(allBenchmarks.size() == includedBenchmarks.size() + excludedBenchmarks.size() + freshBenchmarks.size());
+
             return includedBenchmarks;
         }
         catch (IOException e) {
@@ -314,14 +316,15 @@ public class BenchmarkLoader
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)
     {
         LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarms", "Concurrency"));
-        for (Benchmark benchmark : benchmarks) {
-            LOGGER.info(format(formatString,
-                    benchmark.getName(),
-                    benchmark.getDataSource(),
-                    benchmark.getRuns() + "",
-                    benchmark.getPrewarmRuns() + "",
-                    benchmark.getConcurrency() + ""));
-        }
+        benchmarks.stream()
+                .map(benchmark -> format(formatString,
+                        benchmark.getName(),
+                        benchmark.getDataSource(),
+                        benchmark.getRuns() + "",
+                        benchmark.getPrewarmRuns() + "",
+                        benchmark.getConcurrency() + ""))
+                .distinct()
+                .forEach(LOGGER::info);
     }
 
     private String createFormatString(Collection<Benchmark> benchmarks)
