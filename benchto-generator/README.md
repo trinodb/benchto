@@ -9,6 +9,7 @@ Supported types:
 * double
 * boolean
 * varchar
+* string
 * date, timestamp
 * binary
 
