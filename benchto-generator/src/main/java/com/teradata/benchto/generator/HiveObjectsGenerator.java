@@ -5,6 +5,7 @@ package com.teradata.benchto.generator;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.io.Text;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -34,12 +35,12 @@ class HiveObjectsGenerator
         private Random random = new Random(1410L);
         private int cardinality;
         private String hiveType;
-        private ObjectProducer<HiveVarchar> hiveVarcharProducer = new ObjectProducer<HiveVarchar>()
+        private ObjectProducer<String> stringProducer = new ObjectProducer<String>()
         {
             @Override
-            public HiveVarchar generateNext()
+            public String generateNext()
             {
-                return new HiveVarchar(UUID.randomUUID().toString(), -1);
+                return UUID.randomUUID().toString();
             }
         };
 
@@ -57,14 +58,7 @@ class HiveObjectsGenerator
 
         public HiveObjectsGeneratorBuilder withStringProducer(final ObjectProducer<String> stringProducer)
         {
-            hiveVarcharProducer = new ObjectProducer<HiveVarchar>()
-            {
-                @Override
-                public HiveVarchar generateNext()
-                {
-                    return new HiveVarchar(stringProducer.generateNext(), -1);
-                }
-            };
+            this.stringProducer = stringProducer;
             return this;
         }
 
@@ -72,72 +66,82 @@ class HiveObjectsGenerator
         {
             Object[] values;
             if ("bigint".equals(hiveType)) {
-                values = generateRandomArray(new ObjectProducer()
+                values = generateRandomArray(new ObjectProducer<Long>()
                 {
                     @Override
-                    public Object generateNext()
+                    public Long generateNext()
                     {
                         return random.nextLong();
                     }
                 });
             }
             else if ("int".equals(hiveType)) {
-                values = generateRandomArray(new ObjectProducer()
+                values = generateRandomArray(new ObjectProducer<Integer>()
                 {
                     @Override
-                    public Object generateNext()
+                    public Integer generateNext()
                     {
                         return random.nextInt();
                     }
                 });
             }
             else if ("boolean".equals(hiveType)) {
-                values = generateRandomArray(new ObjectProducer()
+                values = generateRandomArray(new ObjectProducer<Boolean>()
                 {
                     @Override
-                    public Object generateNext()
+                    public Boolean generateNext()
                     {
                         return random.nextBoolean();
                     }
                 });
             }
             else if ("double".equals(hiveType)) {
-                values = generateRandomArray(new ObjectProducer()
+                values = generateRandomArray(new ObjectProducer<Double>()
                 {
                     @Override
-                    public Object generateNext()
+                    public Double generateNext()
                     {
                         return randomDouble();
                     }
                 });
             }
             else if ("binary".equals(hiveType)) {
-                values = generateRandomArray(new ObjectProducer()
+                values = generateRandomArray(new ObjectProducer<byte[]>()
                 {
                     @Override
-                    public Object generateNext()
+                    public byte[] generateNext()
                     {
                         return UUID.randomUUID().toString().getBytes();
                     }
                 });
             }
             else if ("date".equals(hiveType)) {
-                values = generateRandomArray(new ObjectProducer()
+                values = generateRandomArray(new ObjectProducer<Date>()
                 {
                     @Override
-                    public Object generateNext()
+                    public Date generateNext()
                     {
                         return new Date(randomTimestampMillis());
                     }
                 });
             }
             else if ("timestamp".equals(hiveType)) {
+                values = generateRandomArray(new ObjectProducer<Timestamp>()
+                {
+                    @Override
+                    public Timestamp generateNext()
+                    {
+                        return new Timestamp(randomTimestampMillis());
+                    }
+                });
+            }
+            else if ("string".equals(hiveType)) {
                 values = generateRandomArray(new ObjectProducer()
                 {
                     @Override
                     public Object generateNext()
                     {
-                        return new Timestamp(randomTimestampMillis());
+                        return new Text(stringProducer.generateNext());
                     }
                 });
             }
@@ -152,7 +156,14 @@ class HiveObjectsGenerator
                 });
             }
             else if (hiveType.startsWith("varchar")) {
-                values = generateRandomArray(hiveVarcharProducer);
+                values = generateRandomArray(new ObjectProducer<HiveVarchar>()
+                {
+                    @Override
+                    public HiveVarchar generateNext()
+                    {
+                        return new HiveVarchar(stringProducer.generateNext(), -1);
+                    }
+                });
             }
             else {
                 throw new IllegalArgumentException("Unsupported type " + hiveType);

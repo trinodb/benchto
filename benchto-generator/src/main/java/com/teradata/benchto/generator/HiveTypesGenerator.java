@@ -283,7 +283,7 @@ public class HiveTypesGenerator
         options.addOption(Option.builder("type")
                 .required()
                 .hasArg()
-                .desc("hive type to be generated (bigint, int, boolean, double, binary, date, timestamp, decimal or varchar)")
+                .desc("hive type to be generated (bigint, int, boolean, double, binary, date, timestamp, string, decimal or varchar)")
                 .build());
         options.addOption(Option.builder("rows")
                 .required()

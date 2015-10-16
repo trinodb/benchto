@@ -32,7 +32,7 @@ public class HiveTypesGeneratorTest
 {
 
     private static final String[] FORMATS = {"text"}; // mrunit does not work with "orc"
-    private static final String[] TYPES = {"bigint", "int", "boolean", "double", "binary", "date", "timestamp", "decimal(38,8)", "varchar(255)"};
+    private static final String[] TYPES = {"bigint", "int", "boolean", "double", "binary", "date", "timestamp", "string", "decimal(38,8)", "varchar(255)"};
 
     @Parameters
     public static Collection<Object[]> data()
