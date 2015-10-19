@@ -58,6 +58,7 @@ public class BenchmarkLoaderTest
         ReflectionTestUtils.setField(loader, "freemarkerConfiguration", freemarkerConfiguration);
 
         withBenchmarksDir("unit-benchmarks");
+        withFrequencyCheckEnabled(true);
     }
 
     private QueryLoader mockQueryLoader()
@@ -276,7 +277,7 @@ public class BenchmarkLoaderTest
 
     private void withFrequencyCheckEnabled(boolean enabled)
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "frequencyCheckEnabled", enabled);
+        ReflectionTestUtils.setField(benchmarkProperties, "frequencyCheckEnabled", Boolean.toString(enabled));
     }
 
     private void withBenchmarkExecutionAge(Duration executionAge) {
