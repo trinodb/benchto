@@ -17,10 +17,12 @@ import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -28,6 +30,7 @@ import static com.google.common.base.Preconditions.checkState;
 public class QueryExecutionDriver
 {
     private static final Logger LOG = LoggerFactory.getLogger(QueryExecutionDriver.class);
+    private static final int LOGGED_ROWS = 10;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -48,9 +51,15 @@ public class QueryExecutionDriver
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sqlStatement)
         ) {
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+
+            LOG.info("First {} rows for query: {}", LOGGED_ROWS, sqlStatement);
+
             int rowsCount = 0;
             while (resultSet.next()) {
-                rowsCount++;
+                if (rowsCount++ < LOGGED_ROWS) {
+                    logRow(rowsCount, resultSet);
+                }
             }
 
             try {
@@ -80,5 +89,17 @@ public class QueryExecutionDriver
         List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(queryExecution.getQuery(), variables);
         checkState(sqlQueries.size() == 1);
         return sqlQueries.get(0);
+    }
+
+    private void logRow(int rowNumber, ResultSet resultSet)
+            throws SQLException
+    {
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        StringJoiner joiner = new StringJoiner("; ", "[", "]");
+        for (int i = 1; i <= resultSetMetaData.getColumnCount(); ++i) {
+            joiner.add(resultSetMetaData.getColumnName(i) + ": " + resultSet.getObject(i));
+        }
+
+        LOG.info("Row: " + rowNumber + ", column values: " + joiner.toString());
     }
 }
