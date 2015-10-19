@@ -8,12 +8,12 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapDifference.ValueDifference;
-import com.google.common.io.Files;
 import com.teradata.benchto.driver.Query;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +26,7 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * Parses sql queries from files where first line can be single line header.
- * The line must start with -- marker, and define semicolon separeated map of params.
+ * The line must start with -- marker, and define semicolon separated map of params.
  * <p/>
  * Example contents:
  * -- key1: value1; key2: value2a,value2b
@@ -47,10 +47,10 @@ public class AnnotatedQueryParser
             .trimResults()
             .withKeyValueSeparator(Splitter.on(":").trimResults());
 
-    public Query parseFile(String queryName, File inputFile)
+    public Query parseFile(String queryName, Path inputFile)
             throws IOException
     {
-        return parseLines(queryName, Files.readLines(inputFile, UTF_8));
+        return parseLines(queryName, Files.lines(inputFile, UTF_8).collect(toList()));
     }
 
     public Query parseLines(String queryName, List<String> lines)

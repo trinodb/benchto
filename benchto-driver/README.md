@@ -21,36 +21,34 @@ jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>benchmark</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.4.0</version>
-                        <executions>
-                            <execution>
-                                <id>exec-benchmark</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <mainClass>com.teradata.benchto.driver.DriverApp</mainClass>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-
-        </profile>
-    </profiles>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>1.2.5.RELEASE</version></version>
+                 <configuration>
+                    <mainClass>com.teradata.benchto.driver.DriverApp</mainClass>
+                    <layout>ZIP</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 ```
 
-Please take a look into `benchmark-test-example` module for examples.
+Then issue following query to build and run benchto driver:
+
+```
+$ mvn package
+$ java -jar target/your-benchto-benchmarks-*.jar 
+```
 
 ## Global properties configuration
 
@@ -104,17 +102,6 @@ benchmark:
       metrics.collection.enabled: true  # feature toggle which enables cluster metrics collection
     presto:
       metrics.collection.enabled: true  # feature toggle which enables presto query metrics collection
-```
-
-## Properties
-
-```
---sql DIR - sql queries directory (default: sql)
---benchmarks DIR - benchmark descriptors directory (default: benchmarks)
---activeBenchmarks BENCHMARK_NAME,... - list of active benchmarks (default: all benchmarks)
---activeVariables VARIABLE_NAME=VARIABLE_VALUE,... - list of active variables (default: no filtering by variables)
---executionSequenceId SEQUENCE_ID - sequence id of benchmark execution
---timeLimit DURATION - amount of time while benchmarks will be executed
 ```
 
 ## Benchmark descriptor

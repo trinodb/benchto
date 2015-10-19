@@ -3,9 +3,16 @@
  */
 package com.teradata.benchto.driver;
 
+import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.ExecutionDriver;
 import freemarker.template.TemplateException;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -17,6 +24,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -39,8 +49,24 @@ public class DriverApp
     private static final Logger LOG = LoggerFactory.getLogger(DriverApp.class);
 
     public static void main(String[] args)
+            throws Exception
     {
-        ConfigurableApplicationContext ctx = new SpringApplicationBuilder(DriverApp.class).web(false).run(args);
+        DefaultParser defaultParser = new DefaultParser();
+        Options options = createOptions();
+        CommandLine commandLine = defaultParser.parse(options, args);
+        if (commandLine.hasOption("h")) {
+            HelpFormatter helpFormatter = new HelpFormatter();
+            helpFormatter.printHelp("Benchto driver", options);
+            System.exit(0);
+        }
+
+        SpringApplicationBuilder applicationBuilder = new SpringApplicationBuilder(DriverApp.class)
+                .web(false)
+                .properties();
+        if (commandLine.hasOption("profile")) {
+            applicationBuilder.profiles(commandLine.getOptionValue("profile"));
+        }
+        ConfigurableApplicationContext ctx = applicationBuilder.run(args);
         ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
 
         Thread.currentThread().setName("main");
@@ -53,6 +79,30 @@ public class DriverApp
             logException(e);
             System.exit(1);
         }
+    }
+
+    private static Options createOptions()
+            throws ParseException
+    {
+        Options options = new Options();
+        addOption(options, "sql", "DIR", "sql queries directory", "sql");
+        addOption(options, "benchmarks", "DIR", "benchmark descriptors directory", "benchmarks");
+        addOption(options, "activeBenchmarks", "BENCHMARK_NAME,...", "list of active benchmarks", "all benchmarks");
+        addOption(options, "activeVariables", "VARIABLE_NAME=VARIABLE_VALUE,...", "list of active variables", "no filtering by variables");
+        addOption(options, "executionSequenceId", "SEQUENCE_ID", "sequence id of benchmark execution", "generated");
+        addOption(options, "timeLimit", "DURATION", "amount of time while benchmarks will be executed", "unlimited");
+        addOption(options, "profile", "PROFILE", "configuration profile", "none");
+        options.addOption("h", "help", false, "Display help message.");
+        return options;
+    }
+
+    private static void addOption(Options options, String longOption, String arg, String description, String defaultValue)
+    {
+        options.addOption(Option.builder()
+                .longOpt(longOption)
+                .hasArg()
+                .desc(String.format("%s - %s (default: %s).", arg, description, defaultValue))
+                .build());
     }
 
     private static void logException(Throwable e)

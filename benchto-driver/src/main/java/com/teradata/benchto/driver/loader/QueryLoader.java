@@ -38,7 +38,7 @@ public class QueryLoader
         Path queryPath = sqlFilesPath().resolve(queryName);
         try {
             String queryNameWithoutExtension = getNameWithoutExtension(queryPath.toString());
-            return annotatedQueryParser.parseFile(queryNameWithoutExtension, queryPath.toFile());
+            return annotatedQueryParser.parseFile(queryNameWithoutExtension, queryPath);
         }
         catch (IOException e) {
             throw new BenchmarkExecutionException(format("Error during loading query from path %s", queryPath), e);
