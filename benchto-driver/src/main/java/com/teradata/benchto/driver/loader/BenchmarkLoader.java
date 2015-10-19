@@ -100,9 +100,12 @@ public class BenchmarkLoader
 
             fillUniqueBenchmarkNames(includedBenchmarks);
 
-            List<Benchmark> freshBenchmarks = filterFreshBenchmarks(includedBenchmarks);
-            LOGGER.info("Recently tested benchmarks:");
-            printFormattedBenchmarksInfo(formatString, freshBenchmarks);
+            List<Benchmark> freshBenchmarks = ImmutableList.of();
+            if (properties.isFrequencyCheckEnabled()) {
+                freshBenchmarks = filterFreshBenchmarks(includedBenchmarks);
+                LOGGER.info("Recently tested benchmarks:");
+                printFormattedBenchmarksInfo(formatString, freshBenchmarks);
+            }
 
             LOGGER.info("Selected Benchmarks:");
             includedBenchmarks.removeAll(freshBenchmarks);

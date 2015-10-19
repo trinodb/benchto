@@ -211,7 +211,8 @@ public class BenchmarkLoaderTest
     @Test
     public void allBenchmarks_load_only_not_executed_within_two_days() {
         Duration executionAge = Duration.ofDays(2);
-        withBenchamrkExecutionAge(executionAge);
+        withBenchmarkExecutionAge(executionAge);
+        withFrequencyCheckEnabled(true);
 
         assertLoadedBenchmarksCount(6).forEach(benchmark -> {
                     Optional<Duration> frequency = benchmark.getFrequency();
@@ -220,6 +221,14 @@ public class BenchmarkLoaderTest
                     }
                 }
         );
+    }
+
+    @Test
+    public void allBenchmarks_frequency_check_is_disabled() {
+        withBenchmarkExecutionAge(Duration.ofDays(2));
+        withFrequencyCheckEnabled(false);
+
+        assertLoadedBenchmarksCount(8);
     }
 
     private MapAssert<String, String> assertThatBenchmarkWithEntries(List<Benchmark> benchmarks, MapEntry<String, String>... entries)
@@ -265,7 +274,12 @@ public class BenchmarkLoaderTest
         ReflectionTestUtils.setField(benchmarkProperties, "activeVariables", activeVariables);
     }
 
-    private void withBenchamrkExecutionAge(Duration executionAge) {
+    private void withFrequencyCheckEnabled(boolean enabled)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "frequencyCheckEnabled", enabled);
+    }
+
+    private void withBenchmarkExecutionAge(Duration executionAge) {
         this.benchmarkExecutionAge = executionAge;
     }
 }

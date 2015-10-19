@@ -92,6 +92,7 @@ public class DriverApp
         addOption(options, "executionSequenceId", "SEQUENCE_ID", "sequence id of benchmark execution", "generated");
         addOption(options, "timeLimit", "DURATION", "amount of time while benchmarks will be executed", "unlimited");
         addOption(options, "profile", "PROFILE", "configuration profile", "none");
+        addOption(options, "frequencyCheckEnabled", "boolean", "if set no fresh benchmark will be executed", "true");
         options.addOption("h", "help", false, "Display help message.");
         return options;
     }

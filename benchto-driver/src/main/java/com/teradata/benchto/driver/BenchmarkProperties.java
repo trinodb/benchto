@@ -6,6 +6,7 @@ package com.teradata.benchto.driver;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Booleans;
 import com.teradata.benchto.driver.graphite.GraphiteProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +66,10 @@ public class BenchmarkProperties
 
     @Value("${timeLimit:#{null}}")
     private String timeLimit;
+
+
+    @Value("${frequencyCheckEnabled:true}")
+    private String frequencyCheckEnabled;
 
     @Autowired
     private GraphiteProperties graphiteProperties;
@@ -133,7 +138,8 @@ public class BenchmarkProperties
                 .add("benchmarksDir", benchmarksDir)
                 .add("executionSequenceId", executionSequenceId)
                 .add("environmentName", environmentName)
-                .add("graphiteProperties", graphiteProperties);
+                .add("graphiteProperties", graphiteProperties)
+                .add("frequencyCheck", frequencyCheckEnabled);
         addForToStringOptionalField(toStringHelper, "activeBenchmarks", getActiveBenchmarks());
         addForToStringOptionalField(toStringHelper, "activeVariables", getActiveVariables());
         addForToStringOptionalField(toStringHelper, "beforeAllMacros", getBeforeAllMacros());
@@ -161,5 +167,21 @@ public class BenchmarkProperties
     public Optional<List<String>> getAfterAllMacros()
     {
         return splitProperty(afterAllMacros);
+    }
+
+    public boolean isFrequencyCheckEnabled()
+    {
+        return parseBoolean(frequencyCheckEnabled);
+    }
+
+    private boolean parseBoolean(String booleanString)
+    {
+        if (booleanString.equalsIgnoreCase(Boolean.TRUE.toString())) {
+            return true;
+        } else if (booleanString.equalsIgnoreCase(Boolean.FALSE.toString())) {
+            return false;
+        } else {
+            throw new IllegalStateException(String.format("Incorrect boolean value: %s.", this.frequencyCheckEnabled));
+        }
     }
 }
