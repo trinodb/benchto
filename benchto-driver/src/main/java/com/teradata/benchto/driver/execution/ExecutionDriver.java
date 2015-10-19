@@ -101,6 +101,7 @@ public class ExecutionDriver
         int benchmarkOrdinalNumber = 1;
         for (Benchmark benchmark : benchmarks) {
             if (isTimeLimitEnded()) {
+                LOG.warn("Time limit for running benchmarks has run out");
                 break;
             }
 
@@ -113,7 +114,7 @@ public class ExecutionDriver
                 .collect(toList());
 
         if (!failedBenchmarkResults.isEmpty()) {
-            throw new FailedBenchmarkExecutionException(failedBenchmarkResults, benchmarks.size());
+            throw new FailedBenchmarkExecutionException(failedBenchmarkResults, benchmarkExecutionResults.size());
         }
     }
 
