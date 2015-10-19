@@ -169,7 +169,7 @@ SQL query files used to setup data before benchmarks can be executed on differen
 query file property named `datasource`. Example:
 
 ```
--- datasource: presto
+--! datasource: presto
 DROP TABLE IF EXISTS blackhole.default.lineitem_${splits_count}m;
 CREATE TABLE blackhole.default.lineitem_${splits_count}m
     WITH (splits_count=${splits_count},pages_per_split=1000,rows_per_page=1000)

@@ -14,23 +14,24 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.difference;
-import static com.google.common.collect.Maps.newHashMap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 
 /**
  * Parses sql queries from files where first line can be single line header.
- * The line must start with -- marker, and define semicolon separated map of params.
+ * The line must start with --! marker, and define semicolon separated map of params.
  * <p/>
  * Example contents:
- * -- key1: value1; key2: value2a,value2b
- * -- key3: value3
+ * --! key1: value1; key2: value2a,value2b
+ * --! key3: value3
  * FIRST_SQL_QUERY;
  * SECOND
  * SQL
@@ -39,7 +40,9 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class AnnotatedQueryParser
 {
-    private static final String PROPERTIES_PREFIX = "--";
+
+    private static final Pattern COMMENT_LINE_PATTERN = Pattern.compile("\\s*--.*");
+    private static final Pattern PROPERTIES_LINE_PATTERN = Pattern.compile("\\s*--!.*");
 
     private static final Splitter SQL_STATEMENT_SPLITTER = Splitter.on(";").trimResults().omitEmptyStrings();
     private static final Splitter.MapSplitter PROPERTIES_SPLITTER = Splitter.on(';')
@@ -55,7 +58,7 @@ public class AnnotatedQueryParser
 
     public Query parseLines(String queryName, List<String> lines)
     {
-        Map<String, String> properties = newHashMap();
+        Map<String, String> properties = new HashMap<>();
         for (String line : lines) {
             if (isPropertiesLine(line)) {
                 Map<String, String> lineProperties = parseLineProperties(line);
@@ -66,7 +69,7 @@ public class AnnotatedQueryParser
         }
 
         List<String> contentFiltered = lines.stream()
-                .filter(line -> !isPropertiesLine(line))
+                .filter(this::isNotCommentLine)
                 .collect(toList());
         return new Query(queryName, toSqlQueries(contentFiltered), properties);
     }
@@ -80,13 +83,17 @@ public class AnnotatedQueryParser
     private Map<String, String> parseLineProperties(String line)
     {
         checkArgument(isPropertiesLine(line));
-        checkState(isPropertiesLine(line));
 
-        return PROPERTIES_SPLITTER.split(line.substring(PROPERTIES_PREFIX.length()));
+        return PROPERTIES_SPLITTER.split(line.substring(line.indexOf("!") + 1));
     }
 
     private boolean isPropertiesLine(String line)
     {
-        return line.startsWith(PROPERTIES_PREFIX);
+        return PROPERTIES_LINE_PATTERN.matcher(line).matches();
+    }
+
+    private boolean isNotCommentLine(String s)
+    {
+        return !COMMENT_LINE_PATTERN.matcher(s).matches();
     }
 }

@@ -31,8 +31,9 @@ public class AnnotatedQueryParserTest
     public void multipleQueriesWithProperties()
     {
         List<String> fileContent = ImmutableList.of(
-                "-- property1: value1;",
-                "-- property2: value2",
+                "--! property1: value1;",
+                " -- just a comment",
+                "\t--! property2: value2",
                 "sql query 1;",
                 "sql query 2");
         Query parsingResult = queryParser.parseLines("whatever", fileContent);
@@ -50,7 +51,9 @@ public class AnnotatedQueryParserTest
     @Test(expected = IllegalStateException.class)
     public void shouldFailRedundantOptions()
     {
-        List<String> fileContent = ImmutableList.of("-- property1: value", "-- property1: value2");
+        List<String> fileContent = ImmutableList.of(
+                "--! property1: value",
+                "--! property1: value2");
         queryParser.parseLines("whatever", fileContent);
     }
 }
