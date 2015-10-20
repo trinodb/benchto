@@ -4,9 +4,9 @@
 (function () {
     'use strict';
 
-    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3'])
-        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', 'CartCompareService',
-            function ($scope, $routeParams, $location, BenchmarkService, CartCompareService) {
+    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3', 'datatables', 'datatables.colvis', 'datatables.bootstrap'])
+        .controller('BenchmarkListCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', 'CartCompareService', 'DTOptionsBuilder', 'DTColumnDefBuilder',
+            function ($scope, $routeParams, $location, BenchmarkService, CartCompareService, DTOptionsBuilder, DTColumnDefBuilder) {
 
                 $scope.environmentName = $routeParams.environmentName
 
@@ -19,10 +19,31 @@
                             .map(function (variableName) { return {name: variableName, visible: false}})
                             .value();
 
-                        // first three columns will be visible
-                        for (var i = 0; i < Math.min(4, $scope.availableVariables.length); ++i) {
-                            $scope.availableVariables[i].visible = true;
-                        }
+                        var variableColumns = $scope.availableVariables.length
+                        $scope.dtOptions = DTOptionsBuilder.newOptions()
+                            .withPaginationType('full_numbers')
+                            .withBootstrap()
+                            .withColVis()
+                            // first columns (cart, unique name, name, status, environment) and last (started, mean duration) visibility is predefined
+                            .withColVisOption('aiExclude', [0, 1, 2, 3, 4, 5 + variableColumns, 5 + variableColumns + 1])
+                            // disable initial sorting
+                            .withOption("aaSorting", [])
+                            // pagination at the top too
+                            .withOption("dom", '<"top"Clf<"clear">ip<"clear">>rt<"bottom"ip<"clear">>')
+
+                        $scope.dtColumnDefs = _.chain($scope.availableVariables)
+                            .map(function(availableVariable, index) {
+                                var columnDef = DTColumnDefBuilder.newColumnDef(5 + index);
+                                if (!availableVariable.visible) {
+                                    columnDef.notVisible();
+                                }
+                                return columnDef;
+                            })
+                            .value().concat([
+                                DTColumnDefBuilder.newColumnDef(0).withOption("width", "1em").notSortable(),
+                                // unique name should be always hidden (used for search only)
+                                DTColumnDefBuilder.newColumnDef(1).notVisible()
+                            ])
 
                         CartHelper.setCartAddedFlag(CartCompareService, latestBenchmarkRuns);
 
@@ -41,14 +62,24 @@
                     CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
                 };
 
-                $scope.updateQueryInAddress = function () {
-                    $location.search('query', $scope.query);
-                    $location.replace();
-                }
-                var query = $location.search()['query'];
-                if (query) {
-                    $scope.query = $location.search()['query'];
-                }
+                $scope.dtInstanceCallback = function(dtInstance)
+                {
+                    var datatableObj = dtInstance.DataTable;
+                    $scope.tableInstance = datatableObj;
+                    $scope.tableInstance.on('search.dt', function () {
+                        if($scope.$$phase) {
+                            return;
+                        }
+                        $scope.$apply(function() {
+                            $location.search('query', $scope.tableInstance.search()).replace();
+                        });
+                    });
+
+                    var query = $location.search()['query'];
+                    if (query) {
+                        $scope.tableInstance.search(query).draw();
+                    }
+                };
             }])
         .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', 'CartCompareService',
             function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {
