@@ -42,14 +42,19 @@ public class ExecutionDriver
     @Autowired
     private MacroService macroService;
 
-    private ZonedDateTime startTime;
+    private final ZonedDateTime startTime = nowUtc();
 
     public void execute()
     {
-        startTime = nowUtc();
+        List<Benchmark> benchmarks = loadBenchmarks();
+        if (benchmarks.isEmpty()) {
+            LOG.warn("No benchmarks selected, exiting...");
+            return;
+        }
+
+        executeBeforeAllMacros();
         try {
-            executeBeforeAllMacros();
-            executeBenchmarks();
+            executeBenchmarks(benchmarks);
         }
         finally {
             try {
@@ -79,15 +84,14 @@ public class ExecutionDriver
         }
     }
 
-    private void executeBenchmarks()
+    private List<Benchmark> loadBenchmarks()
     {
         String executionSequenceId = benchmarkExecutionSequenceId();
         LOG.info("Running benchmarks(executionSequenceId={}) with properties: {}", executionSequenceId, properties);
 
         List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks(executionSequenceId);
         LOG.info("Loaded {} benchmarks", benchmarks.size());
-
-        executeBenchmarks(benchmarks);
+        return benchmarks;
     }
 
     private String benchmarkExecutionSequenceId()

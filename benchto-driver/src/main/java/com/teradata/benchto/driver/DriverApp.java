@@ -3,7 +3,6 @@
  */
 package com.teradata.benchto.driver;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.ExecutionDriver;
 import freemarker.template.TemplateException;
@@ -24,9 +23,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -34,6 +30,8 @@ import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @Configuration
 @EnableRetry
@@ -51,14 +49,7 @@ public class DriverApp
     public static void main(String[] args)
             throws Exception
     {
-        DefaultParser defaultParser = new DefaultParser();
-        Options options = createOptions();
-        CommandLine commandLine = defaultParser.parse(options, args);
-        if (commandLine.hasOption("h")) {
-            HelpFormatter helpFormatter = new HelpFormatter();
-            helpFormatter.printHelp("Benchto driver", options);
-            System.exit(0);
-        }
+        CommandLine commandLine = processArguments(args);
 
         SpringApplicationBuilder applicationBuilder = new SpringApplicationBuilder(DriverApp.class)
                 .web(false)
@@ -66,7 +57,7 @@ public class DriverApp
         if (commandLine.hasOption("profile")) {
             applicationBuilder.profiles(commandLine.getOptionValue("profile"));
         }
-        ConfigurableApplicationContext ctx = applicationBuilder.run(args);
+        ConfigurableApplicationContext ctx = applicationBuilder.run();
         ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
 
         Thread.currentThread().setName("main");
@@ -78,6 +69,29 @@ public class DriverApp
         catch (Throwable e) {
             logException(e);
             System.exit(1);
+        }
+    }
+
+    private static CommandLine processArguments(String[] args)
+            throws ParseException
+    {
+        DefaultParser defaultParser = new DefaultParser();
+        Options options = createOptions();
+        CommandLine commandLine = defaultParser.parse(options, args);
+        if (commandLine.hasOption("h")) {
+            HelpFormatter helpFormatter = new HelpFormatter();
+            helpFormatter.printHelp("Benchto driver", options);
+            System.exit(0);
+        }
+        exposeArgumentsAsPropertiesForSpring(commandLine);
+        checkState(commandLine.getArgList().isEmpty(), "Added extra non used arguments: %s", commandLine.getArgList());
+        return commandLine;
+    }
+
+    private static void exposeArgumentsAsPropertiesForSpring(CommandLine commandLine)
+    {
+        for (Option option : commandLine.getOptions()) {
+            System.setProperty(option.getLongOpt(), option.getValue());
         }
     }
 

@@ -5,13 +5,13 @@
 package com.teradata.benchto.driver.utils;
 
 import com.google.common.collect.ImmutableList;
-import com.teradata.benchto.driver.Benchmark;
 import org.junit.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Predicate;
 
-import static com.teradata.benchto.driver.utils.FilterUtils.benchmarkNameMatchesTo;
-import static java.util.Collections.emptyList;
+import static com.teradata.benchto.driver.utils.FilterUtils.pathContainsAny;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FilterUtilsTest
@@ -19,20 +19,14 @@ public class FilterUtilsTest
     @Test
     public void test()
     {
-        Predicate<Benchmark> pathPredicate = benchmarkNameMatchesTo(ImmutableList.of("simple", "YACK"));
+        Predicate<Path> pathPredicate = pathContainsAny(ImmutableList.of("simple", "YACK"));
 
-        assertThat(pathPredicate.test(benchmarkWithName("simple"))).isTrue();
-        assertThat(pathPredicate.test(benchmarkWithName("dir/simple"))).isTrue();
-        assertThat(pathPredicate.test(benchmarkWithName("dir/simple.yaml"))).isTrue();
-        assertThat(pathPredicate.test(benchmarkWithName("simple/file.yaml"))).isTrue();
-        assertThat(pathPredicate.test(benchmarkWithName("dir/simple/file.yaml"))).isTrue();
-        assertThat(pathPredicate.test(benchmarkWithName("dir/YACK/file.yaml"))).isTrue();
-        assertThat(pathPredicate.test(benchmarkWithName("dir/YA-CK/file.yaml"))).isFalse();
-    }
-
-    private Benchmark benchmarkWithName(String name)
-    {
-        return new Benchmark.BenchmarkBuilder(name, "", emptyList())
-                .build();
+        assertThat(pathPredicate.test(Paths.get("simple"))).isTrue();
+        assertThat(pathPredicate.test(Paths.get("dir/simple"))).isTrue();
+        assertThat(pathPredicate.test(Paths.get("dir/simple.yaml"))).isTrue();
+        assertThat(pathPredicate.test(Paths.get("simple/file.yaml"))).isTrue();
+        assertThat(pathPredicate.test(Paths.get("dir/simple/file.yaml"))).isTrue();
+        assertThat(pathPredicate.test(Paths.get("dir/YACK/file.yaml"))).isTrue();
+        assertThat(pathPredicate.test(Paths.get("dir/YA-CK/file.yaml"))).isFalse();
     }
 }

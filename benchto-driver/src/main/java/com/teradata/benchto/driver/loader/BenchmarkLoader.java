@@ -46,7 +46,7 @@ import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.QUERY_NAMES
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.VARIABLES_KEY;
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.GenerateUniqueNamesRequestItem.generateUniqueNamesRequestItem;
 import static com.teradata.benchto.driver.utils.CartesianProductUtils.cartesianProduct;
-import static com.teradata.benchto.driver.utils.FilterUtils.benchmarkNameMatchesTo;
+import static com.teradata.benchto.driver.utils.FilterUtils.pathContainsAny;
 import static com.teradata.benchto.driver.utils.YamlUtils.loadYamlFromString;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -87,10 +87,20 @@ public class BenchmarkLoader
         try {
             List<Path> benchmarkFiles = findBenchmarkFiles();
 
+            benchmarkFiles = benchmarkFiles.stream()
+                    .filter(activeBenchmarks())
+                    .collect(toList());
+
+            benchmarkFiles.stream()
+                    .forEach(path -> LOGGER.info("Benchmark file to be read: {}", path));
+
             List<Benchmark> allBenchmarks = loadBenchmarks(sequenceId, benchmarkFiles);
             LOGGER.debug("All benchmarks: {}", allBenchmarks);
 
-            List<Benchmark> includedBenchmarks = filterBenchmarks(allBenchmarks);
+            List<Benchmark> includedBenchmarks = allBenchmarks.stream()
+                    .filter(new BenchmarkByActiveVariablesFilter(properties))
+                    .collect(toList());
+
             Set<Benchmark> excludedBenchmarks = newLinkedHashSet(allBenchmarks);
             excludedBenchmarks.removeAll(includedBenchmarks);
 
@@ -139,14 +149,6 @@ public class BenchmarkLoader
         return benchmarkFiles.stream()
                 .flatMap(file -> loadBenchmarks(sequenceId, file).stream())
                 .sorted((left, right) -> NaturalOrderComparator.forStrings().compare(left.getName(), right.getName()))
-                .collect(toList());
-    }
-
-    private List<Benchmark> filterBenchmarks(List<Benchmark> benchmarks)
-    {
-        return benchmarks.stream()
-                .filter(activeBenchmarksByName())
-                .filter(activeBenchmarksByActiveVariables())
                 .collect(toList());
     }
 
@@ -261,18 +263,13 @@ public class BenchmarkLoader
         return variableMapList;
     }
 
-    private Predicate<Benchmark> activeBenchmarksByName()
+    private Predicate<Path> activeBenchmarks()
     {
         Optional<List<String>> activeBenchmarks = properties.getActiveBenchmarks();
         if (activeBenchmarks.isPresent()) {
-            return benchmarkNameMatchesTo(activeBenchmarks.get());
+            return pathContainsAny(activeBenchmarks.get());
         }
         return path -> true;
-    }
-
-    private Predicate<Benchmark> activeBenchmarksByActiveVariables()
-    {
-        return new BenchmarkByActiveVariablesFilter(properties);
     }
 
     private void fillUniqueBenchmarkNames(List<Benchmark> benchmarks)
@@ -332,8 +329,8 @@ public class BenchmarkLoader
 
     private String createFormatString(Collection<Benchmark> benchmarks)
     {
-        int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().getAsInt();
-        int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().getAsInt();
+        int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().orElseGet(() -> 10);
+        int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().orElseGet(() -> 10);
         int indent = 3;
         return "\t| %-" + (nameMaxLength + indent) + "s | %-" + (dataSourceMaxLength + indent) + "s | %-4s | %-8s | %-11s |";
     }
