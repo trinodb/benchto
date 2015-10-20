@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -41,8 +40,8 @@ import static java.util.stream.Collectors.toList;
 public class AnnotatedQueryParser
 {
 
-    private static final Pattern COMMENT_LINE_PATTERN = Pattern.compile("\\s*--.*");
-    private static final Pattern PROPERTIES_LINE_PATTERN = Pattern.compile("\\s*--!.*");
+    private static final String COMMENT_LINE_PREFIX = "--";
+    private static final String PROPERTIES_LINE_PREFIX = "--!";
 
     private static final Splitter SQL_STATEMENT_SPLITTER = Splitter.on(";").trimResults().omitEmptyStrings();
     private static final Splitter.MapSplitter PROPERTIES_SPLITTER = Splitter.on(';')
@@ -58,6 +57,10 @@ public class AnnotatedQueryParser
 
     public Query parseLines(String queryName, List<String> lines)
     {
+        lines = lines.stream()
+                .map(line -> line.trim())
+                .collect(toList());
+
         Map<String, String> properties = new HashMap<>();
         for (String line : lines) {
             if (isPropertiesLine(line)) {
@@ -89,11 +92,11 @@ public class AnnotatedQueryParser
 
     private boolean isPropertiesLine(String line)
     {
-        return PROPERTIES_LINE_PATTERN.matcher(line).matches();
+        return line.startsWith(PROPERTIES_LINE_PREFIX);
     }
 
     private boolean isNotCommentLine(String s)
     {
-        return !COMMENT_LINE_PATTERN.matcher(s).matches();
+        return !s.startsWith(COMMENT_LINE_PREFIX);
     }
 }
