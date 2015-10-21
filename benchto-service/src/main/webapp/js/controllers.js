@@ -24,8 +24,8 @@
                             .withPaginationType('full_numbers')
                             .withBootstrap()
                             .withColVis()
-                            // first columns (cart, unique name, name, status, environment) and last (started, mean duration) visibility is predefined
-                            .withColVisOption('aiExclude', [0, 1, 2, 3, 4, 5 + variableColumns, 5 + variableColumns + 1])
+                            // first columns (cart, unique name, name, status) and last (started, mean duration) visibility is predefined
+                            .withColVisOption('aiExclude', [0, 1, 2, 3, 4 + variableColumns, 4 + variableColumns + 1])
                             // disable initial sorting
                             .withOption("aaSorting", [])
                             // pagination at the top too
@@ -33,7 +33,7 @@
 
                         $scope.dtColumnDefs = _.chain($scope.availableVariables)
                             .map(function(availableVariable, index) {
-                                var columnDef = DTColumnDefBuilder.newColumnDef(5 + index);
+                                var columnDef = DTColumnDefBuilder.newColumnDef(4 + index);
                                 if (!availableVariable.visible) {
                                     columnDef.notVisible();
                                 }
