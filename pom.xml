@@ -77,6 +77,13 @@
         <dep.javax.el>2.2.4</dep.javax.el>
     </properties>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus</id>
+            <url>http://phabricator.td.teradata.com:8081/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
