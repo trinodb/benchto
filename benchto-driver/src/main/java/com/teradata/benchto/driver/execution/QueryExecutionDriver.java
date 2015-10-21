@@ -51,15 +51,17 @@ public class QueryExecutionDriver
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sqlStatement)
         ) {
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-
             LOG.info("First {} rows for query: {}", LOGGED_ROWS, sqlStatement);
 
             int rowsCount = 0;
             while (resultSet.next()) {
-                if (rowsCount++ < LOGGED_ROWS) {
-                    logRow(rowsCount, resultSet);
+                if (rowsCount < LOGGED_ROWS) {
+                    logRow(rowsCount + 1, resultSet);
                 }
+                else if (rowsCount == LOGGED_ROWS) {
+                    LOG.info("There are more unlogged rows");
+                }
+                rowsCount++;
             }
 
             try {
