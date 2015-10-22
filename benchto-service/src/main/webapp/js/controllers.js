@@ -19,17 +19,23 @@
                             .map(function (variableName) { return {name: variableName, visible: false}})
                             .value();
 
-                        var variableColumns = $scope.availableVariables.length
+                        for (var i = 0; i < Math.min(8, $scope.availableVariables.length); ++i) {
+                            $scope.availableVariables[i].visible = true;
+                        }
+
+                        var variableColumns = $scope.availableVariables.length;
                         $scope.dtOptions = DTOptionsBuilder.newOptions()
                             .withPaginationType('full_numbers')
                             .withBootstrap()
                             .withColVis()
-                            // first columns (cart, unique name, name, status) and last (started, mean duration) visibility is predefined
-                            .withColVisOption('aiExclude', [0, 1, 2, 3, 4 + variableColumns, 4 + variableColumns + 1])
+                            // predefined visibility
+                            .withColVisOption(
+                                'aiExclude',
+                                [0, 1, 2, 4 + variableColumns + 1]) //[cart, name, sequence id, mean duration]
                             // disable initial sorting
                             .withOption("aaSorting", [])
                             // pagination at the top too
-                            .withOption("dom", '<"top"Clf<"clear">ip<"clear">>rt<"bottom"ip<"clear">>')
+                            .withOption("dom", '<"top"Clf<"clear">ip<"clear">>rt<"bottom"ip<"clear">>');
 
                         $scope.dtColumnDefs = _.chain($scope.availableVariables)
                             .map(function(availableVariable, index) {
@@ -42,8 +48,9 @@
                             .value().concat([
                                 DTColumnDefBuilder.newColumnDef(0).withOption("width", "1em").notSortable(),
                                 // unique name should be always hidden (used for search only)
-                                DTColumnDefBuilder.newColumnDef(1).notVisible()
-                            ])
+                                DTColumnDefBuilder.newColumnDef(1).notVisible(),
+                                DTColumnDefBuilder.newColumnDef(4 + variableColumns).notVisible() //started column
+                            ]);
 
                         CartHelper.setCartAddedFlag(CartCompareService, latestBenchmarkRuns);
 

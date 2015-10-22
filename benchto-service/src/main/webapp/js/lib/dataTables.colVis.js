@@ -328,7 +328,7 @@ ColVis.prototype = {
 			this.s.restore = this.s.sRestore;
 		}
 
-		// CamelCase to Hungarian for the column groups 
+		// CamelCase to Hungarian for the column groups
 		var groups = this.s.groups;
 		var hungarianGroups = this.s.aoGroups;
 		if ( groups ) {
@@ -985,7 +985,7 @@ ColVis.defaults = {
 	 *  @type     integer|false
 	 *  @default  500
 	 */
-	iOverlayFade: 500,
+	iOverlayFade: 50,
 
 	/**
 	 * Label callback for column names. Takes three parameters: 1. the
