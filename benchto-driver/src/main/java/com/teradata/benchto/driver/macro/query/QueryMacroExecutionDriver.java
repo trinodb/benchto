@@ -4,8 +4,8 @@
 package com.teradata.benchto.driver.macro.query;
 
 import com.teradata.benchto.driver.Benchmark;
+import com.teradata.benchto.driver.BenchmarkExecutionException;
 import com.teradata.benchto.driver.Query;
-import com.teradata.benchto.driver.loader.BenchmarkDescriptor;
 import com.teradata.benchto.driver.loader.QueryLoader;
 import com.teradata.benchto.driver.loader.SqlStatementGenerator;
 import com.teradata.benchto.driver.macro.MacroExecutionDriver;
@@ -13,15 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.DATA_SOURCE_KEY;
 
 @Component
 public class QueryMacroExecutionDriver
@@ -43,21 +46,45 @@ public class QueryMacroExecutionDriver
         return macroName.endsWith(".sql");
     }
 
-    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark)
+    @Override
+    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmarkOptional, Optional<Connection> connectionOptional)
     {
-        checkArgument(benchmark.isPresent(), "Benchmark is required to run query based macro");
+        checkArgument(benchmarkOptional.isPresent(), "Benchmark is required to run query based macro");
+        Benchmark benchmark = benchmarkOptional.get();
         Query macroQuery = queryLoader.loadFromFile(macroName);
 
-        List<String> sqlStatements = sqlStatementGenerator.generateQuerySqlStatement(macroQuery, benchmark.get().getNonReservedKeywordVariables());
+        List<String> sqlStatements = sqlStatementGenerator.generateQuerySqlStatement(macroQuery, benchmark.getNonReservedKeywordVariables());
 
-        String dataSourceName = macroQuery.getProperty(BenchmarkDescriptor.DATA_SOURCE_KEY, benchmark.get().getDataSource());
+        try {
+            if (connectionOptional.isPresent() && !macroQuery.getProperty(DATA_SOURCE_KEY).isPresent()) {
+                runSqlStatements(connectionOptional.get(), sqlStatements);
+            }
+            else {
+                String dataSourceName = macroQuery.getProperty(DATA_SOURCE_KEY, benchmark.getDataSource());
+                try (Connection connection = getConnectionFor(dataSourceName)) {
+                    runSqlStatements(connection, sqlStatements);
+                }
+            }
+        }
+        catch (SQLException e) {
+            throw new BenchmarkExecutionException("Could not execute macro SQL queries for benchmark: " + benchmark, e);
+        }
+    }
 
-        DataSource dataSource = applicationContext.getBean(dataSourceName, DataSource.class);
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
+    private void runSqlStatements(Connection connection, List<String> sqlStatements)
+            throws SQLException
+    {
         for (String sqlStatement : sqlStatements) {
             LOGGER.info("Executing macro query: {}", sqlStatement);
-            jdbcTemplate.execute(sqlStatement);
+            try (Statement statement = connection.createStatement()) {
+                statement.executeQuery(sqlStatement).close();
+            }
         }
+    }
+
+    private Connection getConnectionFor(String dataSourceName)
+            throws SQLException
+    {
+        return applicationContext.getBean(dataSourceName, DataSource.class).getConnection();
     }
 }

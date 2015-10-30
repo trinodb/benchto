@@ -17,8 +17,13 @@ import com.teradata.benchto.driver.macro.MacroService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -46,6 +51,9 @@ public class BenchmarkExecutionDriver
 
     @Autowired
     private ExecutionSynchronizer executionSynchronizer;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public BenchmarkExecutionResult execute(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount)
     {
@@ -124,10 +132,10 @@ public class BenchmarkExecutionDriver
                 for (int run = 0; run < benchmark.getPrewarmRuns(); ++run) {
                     QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
                     executionFutures.add(executorService.submit(() -> {
-                        try {
-                            LOG.info("Executing prewarm query: {} ({})", query.getName(), queryExecution.getRun());
+                        LOG.info("Executing prewarm query: {} ({})", query.getName(), queryExecution.getRun());
 
-                            return queryExecutionDriver.execute(queryExecution);
+                        try (Connection connection = getConnectionFor(queryExecution)) {
+                            return queryExecutionDriver.execute(queryExecution, connection);
                         }
                         finally {
                             LOG.info("Executed prewarm query: {} ({})", query.getName(), queryExecution.getRun());
@@ -177,28 +185,37 @@ public class BenchmarkExecutionDriver
 
                 executionCallables.add(() -> {
                     QueryExecutionResult result;
-                    macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), Optional.of(benchmark));
 
-                    statusReporter.reportExecutionStarted(queryExecution);
-                    try {
-                        result = queryExecutionDriver.execute(queryExecution);
+                    try (Connection connection = getConnectionFor(queryExecution)) {
+                        macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), Optional.of(benchmark), Optional.of(connection));
+
+                        statusReporter.reportExecutionStarted(queryExecution);
+                        try {
+                            result = queryExecutionDriver.execute(queryExecution, connection);
+                        }
+                        catch (Exception e) {
+                            result = new QueryExecutionResultBuilder(queryExecution)
+                                    .failed(e)
+                                    .build();
+                        }
+
+                        executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(result);
+
+                        statusReporter.reportExecutionFinished(result);
+
+                        macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), Optional.of(benchmark), Optional.of(connection));
                     }
-                    catch (Exception e) {
-                        result = new QueryExecutionResultBuilder(queryExecution)
-                                .failed(e)
-                                .build();
-                    }
-
-                    executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(result);
-
-                    statusReporter.reportExecutionFinished(result);
-
-                    macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), Optional.of(benchmark));
 
                     return result;
                 });
             }
         }
         return executionCallables;
+    }
+
+    private Connection getConnectionFor(QueryExecution queryExecution)
+            throws SQLException
+    {
+        return applicationContext.getBean(queryExecution.getBenchmark().getDataSource(), DataSource.class).getConnection();
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.nio.file.Files.delete;
@@ -35,7 +36,7 @@ public class ShellMacroExecutionDriverTest
         String filename = "/tmp/" + UUID.randomUUID().toString();
         String suffix = System.getenv("USER");
 
-        macroService.runBenchmarkMacro("create-file", ImmutableMap.of("FILENAME", filename), null);
+        macroService.runBenchmarkMacro("create-file", ImmutableMap.of("FILENAME", filename));
 
         Path path = Paths.get(filename + suffix);
         assertThat(exists(path)).isTrue();
@@ -46,7 +47,7 @@ public class ShellMacroExecutionDriverTest
     public void shouldFailWhenMacroFails()
     {
         expectedException.expectMessage("Macro error-macro exited with code 1");
-        macroService.runBenchmarkMacro("error-macro", null);
+        macroService.runBenchmarkMacro("error-macro", Optional.empty(), Optional.empty());
     }
 
     @Test
@@ -54,7 +55,7 @@ public class ShellMacroExecutionDriverTest
 
     {
         expectedException.expectMessage("Macro no-command-macro has no command defined");
-        macroService.runBenchmarkMacro("no-command-macro", null);
+        macroService.runBenchmarkMacro("no-command-macro", Optional.empty(), Optional.empty());
     }
 
     @Test
@@ -62,6 +63,6 @@ public class ShellMacroExecutionDriverTest
 
     {
         expectedException.expectMessage("Macro non-existing-macro is not defined");
-        macroService.runBenchmarkMacro("non-existing-macro", null);
+        macroService.runBenchmarkMacro("non-existing-macro", Optional.empty(), Optional.empty());
     }
 }

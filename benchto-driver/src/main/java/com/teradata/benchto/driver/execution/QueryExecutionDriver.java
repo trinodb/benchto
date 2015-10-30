@@ -10,10 +10,7 @@ import com.teradata.benchto.driver.loader.SqlStatementGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-
-import javax.sql.DataSource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,21 +30,16 @@ public class QueryExecutionDriver
     private static final int LOGGED_ROWS = 10;
 
     @Autowired
-    private ApplicationContext applicationContext;
-
-    @Autowired
     private SqlStatementGenerator sqlStatementGenerator;
 
-    public QueryExecutionResult execute(QueryExecution queryExecution)
+    public QueryExecutionResult execute(QueryExecution queryExecution, Connection connection)
             throws SQLException
     {
         QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution)
                 .startTimer();
 
         String sqlStatement = generateQuerySqlStatement(queryExecution);
-        DataSource dataSource = applicationContext.getBean(queryExecution.getBenchmark().getDataSource(), DataSource.class);
         try (
-                Connection connection = dataSource.getConnection();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sqlStatement)
         ) {

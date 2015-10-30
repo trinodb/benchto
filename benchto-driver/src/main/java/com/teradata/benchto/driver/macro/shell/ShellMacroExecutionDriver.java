@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Connection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -44,12 +45,12 @@ public class ShellMacroExecutionDriver
     }
 
     @Override
-    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark)
+    public void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark, Optional<Connection> connection)
     {
-        runBenchmarkMacro(macroName, ImmutableMap.of(), benchmark);
+        runBenchmarkMacro(macroName, ImmutableMap.of());
     }
 
-    public void runBenchmarkMacro(String macroName, Map<String, String> environment, Optional<Benchmark> benchmark)
+    public void runBenchmarkMacro(String macroName, Map<String, String> environment)
     {
         try {
             String macroCommand = getMacroCommand(macroName);

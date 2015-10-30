@@ -217,7 +217,7 @@ public class DriverAppIntegrationTest
         executionDriver.execute();
 
         ArgumentCaptor<List> macroArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        verify(macroService, times(9)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class));
+        verify(macroService, times(9)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class), any(Optional.class));
 
         assertThat(macroArgumentCaptor.getAllValues()).isEqualTo(ImmutableList.of(
                 ImmutableList.of("no-op-before-all"),
@@ -228,8 +228,7 @@ public class DriverAppIntegrationTest
                 ImmutableList.of("no-op"),
                 ImmutableList.of("no-op-after"),
                 ImmutableList.of("no-op-after"),
-                ImmutableList.of("no-op-after-all")
-        ));
+                ImmutableList.of("no-op-after-all")));
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)
