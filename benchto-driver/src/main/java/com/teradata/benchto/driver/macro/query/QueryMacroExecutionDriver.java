@@ -77,7 +77,7 @@ public class QueryMacroExecutionDriver
         for (String sqlStatement : sqlStatements) {
             LOGGER.info("Executing macro query: {}", sqlStatement);
             try (Statement statement = connection.createStatement()) {
-                statement.executeQuery(sqlStatement).close();
+                statement.execute(sqlStatement);
             }
         }
     }
