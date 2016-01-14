@@ -39,6 +39,21 @@ public class QueryExecutionDriver
                 .startTimer();
 
         String sqlStatement = generateQuerySqlStatement(queryExecution);
+
+        if (isSelectQuery(sqlStatement)) {
+            return executeSelectQuery(connection, queryExecutionResultBuilder, sqlStatement);
+        } else {
+            return executeUpdateQuery(connection, queryExecutionResultBuilder, sqlStatement);
+        }
+    }
+
+    private boolean isSelectQuery(String sql)
+    {
+        sql = sql.trim().toLowerCase();
+        return sql.startsWith("select") || sql.startsWith("show");
+    }
+
+    private QueryExecutionResult executeSelectQuery(Connection connection, QueryExecutionResultBuilder queryExecutionResultBuilder, String sqlStatement) throws SQLException {
         try (
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sqlStatement)
@@ -69,6 +84,16 @@ public class QueryExecutionDriver
 
             return queryExecutionResultBuilder
                     .setRowsCount(rowsCount)
+                    .endTimer()
+                    .build();
+        }
+    }
+
+    private QueryExecutionResult executeUpdateQuery(Connection connection, QueryExecutionResultBuilder queryExecutionResultBuilder, String sqlStatement) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            int rowCount = statement.executeUpdate(sqlStatement);
+            return queryExecutionResultBuilder
+                    .setRowsCount(rowCount)
                     .endTimer()
                     .build();
         }
