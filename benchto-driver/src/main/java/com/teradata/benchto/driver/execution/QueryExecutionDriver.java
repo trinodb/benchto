@@ -106,7 +106,7 @@ public class QueryExecutionDriver
                 .putAll(queryExecution.getBenchmark().getNonReservedKeywordVariables())
                 .build();
         List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(queryExecution.getQuery(), variables);
-        checkState(sqlQueries.size() == 1);
+        checkState(sqlQueries.size() == 1, "Multiple statements in one query file are not supported");
         return sqlQueries.get(0);
     }
 

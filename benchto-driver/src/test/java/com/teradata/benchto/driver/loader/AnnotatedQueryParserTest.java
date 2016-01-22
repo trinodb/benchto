@@ -24,7 +24,7 @@ public class AnnotatedQueryParserTest
         Query parsingResult = queryParser.parseLines("whatever", fileContent);
 
         assertThat(parsingResult.getProperty("unknownProperty")).isEmpty();
-        assertThat(parsingResult.getSqlTemplates()).containsExactly("single sql\nquery");
+        assertThat(parsingResult.getSqlTemplate()).isEqualTo("single sql\nquery");
     }
 
     @Test
@@ -43,9 +43,8 @@ public class AnnotatedQueryParserTest
 
         assertThat(parsingResult.getProperty("property3")).isEmpty();
 
-        assertThat(parsingResult.getSqlTemplates()).containsExactly(
-                "sql query 1",
-                "sql query 2");
+        assertThat(parsingResult.getSqlTemplate()).isEqualTo(
+                "sql query 1;\nsql query 2");
     }
 
     @Test(expected = IllegalStateException.class)

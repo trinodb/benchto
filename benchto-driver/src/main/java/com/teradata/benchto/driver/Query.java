@@ -16,12 +16,12 @@ public class Query
 {
     private final Map<String, String> properties;
     private final String name;
-    private final List<String> sqlTemplates;
+    private final String sqlTemplate;
 
-    public Query(String name, List<String> sqlTemplates, Map<String, String> properties)
+    public Query(String name, String sqlTemplate, Map<String, String> properties)
     {
         this.name = checkNotNull(name);
-        this.sqlTemplates = checkNotNull(sqlTemplates);
+        this.sqlTemplate = checkNotNull(sqlTemplate);
         this.properties = checkNotNull(properties);
     }
 
@@ -30,9 +30,9 @@ public class Query
         return name;
     }
 
-    public List<String> getSqlTemplates()
+    public String getSqlTemplate()
     {
-        return sqlTemplates;
+        return sqlTemplate;
     }
 
     public Optional<String> getProperty(String key)
@@ -55,7 +55,7 @@ public class Query
     {
         return MoreObjects.toStringHelper(this)
                 .add("name", name)
-                .add("sqlTemplate", Joiner.on("; ").join(sqlTemplates))
+                .add("sqlTemplate", sqlTemplate)
                 .toString();
     }
 }

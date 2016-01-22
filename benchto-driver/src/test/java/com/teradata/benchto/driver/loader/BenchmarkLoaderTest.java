@@ -68,7 +68,7 @@ public class BenchmarkLoaderTest
             @Override
             public Query loadFromFile(String queryName)
             {
-                return new Query(queryName, ImmutableList.of("test query"), ImmutableMap.of());
+                return new Query(queryName, "test query", ImmutableMap.of());
             }
         };
     }

@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -43,7 +44,6 @@ public class AnnotatedQueryParser
     private static final String COMMENT_LINE_PREFIX = "--";
     private static final String PROPERTIES_LINE_PREFIX = "--!";
 
-    private static final Splitter SQL_STATEMENT_SPLITTER = Splitter.on(";").trimResults().omitEmptyStrings();
     private static final Splitter.MapSplitter PROPERTIES_SPLITTER = Splitter.on(';')
             .omitEmptyStrings()
             .trimResults()
@@ -71,16 +71,10 @@ public class AnnotatedQueryParser
             }
         }
 
-        List<String> contentFiltered = lines.stream()
+        String contentFiltered = lines.stream()
                 .filter(this::isNotCommentLine)
-                .collect(toList());
-        return new Query(queryName, toSqlQueries(contentFiltered), properties);
-    }
-
-    private ImmutableList<String> toSqlQueries(List<String> lines)
-    {
-        String content = Joiner.on('\n').join(lines);
-        return ImmutableList.copyOf(SQL_STATEMENT_SPLITTER.split(content));
+                .collect(Collectors.joining("\n"));
+        return new Query(queryName, contentFiltered, properties);
     }
 
     private Map<String, String> parseLineProperties(String line)

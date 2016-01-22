@@ -214,10 +214,6 @@ public class Benchmark
             this.benchmark.name = name;
             this.benchmark.sequenceId = sequenceId;
             this.benchmark.queries = ImmutableList.copyOf(queries);
-            for (Query query : this.benchmark.queries) {
-                checkState(query.getSqlTemplates().size() == 1,
-                        "Multiple statements in one query file are not supported");
-            }
         }
 
         public BenchmarkBuilder withDataSource(String dataSource)
