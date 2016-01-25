@@ -1,7 +1,6 @@
 /*
- * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ * Copyright 2013-2016, Teradata, Inc. All rights reserved.
  */
-
 var CartHelper = (function () {
     'use strict';
 

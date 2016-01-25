@@ -1,7 +1,6 @@
 /*
- * Copyright 2013-2015, Teradata, Inc. All rights reserved.
+ * Copyright 2013-2016, Teradata, Inc. All rights reserved.
  */
-
 package com.teradata.benchto.driver.utils;
 
 import com.google.common.base.Splitter;
