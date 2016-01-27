@@ -25,7 +25,7 @@ public class SqlStatementGeneratorTest {
     public void testSimpleQuery() {
         Query query = new Query("simpleQuery", "select * from nation", ImmutableMap.of());
         List<String> queries = sqlStatementGenerator.generateQuerySqlStatement(query, ImmutableMap.of());
-        assertThat(queries).containsExactly("list");
+        assertThat(queries).containsExactly("select * from nation");
     }
 
     @Test
