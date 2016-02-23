@@ -101,6 +101,6 @@ public class ExecutionDriverTest
         doAnswer(invocationOnMock -> {
             sleep(1, TimeUnit.SECONDS);
             return null;
-        }).when(macroService).runBenchmarkMacros(anyList(), any(Optional.class));
+        }).when(macroService).runBenchmarkMacros(anyList());
     }
 }

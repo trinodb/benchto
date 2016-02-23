@@ -4,7 +4,6 @@
 package com.teradata.benchto.driver.jdbc;
 
 import com.teradata.benchto.driver.IntegrationTest;
-import org.apache.tomcat.jdbc.pool.PoolExhaustedException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,7 +24,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
-import static com.teradata.benchto.driver.jdbc.MultipleDataSourcesConfiguration.MAX_POOL_SIZE;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.stream.IntStream.range;
@@ -47,15 +45,7 @@ public class ConnectionPoolTest
     public void shouldSuccessfullyOpenMaxConnectionsCount()
             throws Exception
     {
-        openGivenConnectionsAmountSimultaneously("test_datasource", MAX_POOL_SIZE);
-    }
-
-    @Test
-    public void shouldInstantlyFailWhenConnectionPoolExhausted()
-            throws Exception
-    {
-        expectedException.expect(PoolExhaustedException.class);
-        openGivenConnectionsAmountSimultaneously("test_datasource", MAX_POOL_SIZE + 1);
+        openGivenConnectionsAmountSimultaneously("test_datasource", 500);
     }
 
     private void openGivenConnectionsAmountSimultaneously(String dataSourceName, int connectionsCount)

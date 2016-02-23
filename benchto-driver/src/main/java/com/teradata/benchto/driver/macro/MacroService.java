@@ -16,9 +16,16 @@ public interface MacroService
         runBenchmarkMacros(macroNames, Optional.empty(), Optional.<Connection>empty());
     }
 
-    default void runBenchmarkMacros(List<String> macroNames, Optional<Benchmark> benchmark)
+    default void runBenchmarkMacros(List<String> macroNames, Benchmark benchmark)
     {
-        runBenchmarkMacros(macroNames, benchmark, Optional.<Connection>empty());
+        runBenchmarkMacros(macroNames, Optional.of(benchmark), Optional.<Connection>empty());
+    }
+
+    default void runBenchmarkMacros(List<String> macroNames, Benchmark benchmark, Connection connection)
+    {
+        for (String macroName : macroNames) {
+            runBenchmarkMacro(macroName, Optional.of(benchmark), Optional.of(connection));
+        }
     }
 
     default void runBenchmarkMacros(List<String> macroNames, Optional<Benchmark> benchmark, Optional<Connection> connection)

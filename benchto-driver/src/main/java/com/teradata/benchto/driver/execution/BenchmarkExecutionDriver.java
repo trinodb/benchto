@@ -25,7 +25,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -62,11 +61,11 @@ public class BenchmarkExecutionDriver
         BenchmarkExecutionResult benchmarkExecutionResult = null;
         try {
 
-            macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), Optional.of(benchmark));
+            macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
 
             benchmarkExecutionResult = executeBenchmark(benchmark);
 
-            macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), Optional.of(benchmark));
+            macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
 
             return benchmarkExecutionResult;
         }
@@ -86,14 +85,16 @@ public class BenchmarkExecutionDriver
     private BenchmarkExecutionResult executeBenchmark(Benchmark benchmark)
     {
         try {
-            executePrewarm(benchmark);
+            executeQueries(benchmark, benchmark.getPrewarmRuns(), false);
+
+            executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
 
             statusReporter.reportBenchmarkStarted(benchmark);
 
             BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark)
                     .startTimer();
 
-            List<QueryExecutionResult> executions = executeBenchmarkQueries(benchmark);
+            List<QueryExecutionResult> executions = executeQueries(benchmark, benchmark.getRuns(), true);
 
             BenchmarkExecutionResult executionResult = resultBuilder
                     .endTimer()
@@ -118,53 +119,12 @@ public class BenchmarkExecutionDriver
                 .build();
     }
 
-    private void executePrewarm(Benchmark benchmark)
-    {
-        ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
-        try {
-            if (benchmark.getPrewarmRuns() < 1) {
-                return;
-            }
-            LOG.info("Executing prewarm for benchmark: {}", benchmark.getUniqueName());
-
-            List<ListenableFuture<QueryExecutionResult>> executionFutures = newArrayList();
-            for (Query query : benchmark.getQueries()) {
-                for (int run = 0; run < benchmark.getPrewarmRuns(); ++run) {
-                    QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
-                    executionFutures.add(executorService.submit(() -> {
-                        LOG.info("Executing prewarm query: {} ({})", query.getName(), queryExecution.getRun());
-
-                        try (Connection connection = getConnectionFor(queryExecution)) {
-                            return queryExecutionDriver.execute(queryExecution, connection);
-                        }
-                        finally {
-                            LOG.info("Executed prewarm query: {} ({})", query.getName(), queryExecution.getRun());
-                        }
-                    }));
-                }
-            }
-
-            boolean prewarmSuccessful = Futures.allAsList(executionFutures).get().stream()
-                    .allMatch(QueryExecutionResult::isSuccessful);
-
-            LOG.info("Finished prewarm for benchmark: {}, successful: {}", benchmark.getUniqueName(), prewarmSuccessful);
-
-            executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
-        }
-        catch (Exception e) {
-            throw new BenchmarkExecutionException("Could not execute benchmark prewarm", e);
-        }
-        finally {
-            executorService.shutdown();
-        }
-    }
-
     @SuppressWarnings("unchecked")
-    private List<QueryExecutionResult> executeBenchmarkQueries(Benchmark benchmark)
+    private List<QueryExecutionResult> executeQueries(Benchmark benchmark, int runs, boolean reportStatus)
     {
         ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
         try {
-            List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmark);
+            List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmark, runs, reportStatus);
             List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
             return Futures.allAsList(executionFutures).get();
         }
@@ -176,34 +136,38 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int runs, boolean reportStatus)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
-            for (int run = 0; run < benchmark.getRuns(); ++run) {
+            for (int run = 0; run < runs; ++run) {
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
 
                 executionCallables.add(() -> {
                     QueryExecutionResult result;
 
                     try (Connection connection = getConnectionFor(queryExecution)) {
-                        macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), Optional.of(benchmark), Optional.of(connection));
+                        macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
 
-                        statusReporter.reportExecutionStarted(queryExecution);
+                        if (reportStatus) {
+                            statusReporter.reportExecutionStarted(queryExecution);
+                        }
                         try {
                             result = queryExecutionDriver.execute(queryExecution, connection);
                         }
                         catch (Exception e) {
+                            LOG.error("Query Execution failed for benchmark {}", benchmark.getName());
                             result = new QueryExecutionResultBuilder(queryExecution)
                                     .failed(e)
                                     .build();
                         }
 
-                        executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(result);
+                        if (reportStatus) {
+                            executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(result);
+                            statusReporter.reportExecutionFinished(result);
+                        }
 
-                        statusReporter.reportExecutionFinished(result);
-
-                        macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), Optional.of(benchmark), Optional.of(connection));
+                        macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), benchmark, connection);
                     }
 
                     return result;

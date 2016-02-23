@@ -29,9 +29,13 @@ graphite:
     network: TARGET_NETWORK
 
 macros:
-  no-op:
+  no-op-before-benchmark:
     command:
-  no-op-after:
+  no-op-after-benchmark:
+    command:
+  no-op-before-execution:
+    command:
+  no-op-after-execution:
     command:
   create-file:
     command: touch ${FILENAME}${USER}

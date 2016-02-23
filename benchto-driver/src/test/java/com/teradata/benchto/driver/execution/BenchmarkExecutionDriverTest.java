@@ -15,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -70,7 +68,7 @@ public class BenchmarkExecutionDriverTest
     {
         RuntimeException afterMacroException = new RuntimeException();
         doNothing().doThrow(afterMacroException)
-                .when(macroService).runBenchmarkMacros(anyList(), any(Optional.class));
+                .when(macroService).runBenchmarkMacros(anyList(), any(Benchmark.class));
 
         BenchmarkExecutionResult benchmarkExecutionResult = driver.execute(mock(Benchmark.class), 0, 0);
 

@@ -67,19 +67,19 @@ public class ExecutionDriver
 
     private void executeBeforeAllMacros()
     {
-        runOptionalMacros(properties.getBeforeAllMacros(), "before all", Optional.empty());
+        runOptionalMacros(properties.getBeforeAllMacros(), "before all");
     }
 
     private void executeAfterAllMacros()
     {
-        runOptionalMacros(properties.getAfterAllMacros(), "after all", Optional.empty());
+        runOptionalMacros(properties.getAfterAllMacros(), "after all");
     }
 
-    private void runOptionalMacros(Optional<List<String>> macros, String kind, Optional<Benchmark> benchmark)
+    private void runOptionalMacros(Optional<List<String>> macros, String kind)
     {
         if (macros.isPresent()) {
             LOG.info("Running {} macros: {}", kind, macros.get());
-            macroService.runBenchmarkMacros(macros.get(), benchmark);
+            macroService.runBenchmarkMacros(macros.get());
         }
     }
 
@@ -129,6 +129,10 @@ public class ExecutionDriver
 
     private void executeHealthCheck(Benchmark benchmark)
     {
-        runOptionalMacros(properties.getHealthCheckMacros(), "health check", Optional.of(benchmark));
+        Optional<List<String>> macros = properties.getHealthCheckMacros();
+        if (macros.isPresent()) {
+            LOG.info("Running health check macros: {}", macros.get());
+            macroService.runBenchmarkMacros(macros.get(), benchmark);
+        }
     }
 }

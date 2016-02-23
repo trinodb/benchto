@@ -216,19 +216,22 @@ public class DriverAppIntegrationTest
     {
         executionDriver.execute();
 
-        ArgumentCaptor<List> macroArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        verify(macroService, times(9)).runBenchmarkMacros(macroArgumentCaptor.capture(), any(Optional.class), any(Optional.class));
+        ArgumentCaptor<String> macroArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(macroService, times(12)).runBenchmarkMacro(macroArgumentCaptor.capture(), any(Optional.class), any(Optional.class));
 
         assertThat(macroArgumentCaptor.getAllValues()).isEqualTo(ImmutableList.of(
-                ImmutableList.of("no-op-before-all"),
-                ImmutableList.of("no-op-health-check"),
-                ImmutableList.of("no-op", "test_query.sql"),
-                ImmutableList.of("no-op"),
-                ImmutableList.of("no-op-after"),
-                ImmutableList.of("no-op"),
-                ImmutableList.of("no-op-after"),
-                ImmutableList.of("no-op-after"),
-                ImmutableList.of("no-op-after-all")));
+                "no-op-before-all",
+                "no-op-health-check",
+                "no-op-before-benchmark",
+                "test_query_before_benchmark.sql",
+                "no-op-before-execution",
+                "no-op-after-execution",
+                "no-op-before-execution",
+                "no-op-after-execution",
+                "no-op-before-execution",
+                "no-op-after-execution",
+                "no-op-after-benchmark",
+                "no-op-after-all"));
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)

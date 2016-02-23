@@ -1,8 +1,9 @@
 datasource: test_datasource
 query-names: test_query.sql
-before-benchmark: no-op, test_query.sql
-after-benchmark: no-op-after
-before-execution: no-op
-after-execution: no-op-after
+before-benchmark: no-op-before-benchmark, test_query_before_benchmark.sql
+after-benchmark: no-op-after-benchmark
+before-execution: no-op-before-execution
+after-execution: no-op-after-execution
 runs: 2
+prewarm-runs: 1
 concurrency: 2
