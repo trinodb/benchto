@@ -50,7 +50,7 @@ public class QueryExecutionDriver
     private boolean isSelectQuery(String sql)
     {
         sql = sql.trim().toLowerCase();
-        return sql.startsWith("select") || sql.startsWith("show");
+        return sql.startsWith("select") || sql.startsWith("show") || sql.startsWith("with");
     }
 
     private QueryExecutionResult executeSelectQuery(Connection connection, QueryExecutionResultBuilder queryExecutionResultBuilder, String sqlStatement) throws SQLException {
