@@ -88,8 +88,8 @@
                     }
                 };
             }])
-        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', 'CartCompareService',
-            function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService) {
+        .controller('BenchmarkCtrl', ['$scope', '$routeParams', '$location', '$filter', 'BenchmarkService', 'CartCompareService', 'TagService',
+            function ($scope, $routeParams, $location, $filter, BenchmarkService, CartCompareService, TagService) {
                 $scope.uniqueName = $routeParams.uniqueName;
                 $scope.environmentName = $routeParams.environment;
 
@@ -122,9 +122,17 @@
                         var benchmarkRuns = _.filter(runs.slice().reverse(), function (benchmarkRun) {
                             return benchmarkRun.status === 'ENDED';
                         });
-                        var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns);
-                        $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter, $location);
-                        $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter, $location);
+
+                        if (benchmarkRuns.length > 0) {
+                            var start = benchmarkRuns[0].started;
+                            var end = benchmarkRuns[benchmarkRuns.length - 1].stated;
+                            TagService.loadTags($routeParams.environment, start, end)
+                                .then(function(tags) {
+                                    var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns, tags);
+                                    $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter, $location);
+                                    $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter, $location);
+                                })
+                        }
                     });
             }])
         .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CartCompareService',
@@ -250,7 +258,7 @@
                     $scope.benchmarkRuns.push(_.findWhere(tmpBenchmarkRuns, {uniqueName: benchmarkUniqueNames[i], sequenceId: sequenceIds[i]}))
                 }
 
-                var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns);
+                var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns, []);
                 $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart', $filter, $location);
                 $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart', $filter, $location);
             };

@@ -167,6 +167,22 @@
                         deferredEnvironment.reject(reason);
                     });
                     return deferredEnvironment.promise;
+                },
+                loadTags: function (environmentName, start, end) {
+                    var deferredEnvironment = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: '/v1/tags/' + environmentName,
+                        params: {
+                            start: start,
+                            end: end
+                        }
+                    }).then(function (response) {
+                        deferredEnvironment.resolve(response.data);
+                    }, function (reason) {
+                        deferredEnvironment.reject(reason);
+                    });
+                    return deferredEnvironment.promise;
                 }
             };
         }]);

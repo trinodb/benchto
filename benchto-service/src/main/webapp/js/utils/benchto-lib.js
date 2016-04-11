@@ -27,10 +27,11 @@ var CartHelper = (function () {
     };
 }).call('CartHelper');
 
-var BenchmarkRunsHelper = function (benchmarkRuns) {
+var BenchmarkRunsHelper = function (benchmarkRuns, tags) {
     'use strict';
 
     this.benchmarkRuns = benchmarkRuns;
+    this.tags = tags;
 
     this.aggregatedExecutionsMeasurementKeys = function () {
         return _.uniq(_.flatten(_.map(this.benchmarkRuns,
@@ -109,7 +110,7 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
             var data = super_this.dataForAggregatedMeasurementKey(measurementKey);
             return {
                 data: data,
-                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns)
+                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns, tags)
             }
         });
     };
@@ -123,12 +124,12 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
             var data = [super_this.dataForSingleMeasurementKey(measurements, "value")];
             return {
                 data: data,
-                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns)
+                options: super_this.optionsFor(data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns, tags)
             };
         });
     };
 
-    this.optionsFor = function (data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns) {
+    this.optionsFor = function (data, chartType, measurementKey, unit, $filter, $location, benchmarkRuns, tags) {
         var maxY = _.chain(data)
             .map(function (singleData) {
                 return _.map(singleData.values, function (values) {
@@ -198,6 +199,7 @@ var BenchmarkRunsHelper = function (benchmarkRuns) {
                         return Jaml.render('tooltip', {
                             index: indexFromChartObject(obj),
                             benchmarkRuns: benchmarkRuns,
+                            tags: tags,
                             data: data,
                             valueFormatter: valueFormatter
                         });
@@ -231,6 +233,15 @@ Jaml.register('tooltip_entry', function(entry) {
 
 Jaml.register('tooltip', function(params) {
     var benchmarkRun = params.benchmarkRuns[params.index];
+    var tag = _.chain(params.tags)
+        .filter(function(tag) { return tag.created * 1000 <= benchmarkRun.started; })
+        .max(function(tag) {return tag.created;})
+        .value();
+    var tagInfo = "";
+    if(typeof tag.name !== "undefined") {
+        tagInfo = "<br/>Latest tag: " + tag.name;
+    }
+
     var entries = _.map(params.data, function (dataEntry) {
         return {
             key: dataEntry.key,
@@ -240,7 +251,9 @@ Jaml.register('tooltip', function(params) {
     table(
         thead(tr(
             td({colspan: 2},
-                strong({class: 'x-value'}, benchmarkRun.name), " (" + benchmarkRun.sequenceId + ")"
+                strong({class: 'x-value'}, benchmarkRun.name),
+                " (" + benchmarkRun.sequenceId + ")",
+                 tagInfo
             )
         )),
         tbody(
