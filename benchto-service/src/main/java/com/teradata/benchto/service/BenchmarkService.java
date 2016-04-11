@@ -154,11 +154,7 @@ public class BenchmarkService
 
     private Environment findEnvironment(String environmentName)
     {
-        Environment environment = environmentService.findEnvironment(environmentName);
-        if (environment == null) {
-            throw new IllegalArgumentException("Could not find environment " + environmentName);
-        }
-        return environment;
+        return environmentService.findEnvironment(environmentName);
     }
 
     @Transactional(readOnly = true)
