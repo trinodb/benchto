@@ -131,6 +131,16 @@
                                     var benchmarkRunsHelper = new BenchmarkRunsHelper(benchmarkRuns, tags);
                                     $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('lineChart', $filter, $location);
                                     $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('lineChart', $filter, $location);
+
+                                    for (var benchmarkRun in $scope.benchmarkRuns) {
+                                        for (var tag in tags) {
+                                            if ($scope.benchmarkRuns[benchmarkRun].started >= tags[tag].created) {
+                                                $scope.benchmarkRuns[benchmarkRun].tag = tags[tag];
+                                            } else if ($scope.benchmarkRuns[benchmarkRun].started < tags[tag].created) {
+                                                break;
+                                            }
+                                        }
+                                    }
                                 })
                         }
                     });

@@ -234,7 +234,7 @@ Jaml.register('tooltip_entry', function(entry) {
 Jaml.register('tooltip', function(params) {
     var benchmarkRun = params.benchmarkRuns[params.index];
     var tag = _.chain(params.tags)
-        .filter(function(tag) { return tag.created * 1000 <= benchmarkRun.started; })
+        .filter(function(tag) { return tag.created <= benchmarkRun.started; })
         .max(function(tag) {return tag.created;})
         .value();
     var tagInfo = "";

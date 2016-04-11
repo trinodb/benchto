@@ -178,7 +178,12 @@
                             end: end
                         }
                     }).then(function (response) {
-                        deferredEnvironment.resolve(response.data);
+                        var tags = response.data;
+                        tags.forEach(function (tag) {
+                            // convert to angular date filter consumable format
+                            tag.created *= 1000;
+                        });
+                        deferredEnvironment.resolve(tags);
                     }, function (reason) {
                         deferredEnvironment.reject(reason);
                     });

@@ -40,8 +40,8 @@
                 </tr>
                 </thead>
                 <tr ng-repeat="tag in ::tags">
-                    <td>{{::tag.created * 1000 | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
-                    <td>{{::tag.name}}</td>
+                    <td>{{::tag.created | date : 'yyyy-MM-dd HH:mm:ss'}}</td>
+                    <td>{{::tag.name }}</td>
                     <td>{{::tag.description}}</td>
                 </tr>
             </table>

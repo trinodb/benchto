@@ -8,9 +8,6 @@ import com.teradata.benchto.service.repo.TagRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.TransientDataAccessException;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +27,6 @@ public class TagService
     @Autowired
     private TagRepo repo;
 
-    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void store(String environmentName, String tag, String description)
     {

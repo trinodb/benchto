@@ -74,6 +74,7 @@
                     <td>Started</td>
                     <td>Total duration</td>
                     <td>Execution mean duration</td>
+                    <td>Latest tag</td>
                 </tr>
                 </thead>
                 <tr ng-repeat="benchmarkRun in ::benchmarkRuns">
@@ -90,6 +91,7 @@
                             <strong>{{duration.mean | duration}}</strong> &#177; {{duration.stdDev | duration}} ({{duration.stdDevPercent | unit : 'PERCENT'}})
                         </span>
                     </td>
+                    <td><div title="{{benchmarkRun.tag.description}}">{{benchmarkRun.tag.name}}</div></td>
                 </tr>
             </table>
         </div>
