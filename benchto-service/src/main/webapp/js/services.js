@@ -153,5 +153,21 @@
                     return this.findInCollection(cart, benchmarkRun) ? true : false;
                 }
             };
+        }])
+        .factory('TagService', ['$http', '$q', function ($http, $q) {
+            return {
+                loadTags: function (environmentName) {
+                    var deferredEnvironment = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: '/v1/tags/' + environmentName
+                    }).then(function (response) {
+                        deferredEnvironment.resolve(response.data);
+                    }, function (reason) {
+                        deferredEnvironment.reject(reason);
+                    });
+                    return deferredEnvironment.promise;
+                }
+            };
         }]);
 }());

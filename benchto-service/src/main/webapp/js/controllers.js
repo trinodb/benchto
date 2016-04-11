@@ -182,10 +182,14 @@
                         $scope.environments = environments;
                     });
             }])
-        .controller('EnvironmentCtrl', ['$scope', '$routeParams', 'EnvironmentService', function ($scope, $routeParams, EnvironmentService) {
+        .controller('EnvironmentCtrl', ['$scope', '$routeParams', 'EnvironmentService', 'TagService', function ($scope, $routeParams, EnvironmentService, TagService) {
             EnvironmentService.loadEnvironment($routeParams.environmentName)
                 .then(function (environment) {
                     $scope.environment = environment;
+                });
+            TagService.loadTags($routeParams.environmentName)
+                .then(function (tags) {
+                    $scope.tags = tags;
                 });
         }])
         .controller('BenchmarkRunErrorCtrl', ['$scope', '$modalInstance', 'failure', function ($scope, $modalInstance, failure) {
