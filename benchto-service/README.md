@@ -41,13 +41,29 @@ Go to: [http://localhost:8080/](http://localhost:8080/)
 
 ## Creating environment
 
+To create environment PRESTO-DEVENV you need to run:
+
 ```
-$ curl -X POST -H 'Content-Type: application/json' -d '{
+$ curl -H 'Content-Type: application/json' -d '{
     "dashboardType": "grafana",
     "dashboardURL": "http://localhost:3000/dashboard/db/presto-devenv",
     "prestoURL": "http://presto-master:8080/"
 }' http://localhost:8080/v1/environment/PRESTO-DEVENV
 ```
+
+## Creating tag
+
+To create tag for environment PRESTO-DEVENV you need to run:
+
+```
+$ curl -H 'Content-Type: application/json' -d '{
+    "name": "Short tag desciption",
+    "description": "Very long but optional tag description"
+}' http://localhost:8080/v1/tag/PRESTO-DEVENV
+
+```
+
+Note that `description` field is optional.
 
 ## Building docker image
 
