@@ -145,11 +145,16 @@
                         }
                     });
             }])
-        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CartCompareService',
-            function ($scope, $routeParams, $modal, BenchmarkService, CartCompareService) {
+        .controller('BenchmarkRunCtrl', ['$scope', '$routeParams', '$modal', 'BenchmarkService', 'CartCompareService', 'TagService',
+            function ($scope, $routeParams, $modal, BenchmarkService, CartCompareService, TagService) {
                 BenchmarkService.loadBenchmarkRun($routeParams.uniqueName, $routeParams.benchmarkSequenceId)
                     .then(function (benchmarkRun) {
                         $scope.benchmarkRun = benchmarkRun;
+
+                        TagService.loadLatest(benchmarkRun.environment.name, benchmarkRun.started)
+                            .then(function(tag) {
+                                $scope.tag = tag;
+                            })
                     });
 
                 $scope.benchmarkFromParam = function (benchmarkRun) {

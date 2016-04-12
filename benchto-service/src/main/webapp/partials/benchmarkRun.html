@@ -46,6 +46,9 @@
             <li>
                 <strong>Ended:</strong> {{benchmarkRun.ended ? (benchmarkRun.ended | date : 'yyyy-MM-dd HH:mm:ss') : 'Not finished'}}
             </li>
+            <li ng-if="::tag">
+                <div title="{{::tag.description}}"><strong>Latest tag:</strong> {{::tag.name}}</div>
+            </li>
             <li ng-if="::benchmarkRun.environment.attributes.dashboardURL">
                 <strong>Monitoring:</strong>
                 <a ng-if="benchmarkRun.ended" target="_blank" ng-if="::benchmarkRun.environment.attributes.dashboardType == 'grafana'"

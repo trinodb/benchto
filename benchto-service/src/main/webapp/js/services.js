@@ -188,6 +188,18 @@
                         deferredEnvironment.reject(reason);
                     });
                     return deferredEnvironment.promise;
+                },
+                loadLatest: function (environmentName, until) {
+                    var deferredEnvironment = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: '/v1/tags/' + environmentName + '/latest?until=' + until
+                    }).then(function (response) {
+                        deferredEnvironment.resolve(response.data);
+                    }, function (reason) {
+                        deferredEnvironment.reject(reason);
+                    });
+                    return deferredEnvironment.promise;
                 }
             };
         }]);
