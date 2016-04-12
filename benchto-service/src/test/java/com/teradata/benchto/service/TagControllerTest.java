@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.ZonedDateTime;
 
 import static com.teradata.benchto.service.utils.TimeUtils.currentDateTime;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
+import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -19,6 +21,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -91,6 +94,27 @@ public class TagControllerTest
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].name", is("tag1")))
                 .andExpect(jsonPath("$[0].description", is("description for tag1")));
+
+        // get latest tag
+        mvc.perform(get("/v1/tags/env/latest")
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("tag3")))
+                .andExpect(jsonPath("$.description", is("description for tag3")));
+
+        // get latest tag but not older than afterTat1 timestamp
+        mvc.perform(get("/v1/tags/env/latest?until={until}", afterTag1.toInstant().toEpochMilli())
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("tag1")))
+                .andExpect(jsonPath("$.description", is("description for tag1")));
+
+        // get latest tag but not older than start timestamp
+        mvc.perform(get("/v1/tags/env/latest?until={until}", start.toInstant().toEpochMilli())
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(result -> jsonPath("$.name", is("tag1")))
+                .andExpect(content().string(""));
     }
 
     private String storeTagRequest(String tag)

@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.teradata.benchto.service.utils.TimeUtils.currentDateTime;
@@ -43,5 +45,16 @@ public class TagController
                     request.getEnd().orElse(currentDateTime()));
         }
         return service.find(environmentName);
+    }
+
+    @RequestMapping(value = "/v1/tags/{environmentName}/latest", method = GET)
+    public Tag find(
+            @PathVariable("environmentName") String environmentName,
+            @RequestParam(required = false) ZonedDateTime until)
+    {
+        if (until == null) {
+            until = currentDateTime();
+        }
+        return service.latest(environmentName, until).orElse(null);
     }
 }

@@ -4,6 +4,7 @@
 package com.teradata.benchto.service;
 
 import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
+import com.teradata.benchto.service.rest.converters.ZonedDateTimeConverter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -30,5 +31,10 @@ public class ServiceApp
         hibernate4Module.disable(USE_TRANSIENT_ANNOTATION);
         return new Jackson2ObjectMapperBuilder()
                 .modulesToInstall(hibernate4Module);
+    }
+
+    @Bean
+    public ZonedDateTimeConverter zonedDateTimeConverter() {
+        return new ZonedDateTimeConverter();
     }
 }
