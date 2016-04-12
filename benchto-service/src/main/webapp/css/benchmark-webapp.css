@@ -63,3 +63,9 @@ img.progress-image {
 input.columnSelectCheckbox {
     margin-left: 10px;
 }
+
+.nvd3.nv-line .nvd3.nv-scatter .nv-groups .nv-series-4 .nv-point {
+    fill-opacity: 1;
+    stroke-opacity: 1;
+    stroke-width: 5px;
+}

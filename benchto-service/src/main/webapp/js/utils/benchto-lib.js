@@ -92,20 +92,50 @@ var BenchmarkRunsHelper = function (benchmarkRuns, tags) {
         };
     };
 
+    // Add tag points to time series, so tag get displayed on charts
+    this.dataForTags = function() {
+        var values = [];
+        var latestTag = -1;
+        for (var benchmarkId = 0; benchmarkId < this.benchmarkRuns.length; benchmarkId++) {
+            var changed = false;
+            for (var tagId = latestTag + 1; tagId < this.tags.length; tagId++) {
+                if (this.benchmarkRuns[benchmarkId].started >= this.tags[tagId].created) {
+                    latestTag = tagId;
+                    changed = true;
+                } else {
+                    break;
+                }
+            }
+            if (changed) {
+                values.push([benchmarkId + 1, 0]);
+            }
+        }
+        return {
+            key: "tag",
+            values: values,
+            strokeWidth: 0.1,
+        };
+    };
+
     this.dataForAggregatedMeasurementKey = function (measurementKey) {
         var aggregatedMeasurements = this.extractAggregatedExecutionsAggregatedMeasurements(measurementKey);
-        return [
+        var data = [
             this.dataForSingleMeasurementKey(aggregatedMeasurements, 'mean'),
             this.dataForSingleMeasurementKey(aggregatedMeasurements, 'min'),
             this.dataForSingleMeasurementKey(aggregatedMeasurements, 'max'),
             this.dataForSingleMeasurementKey(aggregatedMeasurements, 'stdDev')
         ];
+        if (this.tags !== undefined && this.tags.length > 0) {
+            data.push(this.dataForTags());
+        }
+        return data;
     };
 
     this.aggregatedExecutionsMeasurementGraphsData = function (chartType, $filter, $location) {
         var benchmarkRuns = this.benchmarkRuns;
+        var tags = this.tags;
         return _.map(this.aggregatedExecutionsMeasurementKeys(), function (measurementKey) {
-            var super_this = new BenchmarkRunsHelper(benchmarkRuns);
+            var super_this = new BenchmarkRunsHelper(benchmarkRuns, tags);
             var unit = super_this.aggregatedExecutionsMeasurementUnit(measurementKey);
             var data = super_this.dataForAggregatedMeasurementKey(measurementKey);
             return {
@@ -117,8 +147,9 @@ var BenchmarkRunsHelper = function (benchmarkRuns, tags) {
 
     this.benchmarkMeasurementGraphsData = function (chartType, $filter, $location) {
         var benchmarkRuns = this.benchmarkRuns;
+        var tags = this.tags;
         return _.map(this.benchmarkMeasurementKeys(), function (measurementKey) {
-            var super_this = new BenchmarkRunsHelper(benchmarkRuns);
+            var super_this = new BenchmarkRunsHelper(benchmarkRuns, tags);
             var unit = super_this.benchmarkMeasurementUnit(measurementKey);
             var measurements = super_this.extractBenchmarkMeasurements(measurementKey);
             var data = [super_this.dataForSingleMeasurementKey(measurements, "value")];
@@ -156,12 +187,21 @@ var BenchmarkRunsHelper = function (benchmarkRuns, tags) {
             return d3.format('.01f')(d);
         };
         var scaleYValue = function(d) {
+            if (d === undefined) {
+                return undefined;
+            }
             return d[1] * valueScaleFactor;
         };
         var valueFormatter = function(d) {
             return yAxisTickFormat(scaleYValue(d)) + ' ' + unit;
         };
         var indexFromChartObject = function(chartObject) {
+            if (chartObject.value !== null && chartObject.value !== undefined) {
+                return chartObject.value - 1;
+            }
+            if (chartObject.series.key == 'tag') {
+                return undefined;
+            }
             var index = chartObject.index;
             if (index === null || index === undefined) {
                 index = chartObject.pointIndex;
@@ -214,8 +254,7 @@ var BenchmarkRunsHelper = function (benchmarkRuns, tags) {
                   dispatch: {
                     elementClick: onElementClick
                   }
-                },
-                callback: function(e){console.log('! callback !')}
+                }
             },
             title: {
                 enable: true,
@@ -242,12 +281,14 @@ Jaml.register('tooltip', function(params) {
         tagInfo = "<br/>Latest tag: " + tag.name;
     }
 
-    var entries = _.map(params.data, function (dataEntry) {
-        return {
-            key: dataEntry.key,
-            value: params.valueFormatter(dataEntry.values[params.index])
-        };
-    });
+    var entries = _.chain(params.data)
+        .filter(function(dataEntry) { return dataEntry.key != 'tag' })
+        .map(function (dataEntry) {
+            return {
+                key: dataEntry.key,
+                value: params.valueFormatter(dataEntry.values[params.index])
+            };
+        }).value();
     table(
         thead(tr(
             td({colspan: 2},
