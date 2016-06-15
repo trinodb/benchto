@@ -8,7 +8,7 @@ Hadoop SQL engines, most importantly [Presto](https://prestodb.io/).
 _Benchto_ consists of two main components: `benchto-service` and `benchto-driver`. To utilize all features of _Benchto_,
 it is also recommended to configure _Graphite_ and _Grafana_. Image below depicts high level architecture:
 
-![Benchto high level architecture](docs/img/high-level-architecture.png?raw=true "Benchto high level architecture")
+![Benchto high level architecture](high-level-architecture.png?raw=true "Benchto high level architecture")
 
 - _benchto-service_ - persistent data store for benchmark results. It exposes REST API and stores results in relational
 DB (_Postgres_). Driver component calls API to store benchmark execution details which are later displayed by webapp
