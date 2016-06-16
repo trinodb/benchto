@@ -19,14 +19,14 @@ graphite:
   url: http://${dockerhost:dockerhost}:18088
   resolution.seconds: 10
   metrics:
-    cpu: asPercent(sumSeries(collectd.localhost.cpu.percent-{user,system}.value), sumSeries(collectd.localhost.cpu.*.value))
-    memory: asPercent(sumSeries(collectd.localhost.memory.{memory-used,memory-buffered,memory-cached}.value), sumSeries(collectd.localhost.memory.memory-*.value))
-    network: sumSeries(collectd.localhost.interface-*.if_octets.{rx,tx})
+    cpu: asPercent(nonNegativeDerivative(collectd.benchto.docker_stats.hadoop.hadoop.gauge.cpu.total), 10000000000)
+    memory: asPercent(sumSeries(collectd.benchto.docker_stats.hadoop.hadoop.gauge.memory.{uage,cache}), collectd.benchto.docker_stats.hadoop.hadoop.gauge.memory.limit)
+    network: nonNegativeDerivative(sumSeries(collectd.benchto.docker_stats.hadoop.hadoop.gauge.net.{rx_bytes,tx_bytes}))
 
 benchmark:
   feature:
     graphite:
       event.reporting.enabled: true
-      metrics.collection.enabled: false
+      metrics.collection.enabled: true
     presto:
       metrics.collection.enabled: false
