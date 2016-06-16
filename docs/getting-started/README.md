@@ -121,7 +121,7 @@ docker run --name benchto-postgres \
        -p 5432:5432 -d postgres
        
 docker run --name benchto-graphite \
-       -p 2003:2003 -p 8089:80 \
+       -p 2003:2003 -p 18088:80 \
        -d hopsoft/graphite-statsd
        
 docker run --name benchto-grafana \

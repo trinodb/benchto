@@ -87,9 +87,8 @@
                 <configuration>
                     <mainClass>com.teradata.benchto.driver.DriverApp</mainClass>
                     <arguments>
-                        <argument>--spring.config.location=classpath:/application.yaml</argument>
+                        <argument>--profile=classpath:/application.yaml</argument>
                         <argument>--activeBenchmarks=${activeBenchmarks}</argument>
-                        <argument>--activeVariables=${activeVariables}</argument>
                     </arguments>
                 </configuration>
             </plugin>

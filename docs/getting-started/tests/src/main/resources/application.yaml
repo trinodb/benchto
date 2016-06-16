@@ -1,9 +1,9 @@
 benchmark-service:
-  url: http://localhost:8080
+  url: http://${dockerhost:dockerhost}:8080
 
 data-sources:
   hive:
-    url: jdbc:hive2://localhost:10000/default
+    url: jdbc:hive2://${dockerhost:dockerhost}:10000/default
     username: hdfs
     password: na
     driver-class-name: org.apache.hive.jdbc.HiveDriver
@@ -16,7 +16,7 @@ macros:
     command: echo "Dropping caches"
 
 graphite:
-  url: http://localhost:8088
+  url: http://${dockerhost:dockerhost}:18088
   resolution.seconds: 10
   metrics:
     cpu: asPercent(sumSeries(collectd.localhost.cpu.percent-{user,system}.value), sumSeries(collectd.localhost.cpu.*.value))
@@ -27,6 +27,6 @@ benchmark:
   feature:
     graphite:
       event.reporting.enabled: true
-      metrics.collection.enabled: true
+      metrics.collection.enabled: false
     presto:
       metrics.collection.enabled: false
