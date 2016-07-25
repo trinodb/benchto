@@ -28,7 +28,7 @@ The easiest way is to setup correct mapping in `/etc/hosts`.
 ## Build project
 
 ```
-mvn clean install package
+mvn clean install package -P docker-images
 ```
 
 ## Starting up local Hadoop in docker environment.
