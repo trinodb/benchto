@@ -25,13 +25,12 @@ $ ./mvnw verify
 ```
 $ ./mvnw spring-boot:run
 
-------------------------------------------------------------------
-
-      Copyright 2013-2015, Teradata, Inc. All rights reserved.
-
-               Benchto-service  (v1.0.0-SNAPSHOT)
-
-------------------------------------------------------------------
+    ____                  __    __      
+   / __ )___  ____  _____/ /_  / /_____ 
+  / __  / _ \/ __ \/ ___/ __ \/ __/ __ \
+ / /_/ /  __/ / / / /__/ / / / /_/ /_/ /
+/_____/\___/_/ /_/\___/_/ /_/\__/\____/ 
+--- The macro-benchmarking framework ---
 
 11:22:30.170 INFO  com.teradata.benchmark.service.App - Starting App v1.0.0-SNAPSHOT on latitude with PID 8659 (/home/sogorkis/repos/benchmark-service/target/service-1.0.0-SNAPSHOT.jar started by sogorkis in /home/sogorkis/repos/benchmark-service)
 ...
