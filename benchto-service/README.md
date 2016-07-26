@@ -17,13 +17,13 @@ $ docker run --name benchto-postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 
 ## Running integration-tests
 
 ```
-$ mvn verify
+$ ./mvnw verify
 ```
 
 ## Running service
 
 ```
-$ mvn spring-boot:run
+$ ./mvnw spring-boot:run
 
 ------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ Note that `description` field is optional.
 ## Building docker image
 
 ```
-$ mvn docker:build
+$ ./mvnw docker:build
 $ docker images
 REPOSITORY                             TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
 teradata-labs/benchto-service          latest              427f3e1f4777        13 seconds ago      879.3 MB
