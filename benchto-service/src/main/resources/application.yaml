@@ -12,3 +12,20 @@ spring:
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: true
       javax.persistence.sharedCache.mode: ENABLE_SELECTIVE
+
+# Uncomment to enable API protection
+#benchto:
+#  security:
+#    api:
+#      protected: true
+#      login: provide user here
+#      password: provide password here
+
+# Uncomment to use HTTPS
+#server:
+#  port: 8443
+#  ssl:
+#    key-store: provide path to keystore here
+#    key-store-password: provide password to keystore here
+#    keyStoreType: key store type eg. PKCS12
+#    keyAlias: provide alias of service key here
