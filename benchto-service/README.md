@@ -78,3 +78,42 @@ $ docker save teradata-labs/benchto-service | gzip > /tmp/benchto-service.tar.gz
 ## Cleaning up stale benchmark runs
 
 Benchmark runs that are older then 24 hours and have not finished will be periodically cleaned up and automatically failed.
+
+## Protecting API write access
+
+Benchto-service does support basic authorization method for using REST API calls that do write to service database.
+It uses basic HTTP auth with user and password provided as part of `application.yaml`.
+
+To enable protected write operations following section should be added to `application.yaml`:
+```
+benchto:
+  security:
+    api:
+      protected: true
+      login: <username>
+      password: <password>
+```
+
+After enabling this security feature calls to api using `curl` should use `-u` flag to provide http auth login and password.
+eg.
+```
+$ curl -u user:password -H 'Content-Type: application/json' -d '{
+    "name": "Short tag desciption",
+    "description": "Very long but optional tag description"
+}' http://localhost:8080/v1/tag/PRESTO-DEVENV
+```
+
+## Benchto-service over HTTPS
+
+Benchto-service may make use of provided SSL certificate in order to provide connection over secure protocol using TLS 1.2.
+This goal may be achieved by adding follwoing section to `application.yaml`.
+```
+server:
+  port: <HTTPS bind port>
+  ssl:
+    key-store: <path to keystore file>
+    key-store-password: <password to keystore file>
+    keyStoreType: <key store type eg. PKCS12>
+    keyAlias: <alias of service key>
+```
+
