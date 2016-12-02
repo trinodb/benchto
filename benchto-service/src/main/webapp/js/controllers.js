@@ -14,7 +14,7 @@
 (function () {
     'use strict';
 
-    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3', 'datatables', 'datatables.colvis', 'datatables.bootstrap'])
+    angular.module('benchmarkServiceUI.controllers', ['benchmarkServiceUI.services', 'nvd3', 'datatables', 'datatables.colvis', 'datatables.bootstrap', 'ngSanitize', 'ngCsv'])
         .controller('BenchmarkListCtrl', ['$scope', '$routeParams', '$location', 'BenchmarkService', 'CartCompareService', 'DTOptionsBuilder', 'DTColumnDefBuilder',
             function ($scope, $routeParams, $location, BenchmarkService, CartCompareService, DTOptionsBuilder, DTColumnDefBuilder) {
 
@@ -232,7 +232,7 @@
                 $modalInstance.dismiss('cancel');
             }
         }])
-        .controller('CartCompareNavBarCtrl', ['$scope', '$location', 'CartCompareService', function ($scope, $location, CartCompareService) {
+        .controller('CartCompareNavBarCtrl', ['$scope', '$location', '$q', 'CartCompareService', 'BenchmarkService', function ($scope, $location, $q, CartCompareService, BenchmarkService) {
             $scope.$on('cart:added', function () {
                 $scope.compareBenchmarkRuns = CartCompareService.getAll();
             });
@@ -253,6 +253,94 @@
                     return benchmarkRun.sequenceId;
                 }).join();
                 $location.path('compare/' + names + '/' + sequenceIds);
+            };
+
+            $scope.exportCsv = function () {
+                var names = _.map($scope.compareBenchmarkRuns, function (benchmarkRun) {
+                    return benchmarkRun.uniqueName;
+                });
+                var sequenceIds = _.map($scope.compareBenchmarkRuns, function (benchmarkRun) {
+                    return benchmarkRun.sequenceId;
+                });
+
+                $scope.benchmarkRuns = [];
+                for (var i in sequenceIds) {
+                    BenchmarkService.loadBenchmarkRun(names[i], sequenceIds[i])
+                        .then(function (benchmarkRun) {
+                            $scope.benchmarkRuns.push(benchmarkRun);
+                            prepareCsv();
+                        });
+                }
+                console.log("x " + $scope.benchmarkRuns );
+
+                var csvDataDefer = $q.defer();
+                var prepareCsv = function () {
+                    if (sequenceIds.length != $scope.benchmarkRuns.length) {
+                        return; // not all benchmarkRuns are loaded yet
+                    }
+
+                    $scope.benchmarkRuns = _.sortBy($scope.benchmarkRuns, function(run) {
+                       return run.uniqueName + run.sequence_id;
+                    })
+
+                    var benchmarkRunsHelper = new BenchmarkRunsHelper($scope.benchmarkRuns, []);
+                    var aggregatedMeasurementsKeys = ['duration']; // let's stick to duration for now
+                    var variableKeys = benchmarkRunsHelper.variableKeys();
+
+                    var csvData = [];
+
+                    var headerRow = [];
+                    headerRow.push('name');
+                    headerRow.push('sequence_id');
+                    headerRow.push('started');
+                    headerRow.push('status');
+                    headerRow.push('unique_name');
+                    _.each(aggregatedMeasurementsKeys, function(key) {
+                        headerRow.push(key + '_mean');
+                        headerRow.push(key + '_min');
+                        headerRow.push(key + '_max');
+                        headerRow.push(key + '_stddev');
+                    });
+
+                    headerRow.push.apply(headerRow, variableKeys);
+
+                    csvData.push(headerRow);
+                    _.each($scope.benchmarkRuns, function(run) {
+                       console.log(run);
+
+                       var csvDataRow = [];
+                       csvDataRow.push(run.name);
+                       csvDataRow.push(run.sequenceId);
+                       csvDataRow.push(run.started);
+                       csvDataRow.push(run.status);
+                       csvDataRow.push(run.uniqueName);
+
+                       _.each(aggregatedMeasurementsKeys, function(key) {
+                           if(run.aggregatedMeasurements.hasOwnProperty(key)) {
+                               csvDataRow.push(run.aggregatedMeasurements[key].mean);
+                               csvDataRow.push(run.aggregatedMeasurements[key].min);
+                               csvDataRow.push(run.aggregatedMeasurements[key].max);
+                               csvDataRow.push(run.aggregatedMeasurements[key].stdDev);
+                           } else {
+                               csvDataRow.push(-1);
+                               csvDataRow.push(-1);
+                               csvDataRow.push(-1);
+                               csvDataRow.push(-1);
+                           }
+                       });
+
+                       _.each(variableKeys, function(variable) {
+                           if (run.variables.hasOwnProperty(variable)) {
+                               csvDataRow.push(run.variables[variable]);
+                           } else {
+                               csvDataRow.push('');
+                           }
+                       });
+                       csvData.push(csvDataRow);
+                    });
+                    csvDataDefer.resolve(csvData);
+                };
+                return csvDataDefer.promise;
             }
         }])
         .controller('CompareCtrl', ['$scope', '$routeParams', '$filter', '$location', 'BenchmarkService', function ($scope, $routeParams, $filter, $location, BenchmarkService) {
@@ -287,5 +375,7 @@
                 $scope.aggregatedExecutionsMeasurementGraphsData = benchmarkRunsHelper.aggregatedExecutionsMeasurementGraphsData('multiBarChart', $filter, $location);
                 $scope.benchmarkMeasurementGraphsData = benchmarkRunsHelper.benchmarkMeasurementGraphsData('multiBarChart', $filter, $location);
             };
+        }])
+        .controller('ExportCsvCtrl', ['$scope', '$routeParams', '$filter', '$location', 'BenchmarkService', function ($scope, $routeParams, $filter, $location, BenchmarkService) {
         }]);
 }());

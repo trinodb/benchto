@@ -25,6 +25,8 @@
     <script src="js/lib/angular-datatables.colvis.js"></script>
     <script src="js/lib/angular-ui-bootstrap-tpls-0.13.0.js"></script>
     <script src="js/lib/angular-nvd3.js"></script>
+    <script src="js/lib/angular-sanitize.js"></script>
+    <script src="js/lib/ng-csv.js"></script>
     <script src="js/lib/jaml.js"></script>
     <script src="js/utils/benchto-lib.js"></script>
     <script src="js/services.js"></script>
@@ -66,6 +68,9 @@
                     <li>
                         <a>
                             <button type="button" class="btn btn-success btn-sm pull-right" ng-click="compare()"><i class="glyphicon glyphicon-stats"></i> Compare all</button>
+                        </a>
+                        <a>
+                            <button type="button" class="btn btn-success btn-sm pull-right" ng-csv="exportCsv()" filename="benchto.csv"><i class="glyphicon glyphicon-stats"></i> Export to CSV</button>
                         </a>
                     </li>
                 </ul>
