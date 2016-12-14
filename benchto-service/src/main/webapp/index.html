@@ -57,7 +57,7 @@
                     <i class="glyphicon glyphicon-shopping-cart"></i>
                     Compare cart <span class="badge">{{ compareBenchmarkRuns.length ? compareBenchmarkRuns.length : 0 }}</span>
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu cart-dropdown">
                     <li ng-repeat="benchmarkRun in compareBenchmarkRuns">
                         <a>
                             {{benchmarkRun.name}} ({{benchmarkRun.sequenceId}})

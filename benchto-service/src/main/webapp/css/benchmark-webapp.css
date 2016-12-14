@@ -11,6 +11,11 @@ body {
  * Global add-ons
  */
 
+.cart-dropdown {
+   height: 500px;
+   overflow: scroll;
+}
+
 .sub-header {
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
