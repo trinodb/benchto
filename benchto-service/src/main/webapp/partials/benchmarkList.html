@@ -10,7 +10,10 @@
 <table datatable="ng" data-page-length='100' dt-options="dtOptions" dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback" class="table table-striped table-bordered" ng-if="latestBenchmarkRuns">
     <thead>
     <tr>
-        <th><i class="glyphicon glyphicon-shopping-cart" data-toggle="tooltip" title="Compare cart items"></i></th>
+        <th>
+            <i class="glyphicon glyphicon-shopping-cart" data-toggle="tooltip" title="Compare cart items"></i>
+            <a ng-click="addAllToCompare()">ALL</a>
+        </th>
         <th>Unique name</th>
         <th>Name</th>
         <th>Status</th>

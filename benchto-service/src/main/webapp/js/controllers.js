@@ -79,6 +79,16 @@
                     CartHelper.updateBenchmarkCartSelection(CartCompareService, benchmarkRun);
                 };
 
+                $scope.addAllToCompare = function () {
+                    _.each($scope.tableInstance.$('tr', {"filter":"applied"}), function (benchmarkRunTr) {
+                        var benchmarkRun = angular.element(benchmarkRunTr).scope().benchmarkRun
+                        if (!benchmarkRun.addedToCompare) {
+                           benchmarkRun.addedToCompare = true;
+                           $scope.addedToCompareChanged(benchmarkRun);
+                        }
+                    });
+                }
+
                 $scope.dtInstanceCallback = function(dtInstance)
                 {
                     var datatableObj = dtInstance.DataTable;
