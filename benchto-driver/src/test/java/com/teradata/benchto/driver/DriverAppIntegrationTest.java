@@ -69,8 +69,8 @@ public class DriverAppIntegrationTest
     {
         setBenchmark("simple_select_benchmark");
         verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA");
-        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 0);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 1);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 2);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
         verifyComplete();
     }
@@ -80,8 +80,8 @@ public class DriverAppIntegrationTest
     {
         setBenchmark("test_benchmark");
         verifyBenchmarkStart("test_benchmark", "test_benchmark");
-        verifySerialExecution("test_benchmark", "test_query", 0);
         verifySerialExecution("test_benchmark", "test_query", 1);
+        verifySerialExecution("test_benchmark", "test_query", 2);
         verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
         verifyComplete();
     }
@@ -99,10 +99,10 @@ public class DriverAppIntegrationTest
         setBenchmark("test_concurrent_benchmark");
 
         verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark");
-        verifyExecutionStarted("test_concurrent_benchmark", 0);
-        verifyExecutionFinished("test_concurrent_benchmark", 0, concurrentQueryMeasurementName);
         verifyExecutionStarted("test_concurrent_benchmark", 1);
         verifyExecutionFinished("test_concurrent_benchmark", 1, concurrentQueryMeasurementName);
+        verifyExecutionStarted("test_concurrent_benchmark", 2);
+        verifyExecutionFinished("test_concurrent_benchmark", 2, concurrentQueryMeasurementName);
         verifyGetGraphiteMeasurements();
         verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
         verifyComplete();

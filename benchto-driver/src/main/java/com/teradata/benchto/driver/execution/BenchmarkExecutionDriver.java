@@ -150,7 +150,7 @@ public class BenchmarkExecutionDriver
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
-            for (int run = 0; run < runs; ++run) {
+            for (int run = 1; run <= runs; run++) {
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
 
                 executionCallables.add(() -> {
