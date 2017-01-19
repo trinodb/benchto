@@ -3,12 +3,12 @@ data-sources:
     url: jdbc:hsqldb:mem:.
     username: sa
     password:
-    driver-class-name: org.hsqldb.jdbcDriver
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
   test_datasource_2:
     url: jdbc:hsqldb:mem:.
     username: sa
     password:
-    driver-class-name: org.hsqldb.jdbcDriver
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
 
 
 benchmark-service:
