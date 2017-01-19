@@ -13,9 +13,13 @@
  */
 package com.teradata.benchto.driver;
 
+import com.google.common.collect.Iterables;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
 
 public class FailedBenchmarkExecutionException
         extends BenchmarkExecutionException
@@ -26,9 +30,23 @@ public class FailedBenchmarkExecutionException
 
     public FailedBenchmarkExecutionException(List<BenchmarkExecutionResult> failedBenchmarkResults, int benchmarksCount)
     {
-        super("" + failedBenchmarkResults.size() + " benchmarks failed");
+        super(createMessage(failedBenchmarkResults));
         this.failedBenchmarkResults = failedBenchmarkResults;
         this.benchmarksCount = benchmarksCount;
+
+        failedBenchmarkResults.stream()
+                .flatMap(benchmarkExecutionResult -> benchmarkExecutionResult.getFailureCauses().stream())
+                .forEach(this::addSuppressed);
+    }
+
+    private static String createMessage(List<BenchmarkExecutionResult> failedBenchmarkResults)
+    {
+        checkArgument(!failedBenchmarkResults.isEmpty(), "no failures");
+
+        return format("%s benchmarks failed, first failure was: %s",
+                failedBenchmarkResults.size(),
+                Iterables.getFirst(failedBenchmarkResults.get(0).getFailureCauses(), null)
+        );
     }
 
     public List<BenchmarkExecutionResult> getFailedBenchmarkResults()
