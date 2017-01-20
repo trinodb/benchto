@@ -13,6 +13,7 @@
  */
 package com.teradata.benchto.driver.execution;
 
+import com.google.common.base.MoreObjects;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Measurable;
 
@@ -66,6 +67,16 @@ public class BenchmarkExecutionResult
                 .collect(toList());
         failure.ifPresent(failureCauses::add);
         return failureCauses;
+    }
+
+    @Override
+    public String toString()
+    {
+        return MoreObjects.toStringHelper(this)
+                .add("benchmark", benchmark.getName())
+                .add("successful", isSuccessful())
+                .add("duration", getQueryDuration().toMillis() + " ms")
+                .toString();
     }
 
     public static class BenchmarkExecutionResultBuilder

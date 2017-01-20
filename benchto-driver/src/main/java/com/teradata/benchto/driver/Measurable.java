@@ -48,10 +48,7 @@ public abstract class Measurable
     public abstract boolean isSuccessful();
 
     @Override
-    public String toString()
-    {
-        throw new UnsupportedOperationException("Expected to be implemented by inheriting class");
-    }
+    public abstract String toString();
 
     public static abstract class MeasuredBuilder<T extends Measurable, B extends MeasuredBuilder>
     {
