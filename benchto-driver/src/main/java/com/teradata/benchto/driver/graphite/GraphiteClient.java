@@ -41,6 +41,7 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.teradata.benchto.driver.graphite.GraphiteClient.GraphiteRenderResponseItem.DATA_POINT_VALUE_INDEX;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -165,6 +166,7 @@ public class GraphiteClient
 
             public GraphiteEventRequestBuilder when(ZonedDateTime zonedDateTime)
             {
+                requireNonNull(zonedDateTime, "zonedDateTime cannot be null");
                 request.when = new BigDecimal(format("%d.%d", zonedDateTime.toEpochSecond(), zonedDateTime.getNano() / 1000));
                 return this;
             }

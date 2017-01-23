@@ -94,6 +94,8 @@ public class BenchmarkExecutionDriver
 
     private BenchmarkExecutionResult executeBenchmark(Benchmark benchmark)
     {
+        BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark);
+        List<QueryExecutionResult> executions;
         try {
             executeQueries(benchmark, benchmark.getPrewarmRuns(), false);
 
@@ -101,25 +103,29 @@ public class BenchmarkExecutionDriver
 
             statusReporter.reportBenchmarkStarted(benchmark);
 
-            BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark)
-                    .startTimer();
+            resultBuilder = resultBuilder.startTimer();
 
-            List<QueryExecutionResult> executions = executeQueries(benchmark, benchmark.getRuns(), true);
-
-            BenchmarkExecutionResult executionResult = resultBuilder
-                    .endTimer()
-                    .withExecutions(executions)
-                    .build();
-
-            executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
-
-            statusReporter.reportBenchmarkFinished(executionResult);
-
-            return executionResult;
+            try {
+                executions = executeQueries(benchmark, benchmark.getRuns(), true);
+            }
+            finally {
+                resultBuilder = resultBuilder.endTimer();
+            }
         }
         catch (RuntimeException e) {
-            return failedBenchmarkResult(benchmark, e);
+            return resultBuilder
+                    .withUnexpectedException(e)
+                    .build();
         }
+
+        BenchmarkExecutionResult executionResult = resultBuilder
+                .withExecutions(executions)
+                .build();
+
+        executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
+        statusReporter.reportBenchmarkFinished(executionResult);
+
+        return executionResult;
     }
 
     private BenchmarkExecutionResult failedBenchmarkResult(Benchmark benchmark, Exception e)
