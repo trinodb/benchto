@@ -40,11 +40,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.teradata.benchto.service.model.Environment.DEFAULT_ENVIRONMENT_NAME;
 import static com.teradata.benchto.service.model.Status.STARTED;
 import static com.teradata.benchto.service.utils.BenchmarkUniqueNameUtils.generateBenchmarkUniqueName;
 import static com.teradata.benchto.service.utils.TimeUtils.currentDateTime;
-import static java.lang.String.format;
 
 @Service
 public class BenchmarkService
@@ -66,7 +66,7 @@ public class BenchmarkService
         checkArgument(uniqueName.equals(generatedUniqueName), "Passed unique benchmark name (%s) does not match generated one: (%s) - name: %s, variables: %s",
                 uniqueName, generatedUniqueName, name, variables);
 
-        BenchmarkRun benchmarkRun = benchmarkRunRepo.findByUniqueNameAndSequenceId(uniqueName, sequenceId);
+        BenchmarkRun benchmarkRun = benchmarkRunRepo.findForUpdateByUniqueNameAndSequenceId(uniqueName, sequenceId);
         if (benchmarkRun == null) {
             Environment environment = environmentService.findEnvironment(environmentName.orElse(DEFAULT_ENVIRONMENT_NAME));
             benchmarkRun = new BenchmarkRun(name, sequenceId, variables, uniqueName);
@@ -90,12 +90,18 @@ public class BenchmarkService
         benchmarkRun.getAttributes().putAll(attributes);
         benchmarkRun.setEnded(fromInstantOrCurrentDateTime(endTime));
         benchmarkRun.setStatus(status);
+        aggregateBenchmarkExecutions(benchmarkRun);
+        LOG.debug("Finishing benchmark - {}", benchmarkRun);
+    }
+
+    private void aggregateBenchmarkExecutions(BenchmarkRun benchmarkRun)
+    {
+        benchmarkRun.clearAggregatedMeasurements();
         AggregatedMeasurement durationAggregatedMeasurement = benchmarkRun.getAggregatedMeasurements().get("duration");
         if (durationAggregatedMeasurement != null) {
             benchmarkRun.setExecutionsMeanDuration(durationAggregatedMeasurement.getMean());
             benchmarkRun.setExecutionStdDevDuration(durationAggregatedMeasurement.getStdDev());
         }
-        LOG.debug("Finishing benchmark - {}", benchmarkRun);
     }
 
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
@@ -103,7 +109,6 @@ public class BenchmarkService
     public void startExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
-        verifyBenchmarkRunInStartedStatus(benchmarkRun);
 
         boolean executionPresent = benchmarkRun.getExecutions().stream()
                 .filter(e -> executionSequenceId.equals(e.getSequenceId()))
@@ -130,22 +135,30 @@ public class BenchmarkService
             Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
-        verifyBenchmarkRunInStartedStatus(benchmarkRun);
 
         BenchmarkRunExecution execution = benchmarkRun.getExecutions().stream()
                 .filter(e -> executionSequenceId.equals(e.getSequenceId()))
-                .findAny().get();
+                .findAny().orElseThrow(() -> new IllegalStateException("Execution cannot be found"));
+
+        checkState(execution.getStatus() == STARTED, "Wrong execution status: %s", execution.getStatus());
 
         execution.getMeasurements().addAll(measurements);
         execution.getAttributes().putAll(attributes);
         execution.setEnded(fromInstantOrCurrentDateTime(endTime));
         execution.setStatus(status);
+
+        if (benchmarkRun.getStatus() != STARTED) {
+            // Already finished and aggregated so needs re-aggregating.
+            aggregateBenchmarkExecutions(benchmarkRun);
+        }
+
+        LOG.debug("Finishing execution - {}", execution);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public BenchmarkRun findBenchmarkRun(String uniqueName, String sequenceId)
     {
-        BenchmarkRun benchmarkRun = benchmarkRunRepo.findByUniqueNameAndSequenceId(uniqueName, sequenceId);
+        BenchmarkRun benchmarkRun = benchmarkRunRepo.findForUpdateByUniqueNameAndSequenceId(uniqueName, sequenceId);
         if (benchmarkRun == null) {
             throw new IllegalArgumentException("Could not find benchmark " + uniqueName + " - " + sequenceId);
         }
@@ -180,13 +193,6 @@ public class BenchmarkService
         return generateBenchmarkUniqueName(name, variables);
     }
 
-    private void verifyBenchmarkRunInStartedStatus(BenchmarkRun benchmarkRun)
-    {
-        if (benchmarkRun.getStatus() != STARTED) {
-            throw new IllegalArgumentException(format("Benchmark run %s - %s in %s status", benchmarkRun.getName(), benchmarkRun.getSequenceId(), benchmarkRun.getStatus()));
-        }
-    }
-
     public Duration getSuccessfulExecutionAge(String uniqueName)
     {
         Timestamp ended = benchmarkRunRepo.findTimeOfLatestSuccessfulExecution(uniqueName);
@@ -196,7 +202,6 @@ public class BenchmarkService
         ZonedDateTime endedAsZDT = ZonedDateTime.of(ended.toLocalDateTime(), ZoneId.systemDefault());
         return Duration.between(endedAsZDT, currentDateTime());
     }
-
 
     private ZonedDateTime fromInstantOrCurrentDateTime(Optional<Instant> instant)
     {

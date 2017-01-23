@@ -287,6 +287,11 @@ public class BenchmarkRun
         return aggregatedMeasurements;
     }
 
+    public void clearAggregatedMeasurements()
+    {
+        aggregatedMeasurements = null;
+    }
+
     @Override
     public boolean equals(Object o)
     {

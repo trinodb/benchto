@@ -16,9 +16,12 @@ package com.teradata.benchto.service.repo;
 import com.teradata.benchto.service.model.BenchmarkRun;
 import com.teradata.benchto.service.model.Environment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import javax.persistence.LockModeType;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
@@ -29,6 +32,9 @@ public interface BenchmarkRunRepo
         extends JpaRepository<BenchmarkRun, String>
 {
     BenchmarkRun findByUniqueNameAndSequenceId(String uniqueName, String sequenceId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    BenchmarkRun findForUpdateByUniqueNameAndSequenceId(String uniqueName, String sequenceId);
 
     List<BenchmarkRun> findByUniqueNameAndEnvironmentOrderBySequenceIdDesc(String uniqueName, Environment environment);
 

@@ -24,6 +24,7 @@ import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
+import java.util.concurrent.Callable;
 
 import static com.teradata.benchto.service.model.MeasurementUnit.BYTES;
 import static com.teradata.benchto.service.model.MeasurementUnit.MILLISECONDS;
@@ -53,12 +54,25 @@ public class BenchmarkControllerTest
     private EnvironmentRepo environmentRepo;
 
     @Test
-    public void benchmarkStartEndHappyPath()
+    public void testBenchmarkStartEndHappyPath()
+            throws Exception
+    {
+        doTestBenchmarkSuccessfulExecution(true);
+    }
+
+    @Test
+    public void testExecutionFinishReportedAfterBenchmarkEnd()
+            throws Exception
+    {
+        doTestBenchmarkSuccessfulExecution(false);
+    }
+
+    private void doTestBenchmarkSuccessfulExecution(boolean reportRunFinishBeforeBenchmarkFinish)
             throws Exception
     {
         String environmentName = "environmentName";
-        String benchmarkName = "benchmarkName";
-        String uniqueName = "benchmarkName_k1=v1";
+        String benchmarkName = "benchmarkName" + reportRunFinishBeforeBenchmarkFinish;
+        String uniqueName = benchmarkName + "_k1=v1";
         String benchmarkSequenceId = "benchmarkSequenceId";
         String executionSequenceId = "executionSequenceId";
         ZonedDateTime testStart = currentDateTime();
@@ -116,20 +130,37 @@ public class BenchmarkControllerTest
                 .andExpect(jsonPath("$.executions[0].status", is("STARTED")))
                 .andExpect(jsonPath("$.executions[0].sequenceId", is(executionSequenceId)));
 
-        // finish execution - post execution measurements
-        mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish",
-                uniqueName, benchmarkSequenceId, executionSequenceId)
-                .contentType(APPLICATION_JSON)
-                .content("{\"measurements\":[{\"name\": \"duration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"bytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
-                        "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"}"))
-                .andExpect(status().isOk());
+        Callable<?> reportExecutionFinish = () -> {
+            // finish execution - post execution measurements
+            mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish",
+                    uniqueName, benchmarkSequenceId, executionSequenceId)
+                    .contentType(APPLICATION_JSON)
+                    .content("{\"measurements\":[{\"name\": \"duration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"bytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
+                            "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"}"))
+                    .andExpect(status().isOk());
 
-        // finish benchmark - post benchmark measurements
-        mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/finish", uniqueName, benchmarkSequenceId)
-                .contentType(APPLICATION_JSON)
-                .content("{\"measurements\":[{\"name\": \"meanDuration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"sumBytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
-                        "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"ENDED\"}"))
-                .andExpect(status().isOk());
+            return null;
+        };
+
+        Callable<?> reportBenchmarkFinish = () -> {
+            // finish benchmark - post benchmark measurements
+            mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/finish", uniqueName, benchmarkSequenceId)
+                    .contentType(APPLICATION_JSON)
+                    .content("{\"measurements\":[{\"name\": \"meanDuration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"sumBytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
+                            "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"ENDED\"}"))
+                    .andExpect(status().isOk());
+
+            return null;
+        };
+
+        if (reportRunFinishBeforeBenchmarkFinish) {
+            reportExecutionFinish.call();
+            reportBenchmarkFinish.call();
+        }
+        else {
+            reportBenchmarkFinish.call();
+            reportExecutionFinish.call();
+        }
 
         ZonedDateTime testEnd = currentDateTime();
 
