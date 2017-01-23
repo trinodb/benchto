@@ -21,22 +21,27 @@ import com.teradata.benchto.driver.service.Measurement;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.teradata.benchto.driver.service.Measurement.measurement;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Component
 public class DurationMeasurementProvider
         implements PostExecutionMeasurementProvider
 {
     @Override
-    public List<Measurement> loadMeasurements(Measurable measurable)
+    public CompletableFuture<List<Measurement>> loadMeasurements(Measurable measurable)
     {
+        List<Measurement> measurements;
         if (shouldMeasureDuration(measurable)) {
-            return ImmutableList.of(measurement("duration", "MILLISECONDS", measurable.getQueryDuration().toMillis()));
+            measurements = ImmutableList.of(measurement("duration", "MILLISECONDS", measurable.getQueryDuration().toMillis()));
         }
         else {
-            return ImmutableList.of();
+            measurements = ImmutableList.of();
         }
+
+        return completedFuture(measurements);
     }
 
     private boolean shouldMeasureDuration(Measurable measurable)

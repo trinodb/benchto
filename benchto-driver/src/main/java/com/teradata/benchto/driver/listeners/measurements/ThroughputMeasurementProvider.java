@@ -20,21 +20,28 @@ import com.teradata.benchto.driver.service.Measurement;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.teradata.benchto.driver.service.Measurement.measurement;
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Component
 public class ThroughputMeasurementProvider
         implements PostExecutionMeasurementProvider
 {
     @Override
-    public List<Measurement> loadMeasurements(Measurable measurable)
+    public CompletableFuture<List<Measurement>> loadMeasurements(Measurable measurable)
     {
+        List<Measurement> measurements;
         if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmark().isConcurrent() && measurable.isSuccessful()) {
-            return ImmutableList.of(measurement("throughput", "QUERY_PER_SECOND", calculateThroughput((BenchmarkExecutionResult) measurable)));
+            measurements = ImmutableList.of(measurement("throughput", "QUERY_PER_SECOND", calculateThroughput((BenchmarkExecutionResult) measurable)));
         }
-        return emptyList();
+        else {
+            measurements = emptyList();
+        }
+
+        return completedFuture(measurements);
     }
 
     private double calculateThroughput(BenchmarkExecutionResult benchmarkExecutionResult)

@@ -34,12 +34,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Service
 @ConditionalOnProperty(prefix = "benchmark.feature.graphite", value = "metrics.collection.enabled")
@@ -72,10 +74,10 @@ public class GraphiteMetricsLoader
     }
 
     @Override
-    public List<Measurement> loadMeasurements(Measurable measurable)
+    public CompletableFuture<List<Measurement>> loadMeasurements(Measurable measurable)
     {
         if (!shouldLoadGraphiteMetrics(measurable)) {
-            return emptyList();
+            return completedFuture(emptyList());
         }
 
         /*
@@ -115,7 +117,7 @@ public class GraphiteMetricsLoader
             }
         }
 
-        return measurements;
+        return completedFuture(measurements);
     }
 
     private boolean shouldLoadGraphiteMetrics(Measurable measurable)

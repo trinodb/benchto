@@ -22,8 +22,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Component
 @ConditionalOnProperty(prefix = "benchmark.feature.presto", value = "metrics.collection.enabled")
@@ -35,14 +37,14 @@ public class PrestoMetricsLoader
     private PrestoClient prestoClient;
 
     @Override
-    public List<Measurement> loadMeasurements(Measurable measurable)
+    public CompletableFuture<List<Measurement>> loadMeasurements(Measurable measurable)
     {
         if (measurable instanceof QueryExecutionResult) {
             QueryExecutionResult executionResult = (QueryExecutionResult) measurable;
             if (executionResult.getPrestoQueryId().isPresent()) {
-                return prestoClient.loadMetrics(executionResult.getPrestoQueryId().get());
+                return completedFuture(prestoClient.loadMetrics(executionResult.getPrestoQueryId().get()));
             }
         }
-        return emptyList();
+        return completedFuture(emptyList());
     }
 }

@@ -17,8 +17,9 @@ import com.teradata.benchto.driver.Measurable;
 import com.teradata.benchto.driver.service.Measurement;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface PostExecutionMeasurementProvider
 {
-    List<Measurement> loadMeasurements(Measurable measurable);
+    CompletableFuture<List<Measurement>> loadMeasurements(Measurable measurable);
 }

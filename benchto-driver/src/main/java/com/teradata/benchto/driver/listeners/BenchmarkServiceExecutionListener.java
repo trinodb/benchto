@@ -25,6 +25,7 @@ import com.teradata.benchto.driver.service.BenchmarkServiceClient;
 import com.teradata.benchto.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
 import com.teradata.benchto.driver.service.BenchmarkServiceClient.ExecutionStartRequest;
 import com.teradata.benchto.driver.service.BenchmarkServiceClient.ExecutionStartRequest.ExecutionStartRequestBuilder;
+import com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest;
 import com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.FinishRequestBuilder;
 import com.teradata.benchto.driver.service.Measurement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORDS;
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
@@ -75,11 +79,19 @@ public class BenchmarkServiceExecutionListener
     @Override
     public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
-        FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
-                .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
-                .addMeasurements(getMeasurements(benchmarkExecutionResult));
-
-        benchmarkServiceClient.finishBenchmark(benchmarkExecutionResult.getBenchmark().getUniqueName(), benchmarkExecutionResult.getBenchmark().getSequenceId(), requestBuilder.build());
+        getMeasurements(benchmarkExecutionResult)
+                .thenApply(measurements -> {
+                    return new FinishRequestBuilder()
+                            .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                            .addMeasurements(measurements)
+                            .build();
+                })
+                .thenAccept(request -> {
+                    benchmarkServiceClient.finishBenchmark(
+                            benchmarkExecutionResult.getBenchmark().getUniqueName(),
+                            benchmarkExecutionResult.getBenchmark().getSequenceId(),
+                            request);
+                });
     }
 
     @Override
@@ -94,9 +106,22 @@ public class BenchmarkServiceExecutionListener
     @Override
     public void executionFinished(QueryExecutionResult executionResult)
     {
+        getMeasurements(executionResult)
+                .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
+                .thenAccept(request -> {
+                    benchmarkServiceClient.finishExecution(
+                            executionResult.getBenchmark().getUniqueName(),
+                            executionResult.getBenchmark().getSequenceId(),
+                            executionSequenceId(executionResult.getQueryExecution()),
+                            request);
+                });
+    }
+
+    private FinishRequest buildExecutionFinishedRequest(QueryExecutionResult executionResult, List<Measurement> measurements)
+    {
         FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
                 .withStatus(executionResult.isSuccessful() ? ENDED : FAILED)
-                .addMeasurements(getMeasurements(executionResult));
+                .addMeasurements(measurements);
 
         if (executionResult.getPrestoQueryId().isPresent()) {
             requestBuilder.addAttribute("prestoQueryId", executionResult.getPrestoQueryId().get());
@@ -110,18 +135,21 @@ public class BenchmarkServiceExecutionListener
                 requestBuilder.addAttribute("failureSQLErrorCode", "" + ((SQLException) executionResult.getFailureCause()).getErrorCode());
             }
         }
-
-        benchmarkServiceClient.finishExecution(executionResult.getBenchmark().getUniqueName(), executionResult.getBenchmark().getSequenceId(),
-                executionSequenceId(executionResult.getQueryExecution()), requestBuilder.build());
+        return requestBuilder.build();
     }
 
-    private List<Measurement> getMeasurements(Measurable measurable)
+    private CompletableFuture<List<Measurement>> getMeasurements(Measurable measurable)
     {
-        ImmutableList.Builder<Measurement> measurementsList = ImmutableList.builder();
+        List<CompletableFuture<?>> providerFutures = new ArrayList<>();
+        List<Measurement> measurementsList = Collections.synchronizedList(new ArrayList<>());
         for (PostExecutionMeasurementProvider measurementProvider : measurementProviders) {
-            measurementsList.addAll(measurementProvider.loadMeasurements(measurable));
+            CompletableFuture<?> future = measurementProvider.loadMeasurements(measurable)
+                    .thenAccept(measurementsList::addAll);
+            providerFutures.add(future);
         }
-        return measurementsList.build();
+
+        return CompletableFuture.allOf(providerFutures.stream().toArray(CompletableFuture[]::new))
+                .thenApply(aVoid -> ImmutableList.copyOf(measurementsList));
     }
 
     private String executionSequenceId(QueryExecution execution)
