@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -86,10 +87,17 @@ public class GraphiteMetricsLoader
          * This ignores first and last bucket (both partially covered), but gives most interesting statistics.
          */
         long fromEpochSecond = measurable.getUtcStart().toEpochSecond();
-        long toEpochSecond = measurable.getUtcEnd()
-                .minus(graphiteProperties.getGraphiteResolutionSeconds(), ChronoUnit.SECONDS)
-                .toEpochSecond();
+        ZonedDateTime to = measurable.getUtcEnd()
+                .minus(graphiteProperties.getGraphiteResolutionSeconds(), ChronoUnit.SECONDS);
+        long toEpochSecond = to.toEpochSecond();
 
+        return executionSynchronizer.execute(
+                to.plus(graphiteProperties.getGraphiteMetricsDelay()).toInstant(),
+                () -> doLoadMeasurements(fromEpochSecond, toEpochSecond));
+    }
+
+    private List<Measurement> doLoadMeasurements(long fromEpochSecond, long toEpochSecond)
+    {
         LOG.debug("Loading metrics {} - from: {}, to: {}", queryMetrics, fromEpochSecond, toEpochSecond);
 
         Map<String, double[]> loadedMetrics = graphiteClient.loadMetrics(queryMetrics, fromEpochSecond, toEpochSecond);
@@ -116,8 +124,7 @@ public class GraphiteMetricsLoader
                 measurements.add(Measurement.measurement("cluster-network_total", "BYTES", totalBytes));
             }
         }
-
-        return completedFuture(measurements);
+        return measurements;
     }
 
     private boolean shouldLoadGraphiteMetrics(Measurable measurable)

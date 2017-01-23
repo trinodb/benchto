@@ -23,6 +23,7 @@ presto:
 graphite:
   url: http://graphite:18088
   resolution.seconds: 1
+  metrics-delay.seconds: 0
   metrics:
     cpu: TARGET_CPU
     memory: TARGET_MEMORY

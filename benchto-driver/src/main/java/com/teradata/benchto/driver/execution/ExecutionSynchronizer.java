@@ -21,6 +21,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
@@ -40,8 +53,33 @@ public class ExecutionSynchronizer
 
     private static final double GRAPHITE_WAIT_BETWEEN_REPORTING_RESOLUTION_COUNT = 2;
 
+    private static final Duration SHUTDOWN_ASYNC_TASKS_WAIT_TIMEOUT = Duration.ofMinutes(20);
+    private static final int SHUTDOWN_ASYNC_TASKS_WAIT_REPORT_TIMES = 20;
+
     @Autowired
     private GraphiteProperties properties;
+
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+
+    @PreDestroy
+    public void shutdown()
+            throws InterruptedException
+    {
+        /*
+         * Request shutdown but let the planned ones complete.
+         */
+
+        executorService.shutdown();
+        executorService.awaitTermination(100, MILLISECONDS);
+
+        for (int i = 0; i < SHUTDOWN_ASYNC_TASKS_WAIT_REPORT_TIMES && !executorService.isTerminated(); i++) {
+            LOGGER.info("Waiting for asynchronous tasks to complete ...");
+            executorService.awaitTermination(SHUTDOWN_ASYNC_TASKS_WAIT_TIMEOUT.dividedBy(SHUTDOWN_ASYNC_TASKS_WAIT_REPORT_TIMES).toMillis(), TimeUnit.MILLISECONDS);
+        }
+        if (!executorService.isTerminated()) {
+            throw new RuntimeException("Some tasks did not finish on time");
+        }
+    }
 
     /**
      * If metrics collection is enabled and we are doing serial benchmark, we should wait
@@ -67,6 +105,40 @@ public class ExecutionSynchronizer
             LOGGER.info("Waiting {}s between benchmarks - thread ({})", waitSecondsBetweenRuns, currThreadName());
             TimeUtils.sleep(waitSecondsBetweenRuns, SECONDS);
         }
+    }
+
+    /**
+     * Executes {@code callable} when time comes. The {@code callable} gets executed immediately, without
+     * offloading to a backghround thread, if execution time requested has already passed.
+     */
+    public <T> CompletableFuture<T> execute(Instant when, Callable<T> callable)
+    {
+        if (!Instant.now().isBefore(when)) {
+            // Run immediately.
+            try {
+                return completedFuture(callable.call());
+            }
+            catch (Exception e) {
+                CompletableFuture<T> future = new CompletableFuture<>();
+                future.completeExceptionally(e);
+                return future;
+            }
+        }
+
+        long delay = Instant.now().until(when, ChronoUnit.MILLIS);
+        CompletableFuture<T> future = new CompletableFuture<>();
+        executorService.schedule(() -> {
+            try {
+                future.complete(callable.call());
+            }
+            catch (Throwable e) {
+                future.completeExceptionally(e);
+                throw e;
+            }
+            return null;
+        }, delay, MILLISECONDS);
+
+        return future;
     }
 
     private int waitSecondsBetweenRuns()

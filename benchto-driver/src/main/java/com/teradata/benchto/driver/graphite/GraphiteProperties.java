@@ -16,6 +16,8 @@ package com.teradata.benchto.driver.graphite;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static com.facebook.presto.jdbc.internal.guava.base.MoreObjects.toStringHelper;
@@ -34,6 +36,9 @@ public class GraphiteProperties
 
     @Value("${graphite.resolution.seconds:0}")
     private int graphiteResolutionSeconds;
+
+    @Value("${graphite.metrics-delay.seconds:0}")
+    private int graphiteMetricsDelaySeconds;
 
     @Value("${benchmark.feature.graphite.metrics.collection.enabled:#{false}}")
     private boolean graphiteMetricsCollectionEnabled;
@@ -58,6 +63,11 @@ public class GraphiteProperties
         return graphiteResolutionSeconds;
     }
 
+    public Duration getGraphiteMetricsDelay()
+    {
+        return Duration.of(graphiteMetricsDelaySeconds, ChronoUnit.SECONDS);
+    }
+
     public boolean isGraphiteMetricsCollectionEnabled()
     {
         return graphiteMetricsCollectionEnabled;
@@ -71,6 +81,7 @@ public class GraphiteProperties
                 .add("memoryGraphiteExpr", memoryGraphiteExpr)
                 .add("networkGraphiteExpr", networkGraphiteExpr)
                 .add("graphiteResolutionSeconds", graphiteResolutionSeconds)
+                .add("graphiteMetricsDelaySeconds", graphiteMetricsDelaySeconds)
                 .add("graphiteMetricsCollectionEnabled", graphiteMetricsCollectionEnabled)
                 .toString();
     }
