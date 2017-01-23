@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.concurrent.Callable;
 
@@ -31,6 +32,7 @@ import static com.teradata.benchto.service.model.MeasurementUnit.MILLISECONDS;
 import static com.teradata.benchto.service.model.Status.ENDED;
 import static com.teradata.benchto.service.model.Status.FAILED;
 import static com.teradata.benchto.service.utils.TimeUtils.currentDateTime;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -57,17 +59,17 @@ public class BenchmarkControllerTest
     public void testBenchmarkStartEndHappyPath()
             throws Exception
     {
-        doTestBenchmarkSuccessfulExecution(true);
+        doTestBenchmarkSuccessfulExecution(true, false);
     }
 
     @Test
     public void testExecutionFinishReportedAfterBenchmarkEnd()
             throws Exception
     {
-        doTestBenchmarkSuccessfulExecution(false);
+        doTestBenchmarkSuccessfulExecution(false, true);
     }
 
-    private void doTestBenchmarkSuccessfulExecution(boolean reportRunFinishBeforeBenchmarkFinish)
+    private void doTestBenchmarkSuccessfulExecution(boolean reportRunFinishBeforeBenchmarkFinish, boolean sendEndTimeWithExecutionFinish)
             throws Exception
     {
         String environmentName = "environmentName";
@@ -130,13 +132,16 @@ public class BenchmarkControllerTest
                 .andExpect(jsonPath("$.executions[0].status", is("STARTED")))
                 .andExpect(jsonPath("$.executions[0].sequenceId", is(executionSequenceId)));
 
+        Instant executionFinish = currentDateTime().toInstant();
         Callable<?> reportExecutionFinish = () -> {
             // finish execution - post execution measurements
             mvc.perform(post("/v1/benchmark/{uniqueName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish",
                     uniqueName, benchmarkSequenceId, executionSequenceId)
                     .contentType(APPLICATION_JSON)
                     .content("{\"measurements\":[{\"name\": \"duration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"bytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
-                            "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"}"))
+                                    "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"" +
+                                    (sendEndTimeWithExecutionFinish ? (", \"endTime\": " + toJsonRepresentation(executionFinish)) : "") +
+                            "}"))
                     .andExpect(status().isOk());
 
             return null;
@@ -153,16 +158,18 @@ public class BenchmarkControllerTest
             return null;
         };
 
+        ZonedDateTime testEnd;
         if (reportRunFinishBeforeBenchmarkFinish) {
             reportExecutionFinish.call();
             reportBenchmarkFinish.call();
+            testEnd = currentDateTime();
         }
         else {
             reportBenchmarkFinish.call();
+            testEnd = currentDateTime();
+            Thread.sleep(2); // make sure current time changes (assuming we're not on Windows)
             reportExecutionFinish.call();
         }
-
-        ZonedDateTime testEnd = currentDateTime();
 
         mvc.perform(get("/v1/benchmark/{uniqueName}?environment={environment}", uniqueName, environmentName))
                 .andExpect(status().isOk())
@@ -227,6 +234,11 @@ public class BenchmarkControllerTest
                     .isAfter(testStart)
                     .isBefore(testEnd);
         });
+    }
+
+    private static String toJsonRepresentation(Instant instant)
+    {
+        return format("%d.%03d", instant.getEpochSecond(), instant.toEpochMilli() % 1000);
     }
 
     @Test

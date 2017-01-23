@@ -83,6 +83,7 @@ public class BenchmarkServiceExecutionListener
                 .thenApply(measurements -> {
                     return new FinishRequestBuilder()
                             .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                            .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
                             .addMeasurements(measurements)
                             .build();
                 })
@@ -121,6 +122,7 @@ public class BenchmarkServiceExecutionListener
     {
         FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
                 .withStatus(executionResult.isSuccessful() ? ENDED : FAILED)
+                .withEndTime(executionResult.getUtcEnd().toInstant())
                 .addMeasurements(measurements);
 
         if (executionResult.getPrestoQueryId().isPresent()) {

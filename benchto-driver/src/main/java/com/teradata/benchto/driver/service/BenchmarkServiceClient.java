@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriTemplate;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -268,6 +269,7 @@ public class BenchmarkServiceClient
         }
 
         private Status status;
+        private Instant endTime;
         private List<Measurement> measurements = newArrayList();
 
         private FinishRequest()
@@ -286,6 +288,12 @@ public class BenchmarkServiceClient
             public FinishRequestBuilder withStatus(Status status)
             {
                 request.status = status;
+                return this;
+            }
+
+            public FinishRequestBuilder withEndTime(Instant endTime)
+            {
+                request.endTime = endTime;
                 return this;
             }
 
@@ -308,6 +316,7 @@ public class BenchmarkServiceClient
             return MoreObjects.toStringHelper(this)
                     .add("measurements", measurements)
                     .add("status", status)
+                    .add("endTime", endTime)
                     .add("attributes", attributes)
                     .toString();
         }
