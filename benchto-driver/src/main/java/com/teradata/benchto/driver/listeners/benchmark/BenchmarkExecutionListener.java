@@ -17,8 +17,10 @@ import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.QueryExecution;
 import com.teradata.benchto.driver.execution.QueryExecutionResult;
+import org.springframework.core.Ordered;
 
 public interface BenchmarkExecutionListener
+        extends Ordered
 {
     void benchmarkStarted(Benchmark benchmark);
 

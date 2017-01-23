@@ -15,6 +15,7 @@ package com.teradata.benchto.driver.listeners;
 
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
+import com.teradata.benchto.driver.execution.ExecutionSynchronizer;
 import com.teradata.benchto.driver.execution.QueryExecution;
 import com.teradata.benchto.driver.execution.QueryExecutionResult;
 import com.teradata.benchto.driver.graphite.GraphiteClient;
@@ -37,7 +38,16 @@ public class GraphiteEventExecutionListener
     private TaskExecutor taskExecutor;
 
     @Autowired
+    private ExecutionSynchronizer executionSynchronizer;
+
+    @Autowired
     private GraphiteClient graphiteClient;
+
+    @Override
+    public int getOrder()
+    {
+        return 0;
+    }
 
     @Override
     public void benchmarkStarted(Benchmark benchmark)
@@ -61,6 +71,8 @@ public class GraphiteEventExecutionListener
                 .build();
 
         taskExecutor.execute(() -> graphiteClient.storeEvent(request));
+
+        executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmarkExecutionResult.getBenchmark());
     }
 
     @Override
@@ -94,5 +106,7 @@ public class GraphiteEventExecutionListener
                 .build();
 
         taskExecutor.execute(() -> graphiteClient.storeEvent(request));
+
+        executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(executionResult);
     }
 }

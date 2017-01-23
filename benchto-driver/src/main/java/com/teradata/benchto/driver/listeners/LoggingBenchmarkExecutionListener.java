@@ -30,6 +30,12 @@ public class LoggingBenchmarkExecutionListener
     private static final Logger LOG = LoggerFactory.getLogger(LoggingBenchmarkExecutionListener.class);
 
     @Override
+    public int getOrder()
+    {
+        return -100;
+    }
+
+    @Override
     public void benchmarkStarted(Benchmark benchmark)
     {
         LOG.info("Executing benchmark: {}", benchmark.getName());

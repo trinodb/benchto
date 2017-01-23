@@ -62,6 +62,12 @@ public class BenchmarkServiceExecutionListener
     private List<PostExecutionMeasurementProvider> measurementProviders;
 
     @Override
+    public int getOrder()
+    {
+        return 0;
+    }
+
+    @Override
     public void benchmarkStarted(Benchmark benchmark)
     {
         taskExecutor.execute(() -> {

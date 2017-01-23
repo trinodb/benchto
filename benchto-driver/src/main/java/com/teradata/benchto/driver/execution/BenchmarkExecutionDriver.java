@@ -122,7 +122,6 @@ public class BenchmarkExecutionDriver
                 .withExecutions(executions)
                 .build();
 
-        executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
         statusReporter.reportBenchmarkFinished(executionResult);
 
         return executionResult;
@@ -179,7 +178,6 @@ public class BenchmarkExecutionDriver
                         }
 
                         if (reportStatus) {
-                            executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(result);
                             statusReporter.reportExecutionFinished(result);
                         }
 

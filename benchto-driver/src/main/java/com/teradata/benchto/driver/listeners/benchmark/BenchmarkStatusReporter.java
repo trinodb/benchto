@@ -20,6 +20,8 @@ import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.QueryExecution;
 import com.teradata.benchto.driver.execution.QueryExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.OrderComparator;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -36,7 +38,10 @@ public class BenchmarkStatusReporter
     public void sortExecutionListeners()
     {
         // HACK: listeners have to be sorted to provide tests determinism
-        executionListeners = ImmutableList.copyOf(Ordering.usingToString().sortedCopy(executionListeners));
+        executionListeners = ImmutableList.copyOf(
+                Ordering.<Ordered>from(OrderComparator.INSTANCE::compare)
+                        .compound(Ordering.usingToString())
+                        .sortedCopy(executionListeners));
     }
 
     public void reportBenchmarkStarted(Benchmark benchmark)
