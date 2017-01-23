@@ -65,7 +65,7 @@ public class GraphiteClient
         restTemplate.postForObject("{graphiteURL}/events/", request, Object.class, ImmutableMap.of("graphiteURL", graphiteURL));
     }
 
-    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
+    @Retryable(value = {RestClientException.class, IncompleteDataException.class}, backoff = @Backoff(delay = 5000, multiplier = 2), maxAttempts = 4)
     public Map<String, double[]> loadMetrics(Map<String, String> metrics, ZonedDateTime from, ZonedDateTime to)
     {
         URI uri = buildLoadMetricsURI(metrics, from, to);
@@ -108,8 +108,17 @@ public class GraphiteClient
         double[] dataPoints = new double[inputDataPoints.length];
         for (int i = 0; i < inputDataPoints.length; i++) {
             Double value = inputDataPoints[i][DATA_POINT_VALUE_INDEX];
-            // rarely graphite does not return value for given timestamp, use 0 in this case
-            dataPoints[i] = value == null ? 0 : value;
+            if (value == null) {
+                /*
+                 * Graphite returns null for an aggregation if *all* ingredients are null. We should query Graphite after
+                 * delay, so that all ingredients *are* present, so aggregation should not be null too.
+                 *
+                 * Note however, that non-null value for e.g. an average or sum does not mean that the value can be trusted.
+                 * Some data points can still be missing.
+                 */
+                throw new IncompleteDataException("null data point returned from Graphite");
+            }
+            dataPoints[i] = value;
         }
         return dataPoints;
     }
@@ -191,6 +200,15 @@ public class GraphiteClient
         String getTarget()
         {
             return target;
+        }
+    }
+
+    public static final class IncompleteDataException
+            extends RuntimeException
+    {
+        public IncompleteDataException(String message)
+        {
+            super(message);
         }
     }
 }
