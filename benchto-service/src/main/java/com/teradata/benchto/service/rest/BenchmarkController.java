@@ -30,6 +30,7 @@ import javax.validation.Valid;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 import static com.teradata.benchto.service.utils.CollectionUtils.failSafeEmpty;
 import static java.util.Optional.ofNullable;
@@ -83,6 +84,7 @@ public class BenchmarkController
         benchmarkService.finishBenchmarkRun(uniqueName,
                 benchmarkSequenceId,
                 finishRequest.getStatus(),
+                Optional.ofNullable(finishRequest.getEndTime()),
                 failSafeEmpty(finishRequest.getMeasurements()),
                 failSafeEmpty(finishRequest.getAttributes()));
     }
@@ -111,6 +113,7 @@ public class BenchmarkController
                 benchmarkSequenceId,
                 executionSequenceId,
                 finishRequest.getStatus(),
+                Optional.ofNullable(finishRequest.getEndTime()),
                 failSafeEmpty(finishRequest.getMeasurements()),
                 failSafeEmpty(finishRequest.getAttributes()));
     }

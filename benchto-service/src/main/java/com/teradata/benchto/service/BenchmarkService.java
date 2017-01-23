@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -82,12 +83,12 @@ public class BenchmarkService
 
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
-    public void finishBenchmarkRun(String uniqueName, String sequenceId, Status status, List<Measurement> measurements, Map<String, String> attributes)
+    public void finishBenchmarkRun(String uniqueName, String sequenceId, Status status, Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, sequenceId);
         benchmarkRun.getMeasurements().addAll(measurements);
         benchmarkRun.getAttributes().putAll(attributes);
-        benchmarkRun.setEnded(currentDateTime());
+        benchmarkRun.setEnded(fromInstantOrCurrentDateTime(endTime));
         benchmarkRun.setStatus(status);
         AggregatedMeasurement durationAggregatedMeasurement = benchmarkRun.getAggregatedMeasurements().get("duration");
         if (durationAggregatedMeasurement != null) {
@@ -126,7 +127,7 @@ public class BenchmarkService
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
     @Transactional
     public void finishExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Status status,
-            List<Measurement> measurements, Map<String, String> attributes)
+            Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
         verifyBenchmarkRunInStartedStatus(benchmarkRun);
@@ -137,7 +138,7 @@ public class BenchmarkService
 
         execution.getMeasurements().addAll(measurements);
         execution.getAttributes().putAll(attributes);
-        execution.setEnded(currentDateTime());
+        execution.setEnded(fromInstantOrCurrentDateTime(endTime));
         execution.setStatus(status);
     }
 
@@ -194,5 +195,14 @@ public class BenchmarkService
         }
         ZonedDateTime endedAsZDT = ZonedDateTime.of(ended.toLocalDateTime(), ZoneId.systemDefault());
         return Duration.between(endedAsZDT, currentDateTime());
+    }
+
+
+    private ZonedDateTime fromInstantOrCurrentDateTime(Optional<Instant> instant)
+    {
+        ZonedDateTime currentDateTime = currentDateTime();
+        return instant
+                .map(i -> i.atZone(currentDateTime.getZone()))
+                .orElse(currentDateTime);
     }
 }

@@ -20,6 +20,7 @@ import com.teradata.benchto.service.model.Status;
 
 import javax.validation.constraints.NotNull;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -27,14 +28,18 @@ public class FinishRequest
 {
     @NotNull
     private final Status status;
+    private final Instant endTime;
     private final List<Measurement> measurements;
     private final Map<String, String> attributes;
 
     @JsonCreator
-    public FinishRequest(@JsonProperty("status") Status status, @JsonProperty("measurements") List<Measurement> measurements,
+    public FinishRequest(@JsonProperty("status") Status status,
+            @JsonProperty("endTime") Instant endTime,
+            @JsonProperty("measurements") List<Measurement> measurements,
             @JsonProperty("attributes") Map<String, String> attributes)
     {
         this.status = status;
+        this.endTime = endTime;
         this.measurements = measurements;
         this.attributes = attributes;
     }
@@ -42,6 +47,11 @@ public class FinishRequest
     public Status getStatus()
     {
         return status;
+    }
+
+    public Instant getEndTime()
+    {
+        return endTime;
     }
 
     public List<Measurement> getMeasurements()
