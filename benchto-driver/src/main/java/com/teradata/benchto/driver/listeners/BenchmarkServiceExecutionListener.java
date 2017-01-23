@@ -14,6 +14,7 @@
 package com.teradata.benchto.driver.listeners;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.math.LongMath;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Measurable;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
@@ -34,6 +35,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,11 +47,14 @@ import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.RESERVED_KE
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.FAILED;
 import static com.teradata.benchto.driver.utils.ExceptionUtils.stackTraceToString;
+import static java.lang.String.format;
 
 @Component
 public class BenchmarkServiceExecutionListener
         implements BenchmarkExecutionListener
 {
+    private static final Duration MAX_CLOCK_DRIFT = Duration.of(1, ChronoUnit.SECONDS);
+
     @Autowired
     private TaskExecutor taskExecutor;
 
@@ -70,6 +76,8 @@ public class BenchmarkServiceExecutionListener
     @Override
     public void benchmarkStarted(Benchmark benchmark)
     {
+        checkClocksSync();
+
         taskExecutor.execute(() -> {
             BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder(benchmark.getName())
                     .environmentName(benchmark.getEnvironment());
@@ -87,6 +95,22 @@ public class BenchmarkServiceExecutionListener
 
             benchmarkServiceClient.startBenchmark(benchmark.getUniqueName(), benchmark.getSequenceId(), request);
         });
+    }
+
+    private void checkClocksSync()
+    {
+        long timeBefore = System.currentTimeMillis();
+        long serviceTime = benchmarkServiceClient.getServiceCurrentTime().toEpochMilli();
+        long timeAfter = System.currentTimeMillis();
+
+        long driftApproximation = Math.abs(LongMath.mean(timeBefore, timeAfter) - serviceTime);
+        long approximationPrecision = timeAfter - LongMath.mean(timeBefore, timeAfter);
+
+        Duration driftLowerBound = Duration.of(driftApproximation - approximationPrecision, ChronoUnit.MILLIS);
+
+        if (driftLowerBound.compareTo(MAX_CLOCK_DRIFT) > 1) {
+            throw new RuntimeException(format("Detected driver and service clocks drift of at least %s, assumed sane maximum is %s", driftLowerBound, MAX_CLOCK_DRIFT));
+        }
     }
 
     @Override

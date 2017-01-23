@@ -37,6 +37,7 @@ import java.util.Map;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static java.util.Objects.requireNonNull;
 
 @Component
 public class BenchmarkServiceClient
@@ -48,6 +49,14 @@ public class BenchmarkServiceClient
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
+    public Instant getServiceCurrentTime()
+    {
+        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
+        Long serviceCurrentTime = postForObject("{serviceUrl}/v1/time/current-time-millis", null, Long.class, requestParams);
+        return Instant.ofEpochMilli(requireNonNull(serviceCurrentTime, "service returned null time"));
+    }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<String> generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)

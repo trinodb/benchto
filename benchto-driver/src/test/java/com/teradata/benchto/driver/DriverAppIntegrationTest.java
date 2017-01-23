@@ -122,6 +122,11 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess().contentType(APPLICATION_JSON).body("[\"" + uniqueBenchmarkName + "\"]"));
 
         restServiceServer.expect(matchAll(
+                requestTo("http://benchmark-service:8080/v1/time/current-time-millis"),
+                method(HttpMethod.POST))
+        ).andRespond(request -> withSuccess().contentType(APPLICATION_JSON).body("" + System.currentTimeMillis()).createResponse(request));
+
+        restServiceServer.expect(matchAll(
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/start"),
                 method(HttpMethod.POST),
                 jsonPath("$.name", is(benchmarkName)),
