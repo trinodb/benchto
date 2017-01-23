@@ -30,6 +30,7 @@ import com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.
 import com.teradata.benchto.driver.service.Measurement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
@@ -48,6 +49,8 @@ import static com.teradata.benchto.driver.utils.ExceptionUtils.stackTraceToStrin
 public class BenchmarkServiceExecutionListener
         implements BenchmarkExecutionListener
 {
+    @Autowired
+    private TaskExecutor taskExecutor;
 
     @Value("${benchmark-service.url}")
     private String serviceUrl;
@@ -61,61 +64,71 @@ public class BenchmarkServiceExecutionListener
     @Override
     public void benchmarkStarted(Benchmark benchmark)
     {
-        BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder(benchmark.getName())
-                .environmentName(benchmark.getEnvironment());
+        taskExecutor.execute(() -> {
+            BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder(benchmark.getName())
+                    .environmentName(benchmark.getEnvironment());
 
-        for (Map.Entry<String, String> variableEntry : benchmark.getVariables().entrySet()) {
-            if (RESERVED_KEYWORDS.contains(variableEntry.getKey())) {
-                requestBuilder.addAttribute(variableEntry.getKey(), variableEntry.getValue());
+            for (Map.Entry<String, String> variableEntry : benchmark.getVariables().entrySet()) {
+                if (RESERVED_KEYWORDS.contains(variableEntry.getKey())) {
+                    requestBuilder.addAttribute(variableEntry.getKey(), variableEntry.getValue());
+                }
+                else {
+                    requestBuilder.addVariable(variableEntry.getKey(), variableEntry.getValue());
+                }
             }
-            else {
-                requestBuilder.addVariable(variableEntry.getKey(), variableEntry.getValue());
-            }
-        }
 
-        benchmarkServiceClient.startBenchmark(benchmark.getUniqueName(), benchmark.getSequenceId(), requestBuilder.build());
+            BenchmarkServiceClient.BenchmarkStartRequest request = requestBuilder.build();
+
+            benchmarkServiceClient.startBenchmark(benchmark.getUniqueName(), benchmark.getSequenceId(), request);
+        });
     }
 
     @Override
     public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
-        getMeasurements(benchmarkExecutionResult)
-                .thenApply(measurements -> {
-                    return new FinishRequestBuilder()
-                            .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
-                            .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
-                            .addMeasurements(measurements)
-                            .build();
-                })
-                .thenAccept(request -> {
-                    benchmarkServiceClient.finishBenchmark(
-                            benchmarkExecutionResult.getBenchmark().getUniqueName(),
-                            benchmarkExecutionResult.getBenchmark().getSequenceId(),
-                            request);
-                });
+        taskExecutor.execute(() -> {
+            getMeasurements(benchmarkExecutionResult)
+                    .thenApply(measurements -> {
+                        return new FinishRequestBuilder()
+                                .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                                .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
+                                .addMeasurements(measurements)
+                                .build();
+                    })
+                    .thenAccept(request -> {
+                        benchmarkServiceClient.finishBenchmark(
+                                benchmarkExecutionResult.getBenchmark().getUniqueName(),
+                                benchmarkExecutionResult.getBenchmark().getSequenceId(),
+                                request);
+                    });
+        });
     }
 
     @Override
     public void executionStarted(QueryExecution execution)
     {
-        ExecutionStartRequest request = new ExecutionStartRequestBuilder()
-                .build();
+        taskExecutor.execute(() -> {
+            ExecutionStartRequest request = new ExecutionStartRequestBuilder()
+                    .build();
 
-        benchmarkServiceClient.startExecution(execution.getBenchmark().getUniqueName(), execution.getBenchmark().getSequenceId(), executionSequenceId(execution), request);
+            benchmarkServiceClient.startExecution(execution.getBenchmark().getUniqueName(), execution.getBenchmark().getSequenceId(), executionSequenceId(execution), request);
+        });
     }
 
     @Override
     public void executionFinished(QueryExecutionResult executionResult)
     {
-        getMeasurements(executionResult)
-                .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
-                .thenAccept(request -> {
-                    benchmarkServiceClient.finishExecution(
-                            executionResult.getBenchmark().getUniqueName(),
-                            executionResult.getBenchmark().getSequenceId(),
-                            executionSequenceId(executionResult.getQueryExecution()),
-                            request);
-                });
+        taskExecutor.execute(() -> {
+            getMeasurements(executionResult)
+                    .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
+                    .thenAccept(request -> {
+                        benchmarkServiceClient.finishExecution(
+                                executionResult.getBenchmark().getUniqueName(),
+                                executionResult.getBenchmark().getSequenceId(),
+                                executionSequenceId(executionResult.getQueryExecution()),
+                                request);
+                    });
+        });
     }
 
     private FinishRequest buildExecutionFinishedRequest(QueryExecutionResult executionResult, List<Measurement> measurements)

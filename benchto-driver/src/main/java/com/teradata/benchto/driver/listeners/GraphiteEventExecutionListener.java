@@ -23,6 +23,7 @@ import com.teradata.benchto.driver.graphite.GraphiteClient.GraphiteEventRequest.
 import com.teradata.benchto.driver.listeners.benchmark.BenchmarkExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import static java.lang.String.format;
@@ -32,6 +33,8 @@ import static java.lang.String.format;
 public class GraphiteEventExecutionListener
         implements BenchmarkExecutionListener
 {
+    @Autowired
+    private TaskExecutor taskExecutor;
 
     @Autowired
     private GraphiteClient graphiteClient;
@@ -44,7 +47,7 @@ public class GraphiteEventExecutionListener
                 .tags("benchmark", "started", benchmark.getEnvironment())
                 .build();
 
-        graphiteClient.storeEvent(request);
+        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
     }
 
     @Override
@@ -57,7 +60,7 @@ public class GraphiteEventExecutionListener
                 .when(benchmarkExecutionResult.getUtcEnd())
                 .build();
 
-        graphiteClient.storeEvent(request);
+        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
     }
 
     @Override
@@ -72,7 +75,7 @@ public class GraphiteEventExecutionListener
                 .tags("execution", "started", execution.getBenchmark().getEnvironment())
                 .build();
 
-        graphiteClient.storeEvent(request);
+        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
     }
 
     @Override
@@ -90,6 +93,6 @@ public class GraphiteEventExecutionListener
                 .when(executionResult.getUtcEnd())
                 .build();
 
-        graphiteClient.storeEvent(request);
+        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
     }
 }

@@ -20,7 +20,6 @@ import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.QueryExecution;
 import com.teradata.benchto.driver.execution.QueryExecutionResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -30,9 +29,6 @@ import java.util.List;
 @Component
 public class BenchmarkStatusReporter
 {
-    @Autowired
-    private TaskExecutor taskExecutor;
-
     @Autowired
     private List<BenchmarkExecutionListener> executionListeners;
 
@@ -46,28 +42,28 @@ public class BenchmarkStatusReporter
     public void reportBenchmarkStarted(Benchmark benchmark)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.benchmarkStarted(benchmark));
+            listener.benchmarkStarted(benchmark);
         }
     }
 
     public void reportBenchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.benchmarkFinished(benchmarkExecutionResult));
+            listener.benchmarkFinished(benchmarkExecutionResult);
         }
     }
 
     public void reportExecutionStarted(QueryExecution queryExecution)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.executionStarted(queryExecution));
+            listener.executionStarted(queryExecution);
         }
     }
 
     public void reportExecutionFinished(QueryExecutionResult queryExecutionResult)
     {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            taskExecutor.execute(() -> listener.executionFinished(queryExecutionResult));
+            listener.executionFinished(queryExecutionResult);
         }
     }
 }
