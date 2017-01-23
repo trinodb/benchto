@@ -66,9 +66,9 @@ public class GraphiteClient
     }
 
     @Retryable(value = {RestClientException.class, IncompleteDataException.class}, backoff = @Backoff(delay = 5000, multiplier = 2), maxAttempts = 4)
-    public Map<String, double[]> loadMetrics(Map<String, String> metrics, ZonedDateTime from, ZonedDateTime to)
+    public Map<String, double[]> loadMetrics(Map<String, String> metrics, long fromEpochSecond, long toEpochSecond)
     {
-        URI uri = buildLoadMetricsURI(metrics, from, to);
+        URI uri = buildLoadMetricsURI(metrics, fromEpochSecond, toEpochSecond);
 
         LOGGER.debug("Loading metrics: {}", uri);
 
@@ -84,14 +84,14 @@ public class GraphiteClient
         ));
     }
 
-    private URI buildLoadMetricsURI(Map<String, String> metrics, ZonedDateTime from, ZonedDateTime to)
+    private URI buildLoadMetricsURI(Map<String, String> metrics, long fromEpochSecond, long toEpochSecond)
     {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
                 .fromUriString(graphiteURL)
                 .path("/render")
                 .queryParam("format", "json")
-                .queryParam("from", from.toEpochSecond())
-                .queryParam("until", to.toEpochSecond());
+                .queryParam("from", fromEpochSecond)
+                .queryParam("until", toEpochSecond);
 
         for (Map.Entry<String, String> metric : metrics.entrySet()) {
             String metricQueryExpr = metric.getValue();

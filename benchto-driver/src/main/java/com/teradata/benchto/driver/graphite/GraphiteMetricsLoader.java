@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
-import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,14 +78,19 @@ public class GraphiteMetricsLoader
             return emptyList();
         }
 
-        long cutOffThresholdSeconds = executionSynchronizer.cutOffThresholdSecondsForMeasurementReporting();
+        /*
+         * Graphite can be queried with seconds resolution. It's `from` is exclusive (sic!, at least currently) but `until` is inclusive.
+         * Subtracting graphite resolution from `until` we effectively ask for the buckets that are fully covered by the `measurable`.
+         * This ignores first and last bucket (both partially covered), but gives most interesting statistics.
+         */
+        long fromEpochSecond = measurable.getUtcStart().toEpochSecond();
+        long toEpochSecond = measurable.getUtcEnd()
+                .minus(graphiteProperties.getGraphiteResolutionSeconds(), ChronoUnit.SECONDS)
+                .toEpochSecond();
 
-        ZonedDateTime from = measurable.getUtcStart().minusSeconds(cutOffThresholdSeconds);
-        ZonedDateTime to = measurable.getUtcEnd().plusSeconds(cutOffThresholdSeconds);
+        LOG.debug("Loading metrics {} - from: {}, to: {}", queryMetrics, fromEpochSecond, toEpochSecond);
 
-        LOG.debug("Loading metrics {} - from: {}, to: {}", queryMetrics, from, to);
-
-        Map<String, double[]> loadedMetrics = graphiteClient.loadMetrics(queryMetrics, from, to);
+        Map<String, double[]> loadedMetrics = graphiteClient.loadMetrics(queryMetrics, fromEpochSecond, toEpochSecond);
 
         List<Measurement> measurements = newArrayList();
 

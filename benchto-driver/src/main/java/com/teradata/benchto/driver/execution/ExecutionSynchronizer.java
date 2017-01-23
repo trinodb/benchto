@@ -39,7 +39,6 @@ public class ExecutionSynchronizer
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionSynchronizer.class);
 
     private static final double GRAPHITE_WAIT_BETWEEN_REPORTING_RESOLUTION_COUNT = 2;
-    private static final double GRAPHITE_CUT_OFF_THRESHOLD_RESOLUTION_COUNT = 1.3;
 
     @Autowired
     private GraphiteProperties properties;
@@ -68,18 +67,6 @@ public class ExecutionSynchronizer
             LOGGER.info("Waiting {}s between benchmarks - thread ({})", waitSecondsBetweenRuns, currThreadName());
             TimeUtils.sleep(waitSecondsBetweenRuns, SECONDS);
         }
-    }
-
-    /**
-     * This method returns number of seconds which should be passed before/after query or benchmark
-     * run. This is needed as graphite collects metrics with given resolution, so we need to make sure
-     * that time range which is passed to Graphite query consists all data points.
-     *
-     * @return number of seconds which should be passed before/after query or benchmark run
-     */
-    public long cutOffThresholdSecondsForMeasurementReporting()
-    {
-        return (long) (properties.getGraphiteResolutionSeconds() * GRAPHITE_CUT_OFF_THRESHOLD_RESOLUTION_COUNT);
     }
 
     private int waitSecondsBetweenRuns()
