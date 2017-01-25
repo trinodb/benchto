@@ -39,7 +39,7 @@ public class EnvironmentService
     @Autowired
     private EnvironmentRepo environmentRepo;
 
-    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void storeEnvironment(String name, Map<String, String> attributes)
     {

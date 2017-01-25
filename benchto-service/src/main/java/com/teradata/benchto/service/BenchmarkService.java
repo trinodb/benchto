@@ -57,7 +57,7 @@ public class BenchmarkService
     @Autowired
     private EnvironmentService environmentService;
 
-    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public String startBenchmarkRun(String uniqueName, String name, String sequenceId, Optional<String> environmentName, Map<String, String> variables,
             Map<String, String> attributes)
@@ -81,7 +81,7 @@ public class BenchmarkService
         return benchmarkRun.getUniqueName();
     }
 
-    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void finishBenchmarkRun(String uniqueName, String sequenceId, Status status, Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
     {
@@ -104,7 +104,7 @@ public class BenchmarkService
         }
     }
 
-    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void startExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Map<String, String> attributes)
     {
@@ -129,7 +129,7 @@ public class BenchmarkService
         benchmarkRun.getExecutions().add(execution);
     }
 
-    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class}, maxAttempts = 1)
+    @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void finishExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Status status,
             Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
