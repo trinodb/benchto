@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
+import static com.google.common.collect.Maps.immutableEntry;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -40,7 +42,9 @@ public final class YamlUtils
     {
         return variableMap.entrySet()
                 .stream()
-                .collect(toMap(Map.Entry::getKey, e -> asStringList(e.getValue())));
+                .map(entry -> immutableEntry(entry.getKey(),
+                        asStringList(requireNonNull(entry.getValue(), "Null value for key: " + entry.getKey()))))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public static List<String> asStringList(Object object)
