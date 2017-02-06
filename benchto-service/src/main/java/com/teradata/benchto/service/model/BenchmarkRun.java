@@ -54,6 +54,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.teradata.benchto.service.model.AggregatedMeasurement.aggregate;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static javax.persistence.FetchType.EAGER;
 import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
@@ -281,8 +282,16 @@ public class BenchmarkRun
                     measurementValues.put(measurement, measurement.getValue());
                 }
             }
-            aggregatedMeasurements = measurementValues.asMap().entrySet().stream()
+            Map<String, AggregatedMeasurement> aggregated = measurementValues.asMap().entrySet().stream()
                     .collect(toMap(entry -> entry.getKey().getName(), entry -> aggregate(entry.getKey().getUnit(), entry.getValue())));
+
+            // Fill-in measurements captured only at benchmark-run level
+            for (Measurement measurement : measurements) {
+                aggregated.computeIfAbsent(measurement.getName(),
+                        name -> aggregate(measurement.getUnit(), singletonList(measurement.getValue())));
+            }
+
+            aggregatedMeasurements = aggregated;
         }
         return aggregatedMeasurements;
     }
