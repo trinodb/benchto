@@ -31,7 +31,7 @@ import com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.
 import com.teradata.benchto.driver.service.Measurement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
@@ -56,7 +56,7 @@ public class BenchmarkServiceExecutionListener
     private static final Duration MAX_CLOCK_DRIFT = Duration.of(1, ChronoUnit.SECONDS);
 
     @Autowired
-    private TaskExecutor taskExecutor;
+    private AsyncTaskExecutor taskExecutor;
 
     @Value("${benchmark-service.url}")
     private String serviceUrl;

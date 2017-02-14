@@ -24,7 +24,7 @@ import com.teradata.benchto.driver.graphite.GraphiteClient.GraphiteEventRequest.
 import com.teradata.benchto.driver.listeners.benchmark.BenchmarkExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import static java.lang.String.format;
@@ -35,7 +35,7 @@ public class GraphiteEventExecutionListener
         implements BenchmarkExecutionListener
 {
     @Autowired
-    private TaskExecutor taskExecutor;
+    private AsyncTaskExecutor taskExecutor;
 
     @Autowired
     private ExecutionSynchronizer executionSynchronizer;
