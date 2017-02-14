@@ -27,6 +27,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 import static java.lang.String.format;
 
 @Component
@@ -50,18 +53,18 @@ public class GraphiteEventExecutionListener
     }
 
     @Override
-    public void benchmarkStarted(Benchmark benchmark)
+    public Future<?> benchmarkStarted(Benchmark benchmark)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s started", benchmark.getUniqueName()))
                 .tags("benchmark", "started", benchmark.getEnvironment())
                 .build();
 
-        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
+        return taskExecutor.submit(() -> graphiteClient.storeEvent(request));
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
+    public Future<?> benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
                 .what(format("Benchmark %s ended", benchmarkExecutionResult.getBenchmark().getUniqueName()))
@@ -70,16 +73,18 @@ public class GraphiteEventExecutionListener
                 .when(benchmarkExecutionResult.getUtcEnd())
                 .build();
 
-        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
+        Future<?> future = taskExecutor.submit(() -> graphiteClient.storeEvent(request));
 
         executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmarkExecutionResult.getBenchmark());
+
+        return future;
     }
 
     @Override
-    public void executionStarted(QueryExecution execution)
+    public Future<?> executionStarted(QueryExecution execution)
     {
         if (execution.getBenchmark().isConcurrent()) {
-            return;
+            return CompletableFuture.completedFuture("");
         }
 
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
@@ -87,14 +92,14 @@ public class GraphiteEventExecutionListener
                 .tags("execution", "started", execution.getBenchmark().getEnvironment())
                 .build();
 
-        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
+        return taskExecutor.submit(() -> graphiteClient.storeEvent(request));
     }
 
     @Override
-    public void executionFinished(QueryExecutionResult executionResult)
+    public Future<?> executionFinished(QueryExecutionResult executionResult)
     {
         if (executionResult.getBenchmark().isConcurrent()) {
-            return;
+            return CompletableFuture.completedFuture("");
         }
 
         QueryExecution queryExecution = executionResult.getQueryExecution();
@@ -105,8 +110,10 @@ public class GraphiteEventExecutionListener
                 .when(executionResult.getUtcEnd())
                 .build();
 
-        taskExecutor.execute(() -> graphiteClient.storeEvent(request));
+        Future<?> future = taskExecutor.submit(() -> graphiteClient.storeEvent(request));
 
         executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(executionResult);
+
+        return future;
     }
 }

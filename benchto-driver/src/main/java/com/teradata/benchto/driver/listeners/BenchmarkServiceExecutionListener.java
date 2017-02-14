@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORDS;
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
@@ -74,11 +75,11 @@ public class BenchmarkServiceExecutionListener
     }
 
     @Override
-    public void benchmarkStarted(Benchmark benchmark)
+    public Future<?> benchmarkStarted(Benchmark benchmark)
     {
         checkClocksSync();
 
-        taskExecutor.execute(() -> {
+        return taskExecutor.submit(() -> {
             BenchmarkStartRequestBuilder requestBuilder = new BenchmarkStartRequestBuilder(benchmark.getName())
                     .environmentName(benchmark.getEnvironment());
 
@@ -114,30 +115,29 @@ public class BenchmarkServiceExecutionListener
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
+    public Future<?> benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
-        taskExecutor.execute(() -> {
-            getMeasurements(benchmarkExecutionResult)
-                    .thenApply(measurements -> {
-                        return new FinishRequestBuilder()
-                                .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
-                                .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
-                                .addMeasurements(measurements)
-                                .build();
-                    })
-                    .thenAccept(request -> {
-                        benchmarkServiceClient.finishBenchmark(
-                                benchmarkExecutionResult.getBenchmark().getUniqueName(),
-                                benchmarkExecutionResult.getBenchmark().getSequenceId(),
-                                request);
-                    });
-        });
+        return CompletableFuture.supplyAsync(() -> getMeasurements(benchmarkExecutionResult), taskExecutor::execute)
+                .thenCompose(future -> future)
+                .thenApply(measurements -> {
+                    return new FinishRequestBuilder()
+                            .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                            .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
+                            .addMeasurements(measurements)
+                            .build();
+                })
+                .thenAccept(request -> {
+                    benchmarkServiceClient.finishBenchmark(
+                            benchmarkExecutionResult.getBenchmark().getUniqueName(),
+                            benchmarkExecutionResult.getBenchmark().getSequenceId(),
+                            request);
+                });
     }
 
     @Override
-    public void executionStarted(QueryExecution execution)
+    public Future<?> executionStarted(QueryExecution execution)
     {
-        taskExecutor.execute(() -> {
+        return taskExecutor.submit(() -> {
             ExecutionStartRequest request = new ExecutionStartRequestBuilder()
                     .build();
 
@@ -146,19 +146,18 @@ public class BenchmarkServiceExecutionListener
     }
 
     @Override
-    public void executionFinished(QueryExecutionResult executionResult)
+    public Future<?> executionFinished(QueryExecutionResult executionResult)
     {
-        taskExecutor.execute(() -> {
-            getMeasurements(executionResult)
-                    .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
-                    .thenAccept(request -> {
-                        benchmarkServiceClient.finishExecution(
-                                executionResult.getBenchmark().getUniqueName(),
-                                executionResult.getBenchmark().getSequenceId(),
-                                executionSequenceId(executionResult.getQueryExecution()),
-                                request);
-                    });
-        });
+        return CompletableFuture.supplyAsync(() -> getMeasurements(executionResult), taskExecutor::execute)
+                .thenCompose(future -> future)
+                .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
+                .thenAccept(request -> {
+                    benchmarkServiceClient.finishExecution(
+                            executionResult.getBenchmark().getUniqueName(),
+                            executionResult.getBenchmark().getSequenceId(),
+                            executionSequenceId(executionResult.getQueryExecution()),
+                            request);
+                });
     }
 
     private FinishRequest buildExecutionFinishedRequest(QueryExecutionResult executionResult, List<Measurement> measurements)

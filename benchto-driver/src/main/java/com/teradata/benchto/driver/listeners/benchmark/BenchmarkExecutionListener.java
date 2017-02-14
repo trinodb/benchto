@@ -19,14 +19,16 @@ import com.teradata.benchto.driver.execution.QueryExecution;
 import com.teradata.benchto.driver.execution.QueryExecutionResult;
 import org.springframework.core.Ordered;
 
+import java.util.concurrent.Future;
+
 public interface BenchmarkExecutionListener
         extends Ordered
 {
-    void benchmarkStarted(Benchmark benchmark);
+    Future<?> benchmarkStarted(Benchmark benchmark);
 
-    void benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult);
+    Future<?> benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult);
 
-    void executionStarted(QueryExecution queryExecution);
+    Future<?> executionStarted(QueryExecution queryExecution);
 
-    void executionFinished(QueryExecutionResult execution);
+    Future<?> executionFinished(QueryExecutionResult execution);
 }

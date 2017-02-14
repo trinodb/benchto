@@ -22,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 @Component
 public class LoggingBenchmarkExecutionListener
         implements BenchmarkExecutionListener
@@ -36,25 +39,31 @@ public class LoggingBenchmarkExecutionListener
     }
 
     @Override
-    public void benchmarkStarted(Benchmark benchmark)
+    public Future<?> benchmarkStarted(Benchmark benchmark)
     {
         LOG.info("Executing benchmark: {}", benchmark.getName());
+
+        return CompletableFuture.completedFuture("");
     }
 
     @Override
-    public void benchmarkFinished(BenchmarkExecutionResult result)
+    public Future<?> benchmarkFinished(BenchmarkExecutionResult result)
     {
         LOG.info("Finished benchmark: {}", result.getBenchmark().getName());
+
+        return CompletableFuture.completedFuture("");
     }
 
     @Override
-    public void executionStarted(QueryExecution execution)
+    public Future<?> executionStarted(QueryExecution execution)
     {
         LOG.info("Query started: {} ({}/{})", execution.getQueryName(), execution.getRun(), execution.getBenchmark().getRuns());
+
+        return CompletableFuture.completedFuture("");
     }
 
     @Override
-    public void executionFinished(QueryExecutionResult result)
+    public Future<?> executionFinished(QueryExecutionResult result)
     {
         if (result.isSuccessful()) {
             LOG.info("Query finished: {} ({}/{}), rows count: {}, duration: {}", result.getQueryName(), result.getQueryExecution().getRun(),
@@ -64,5 +73,7 @@ public class LoggingBenchmarkExecutionListener
             LOG.error("Query failed: {} ({}/{}), execution error: {}", result.getQueryName(), result.getQueryExecution().getRun(),
                     result.getBenchmark().getRuns(), result.getFailureCause().getMessage());
         }
+
+        return CompletableFuture.completedFuture("");
     }
 }
