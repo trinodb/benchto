@@ -163,6 +163,7 @@ public class BenchmarkService
             throw new IllegalArgumentException("Could not find benchmark " + uniqueName + " - " + sequenceId);
         }
         Hibernate.initialize(benchmarkRun.getExecutions());
+        Hibernate.initialize(benchmarkRun.getMeasurements());
         return benchmarkRun;
     }
 
