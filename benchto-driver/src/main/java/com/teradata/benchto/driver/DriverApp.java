@@ -63,18 +63,16 @@ public class DriverApp
 
         SpringApplicationBuilder applicationBuilder = new SpringApplicationBuilder(DriverApp.class)
                 .web(false)
+                .registerShutdownHook(false)
                 .properties();
         if (commandLine.hasOption("profile")) {
             applicationBuilder.profiles(commandLine.getOptionValue("profile"));
         }
-        ConfigurableApplicationContext ctx = applicationBuilder.run();
-        ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
 
-        Thread.currentThread().setName("main");
-
-        try {
+        try (ConfigurableApplicationContext ctx = applicationBuilder.run()) {
+            ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
+            Thread.currentThread().setName("main");
             executionDriver.execute();
-            System.exit(0);
         }
         catch (Throwable e) {
             logException(e);
