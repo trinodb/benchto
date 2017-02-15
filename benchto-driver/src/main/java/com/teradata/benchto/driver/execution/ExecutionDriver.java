@@ -16,6 +16,7 @@ package com.teradata.benchto.driver.execution;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.BenchmarkProperties;
 import com.teradata.benchto.driver.FailedBenchmarkExecutionException;
+import com.teradata.benchto.driver.listeners.benchmark.BenchmarkStatusReporter;
 import com.teradata.benchto.driver.loader.BenchmarkLoader;
 import com.teradata.benchto.driver.macro.MacroService;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.teradata.benchto.driver.utils.TimeUtils.nowUtc;
@@ -41,6 +43,9 @@ public class ExecutionDriver
 
     @Autowired
     private BenchmarkProperties properties;
+
+    @Autowired
+    private BenchmarkStatusReporter benchmarkStatusReporter;
 
     @Autowired
     private BenchmarkLoader benchmarkLoader;
@@ -120,11 +125,14 @@ public class ExecutionDriver
 
             executeHealthCheck(benchmark);
             benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
+            benchmarkStatusReporter.processCompletedFutures();
         }
 
         List<BenchmarkExecutionResult> failedBenchmarkResults = benchmarkExecutionResults.stream()
                 .filter(benchmarkExecutionResult -> !benchmarkExecutionResult.isSuccessful())
                 .collect(toList());
+
+        benchmarkStatusReporter.awaitAllFutures(10, TimeUnit.MINUTES);
 
         if (!failedBenchmarkResults.isEmpty()) {
             throw new FailedBenchmarkExecutionException(failedBenchmarkResults, benchmarkExecutionResults.size());

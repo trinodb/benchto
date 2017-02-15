@@ -17,6 +17,7 @@ import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.BenchmarkProperties;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
+import com.teradata.benchto.driver.listeners.benchmark.BenchmarkStatusReporter;
 import com.teradata.benchto.driver.loader.BenchmarkLoader;
 import com.teradata.benchto.driver.macro.MacroService;
 import org.junit.Before;
@@ -56,6 +57,9 @@ public class ExecutionDriverTest
 
     @Mock
     BenchmarkLoader benchmarkLoader;
+
+    @Mock
+    BenchmarkStatusReporter benchmarkStatusReporter;
 
     @InjectMocks
     ExecutionDriver driver;
