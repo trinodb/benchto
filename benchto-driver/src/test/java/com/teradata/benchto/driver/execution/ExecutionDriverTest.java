@@ -16,8 +16,11 @@ package com.teradata.benchto.driver.execution;
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.BenchmarkProperties;
+import com.teradata.benchto.driver.concurrent.ExecutorServiceFactory;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
+import com.teradata.benchto.driver.listeners.benchmark.BenchmarkExecutionListener;
 import com.teradata.benchto.driver.listeners.benchmark.BenchmarkStatusReporter;
+import com.teradata.benchto.driver.listeners.benchmark.DefaultBenchmarkExecutionListener;
 import com.teradata.benchto.driver.loader.BenchmarkLoader;
 import com.teradata.benchto.driver.macro.MacroService;
 import org.junit.Before;
@@ -26,12 +29,17 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.teradata.benchto.driver.utils.TimeUtils.sleep;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyList;
@@ -110,6 +118,36 @@ public class ExecutionDriverTest
 
         verify(benchmarkExecutionDriver).execute(any(Benchmark.class), anyInt(), anyInt());
         verifyNoMoreInteractions(benchmarkExecutionDriver);
+    }
+
+    @Test
+    public void failOnListenerFailure()
+    {
+        BenchmarkExecutionListener failingListener = new DefaultBenchmarkExecutionListener()
+        {
+            @Override
+            public Future<?> benchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
+            {
+                throw new IllegalStateException("programmatic listener failure in testFailingListener");
+            }
+        };
+
+        BenchmarkStatusReporter statusReporter = new BenchmarkStatusReporter(singletonList(failingListener));
+        /*
+         * Listeners are called by BenchmarkExecutionDriver so we need to provide one.
+         * Listeners results final check is invoked by ExecutionDriver, so this is tested here.
+         */
+        BenchmarkExecutionDriver benchmarkExecutionDriver = new BenchmarkExecutionDriver();
+        ReflectionTestUtils.setField(benchmarkExecutionDriver, "macroService", mock(MacroService.class));
+        ReflectionTestUtils.setField(benchmarkExecutionDriver, "executorServiceFactory", new ExecutorServiceFactory());
+        ReflectionTestUtils.setField(benchmarkExecutionDriver, "executionSynchronizer", mock(ExecutionSynchronizer.class));
+        ReflectionTestUtils.setField(benchmarkExecutionDriver, "statusReporter", statusReporter);
+        ReflectionTestUtils.setField(driver, "benchmarkExecutionDriver", benchmarkExecutionDriver);
+        ReflectionTestUtils.setField(driver, "benchmarkStatusReporter", statusReporter);
+
+        assertThatThrownBy(() -> {
+            driver.execute();
+        }).hasMessageContaining("programmatic listener failure in testFailingListener");
     }
 
     private void sleepOnSecondDuringMacroExecution()
