@@ -27,8 +27,6 @@ import org.springframework.core.OrderComparator;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,17 +46,16 @@ public class BenchmarkStatusReporter
 {
     private static final Logger LOG = LoggerFactory.getLogger(BenchmarkStatusReporter.class);
 
-    @Autowired
-    private List<BenchmarkExecutionListener> executionListeners;
+    private final List<BenchmarkExecutionListener> executionListeners;
 
     private Queue<Future<?>> pendingFutures = synchronizedQueue(new ArrayDeque<>());
 
-    @PostConstruct
-    public void sortExecutionListeners()
+    @Autowired
+    public BenchmarkStatusReporter(List<BenchmarkExecutionListener> executionListeners)
     {
-        // HACK: listeners have to be sorted to provide tests determinism
-        executionListeners = ImmutableList.copyOf(
+        this.executionListeners = ImmutableList.copyOf(
                 Ordering.<Ordered>from(OrderComparator.INSTANCE::compare)
+                        // HACK: listeners have to be sorted to provide tests determinism
                         .compound(Ordering.usingToString())
                         .sortedCopy(executionListeners));
     }
