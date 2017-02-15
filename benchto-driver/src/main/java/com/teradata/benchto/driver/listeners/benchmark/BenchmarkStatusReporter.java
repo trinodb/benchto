@@ -27,6 +27,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.function.BiFunction;
 
 @Component
 public class BenchmarkStatusReporter
@@ -46,29 +48,28 @@ public class BenchmarkStatusReporter
 
     public void reportBenchmarkStarted(Benchmark benchmark)
     {
-        for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.benchmarkStarted(benchmark);
-        }
+        fireListeners(BenchmarkExecutionListener::benchmarkStarted, benchmark);
     }
 
     public void reportBenchmarkFinished(BenchmarkExecutionResult benchmarkExecutionResult)
     {
-        for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.benchmarkFinished(benchmarkExecutionResult);
-        }
+        fireListeners(BenchmarkExecutionListener::benchmarkFinished, benchmarkExecutionResult);
     }
 
     public void reportExecutionStarted(QueryExecution queryExecution)
     {
-        for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.executionStarted(queryExecution);
-        }
+        fireListeners(BenchmarkExecutionListener::executionStarted, queryExecution);
     }
 
     public void reportExecutionFinished(QueryExecutionResult queryExecutionResult)
     {
+        fireListeners(BenchmarkExecutionListener::executionFinished, queryExecutionResult);
+    }
+
+    private <T> void fireListeners(BiFunction<BenchmarkExecutionListener, T, Future<?>> invoker, T argument)
+    {
         for (BenchmarkExecutionListener listener : executionListeners) {
-            listener.executionFinished(queryExecutionResult);
+            invoker.apply(listener, argument);
         }
     }
 }
