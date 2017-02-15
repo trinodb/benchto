@@ -91,6 +91,11 @@ public class GraphiteMetricsLoader
                 .minus(graphiteProperties.getGraphiteResolutionSeconds(), ChronoUnit.SECONDS);
         long toEpochSecond = to.toEpochSecond();
 
+        if (fromEpochSecond >= toEpochSecond) {
+            // Empty range
+            return completedFuture(emptyList());
+        }
+
         return executionSynchronizer.execute(
                 to.plus(graphiteProperties.getGraphiteMetricsDelay()).toInstant(),
                 () -> doLoadMeasurements(fromEpochSecond, toEpochSecond));
