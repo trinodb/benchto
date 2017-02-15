@@ -63,8 +63,11 @@ public class ExecutionDriverTest
     @Before
     public void setUp()
     {
+        Benchmark benchmark = mock(Benchmark.class);
+        when(benchmark.getConcurrency()).thenReturn(1);
+
         when(benchmarkLoader.loadBenchmarks(anyString()))
-                .thenReturn(ImmutableList.of(mock(Benchmark.class)));
+                .thenReturn(ImmutableList.of(benchmark));
         when(benchmarkProperties.getBeforeAllMacros())
                 .thenReturn(Optional.of(ImmutableList.of("before-macro")));
         when(benchmarkProperties.getAfterAllMacros())
@@ -75,6 +78,8 @@ public class ExecutionDriverTest
                 .thenReturn(Optional.of("sequence-id"));
         when(benchmarkExecutionDriver.execute(any(Benchmark.class), anyInt(), anyInt()))
                 .thenReturn(successfulBenchmarkExecution());
+        when(benchmarkProperties.getTimeLimit())
+                .thenReturn(Optional.empty());
     }
 
     private BenchmarkExecutionResult successfulBenchmarkExecution() {return new BenchmarkExecutionResultBuilder(null).withExecutions(ImmutableList.of()).build();}
@@ -95,9 +100,6 @@ public class ExecutionDriverTest
     @Test
     public void benchmarkIsExecutedWhenNoTimeLimitEnds()
     {
-        when(benchmarkProperties.getTimeLimit())
-                .thenReturn(Optional.empty());
-
         sleepOnSecondDuringMacroExecution();
 
         driver.execute();
