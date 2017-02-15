@@ -68,7 +68,6 @@ public class BenchmarkExecutionDriverTest
 
         BenchmarkExecutionResult benchmarkExecutionResult = driver.execute(mock(Benchmark.class), 0, 0);
 
-        benchmarkExecutionResult.getFailureCauses().stream().forEach(Exception::printStackTrace);
         assertThat(benchmarkExecutionResult.getFailureCauses()).isEmpty();
         assertThat(benchmarkExecutionResult.isSuccessful()).isTrue();
     }
