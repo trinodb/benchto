@@ -97,15 +97,19 @@ public class DriverAppIntegrationTest
                 .build();
 
         setBenchmark("test_concurrent_benchmark");
+        int preWarmRuns = 1;
+        int runs = 1000;
+        int allRuns = preWarmRuns + runs;
 
         verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark");
-        verifyExecutionStarted("test_concurrent_benchmark", 1);
-        verifyExecutionFinished("test_concurrent_benchmark", 1, concurrentQueryMeasurementName);
-        verifyExecutionStarted("test_concurrent_benchmark", 2);
-        verifyExecutionFinished("test_concurrent_benchmark", 2, concurrentQueryMeasurementName);
+        for (int i = preWarmRuns; i < allRuns; i++) {
+            verifyExecutionStarted("test_concurrent_benchmark", i);
+            verifyExecutionFinished("test_concurrent_benchmark", i, concurrentQueryMeasurementName);
+        }
         verifyGetGraphiteMeasurements();
         verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
-        verifyComplete();
+
+        verifyComplete(allRuns);
     }
 
     private void setBenchmark(String s)
@@ -229,24 +233,37 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
+        verifyComplete(3);
+    }
+
+    private void verifyComplete(int runs)
+    {
+        int expectedMacroCallCount = runs * /* macros per query */ 2
+                + /* before, after benchmark */ 2 + 1
+                + /* health check, before, after all */ 3;
+
         executionDriver.execute();
 
         ArgumentCaptor<String> macroArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(macroService, times(12)).runBenchmarkMacro(macroArgumentCaptor.capture(), any(Optional.class), any(Optional.class));
+        verify(macroService, times(expectedMacroCallCount)).runBenchmarkMacro(macroArgumentCaptor.capture(), any(Optional.class), any(Optional.class));
 
-        assertThat(macroArgumentCaptor.getAllValues()).isEqualTo(ImmutableList.of(
+        ImmutableList.Builder<String> expected = ImmutableList.builder();
+        expected.add(
                 "no-op-before-all",
                 "no-op-health-check",
                 "no-op-before-benchmark",
-                "test_query_before_benchmark.sql",
-                "no-op-before-execution",
-                "no-op-after-execution",
-                "no-op-before-execution",
-                "no-op-after-execution",
-                "no-op-before-execution",
-                "no-op-after-execution",
+                "test_query_before_benchmark.sql");
+        for (int i = 0; i < runs; i++) {
+            expected.add(
+                    "no-op-before-execution",
+                    "no-op-after-execution");
+        }
+        expected.add(
                 "no-op-after-benchmark",
-                "no-op-after-all"));
+                "no-op-after-all");
+
+        assertThat(macroArgumentCaptor.getAllValues())
+                .isEqualTo(expected.build());
     }
 
     private RequestMatcher matchAll(RequestMatcher... matchers)
