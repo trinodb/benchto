@@ -20,7 +20,6 @@ import com.teradata.benchto.driver.loader.SqlStatementGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,7 +32,6 @@ import java.util.StringJoiner;
 
 import static com.google.common.base.Preconditions.checkState;
 
-@Component
 public class QueryExecutionDriver
 {
     private static final Logger LOG = LoggerFactory.getLogger(QueryExecutionDriver.class);

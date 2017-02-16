@@ -15,6 +15,7 @@ package com.teradata.benchto.driver;
 
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.ExecutionDriver;
+import com.teradata.benchto.driver.execution.QueryExecutionDriver;
 import freemarker.template.TemplateException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -173,5 +174,10 @@ public class DriverApp
         FreeMarkerConfigurationFactoryBean factory = new FreeMarkerConfigurationFactoryBean();
         factory.setDefaultEncoding("UTF-8");
         return factory;
+    }
+
+    @Bean
+    public QueryExecutionDriver queryExecutionDriver() {
+        return new QueryExecutionDriver();
     }
 }
