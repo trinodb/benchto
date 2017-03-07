@@ -77,12 +77,41 @@
         <dep.javax.el>2.2.4</dep.javax.el>
     </properties>
 
+    <scm>
+        <connection>scm:git:https://github.com/prestodb/benchto.git</connection>
+        <developerConnection>scm:git:https://github.com/prestodb/benchto.git</developerConnection>
+        <url>https://github.com/prestodb/benchto.git</url>
+    </scm>
+
     <distributionManagement>
         <snapshotRepository>
-            <id>nexus</id>
-            <url>http://phabricator.td.teradata.com:8081/nexus/content/repositories/snapshots</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
+            </url>
+        </repository>
     </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencyManagement>
         <dependencies>
