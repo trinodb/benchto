@@ -39,10 +39,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 /**
  * This class is responsible for synchronizing threads in driver if graphite metrics collection
  * is enabled. Graphite collects metrics with predefined resolution, ex. 10 s.
- * <p/>
+ * <p>
  * After query/benchmark is finished we should wait at least 2 resolutions before we execute
  * next query/benchmark, so runs does not interfere with each other.
- * <p/>
+ * <p>
  * Graphite metrics loading should be delayed at least 1 resolution to make sure that last
  * probe was stored in graphite.
  */

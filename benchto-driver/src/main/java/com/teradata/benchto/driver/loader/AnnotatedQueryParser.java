@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Parses sql queries from files where first line can be single line header.
  * The line must start with --! marker, and define semicolon separated map of params.
- * <p/>
+ * <p>
  * Example contents:
  * --! key1: value1; key2: value2a,value2b
  * --! key3: value3
