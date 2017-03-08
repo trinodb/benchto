@@ -156,10 +156,10 @@
                     <plugin>
                         <groupId>com.spotify</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.4.10</version>
+                        <version>0.4.13</version>
                         <configuration>
                             <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                            <dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
+                            <dockerDirectory>${project.build.directory}/classes/docker</dockerDirectory>
                             <resources>
                                 <resource>
                                     <targetPath>/</targetPath>
@@ -250,6 +250,11 @@
             <resource>
                 <directory>src/main/webapp</directory>
                 <targetPath>static</targetPath>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/docker</directory>
+                <filtering>true</filtering>
+                <targetPath>docker</targetPath>
             </resource>
         </resources>
     </build>

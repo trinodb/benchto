@@ -67,7 +67,7 @@ Note that `description` field is optional.
 ## Building docker image
 
 ```
-$ ./mvnw docker:build
+$ ./mvnw package -pl benchto-service -P docker-images
 $ docker images
 REPOSITORY                             TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
 teradata-labs/benchto-service          latest              427f3e1f4777        13 seconds ago      879.3 MB
