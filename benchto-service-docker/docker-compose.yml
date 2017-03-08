@@ -1,0 +1,40 @@
+version: '2'
+services:
+
+  benchto-postgres:
+    image: 'postgres:9.6.2'
+    ports:
+      - '5432:5432'
+
+  benchto-graphite:
+    image: 'sitespeedio/graphite:0.9.14'
+    ports:
+      - '2003:2003'
+      - '8088:80'
+    volumes:
+      - ./config/graphite/storage-schemas.conf:/opt/graphite/conf/storage-schemas.conf
+      - ./config/graphite/carbon.conf:/opt/graphite/conf/carbon.conf
+
+  benchto-grafana:
+    image: 'grafana/grafana:4.1.2'
+    ports:
+      - '3000:3000'
+    links:
+      - benchto-graphite
+
+  benchto-service:
+    image: 'teradatalabs/benchto-service:${BENCHTO_SERVICE_TAG}'
+    ports:
+      - '80:8080'
+    links:
+      - benchto-postgres
+    environment:
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://benchto-postgres:5432/postgres'
+
+  benchto-setup:
+    image: 'centos:7.3.1611'
+    links:
+      - benchto-graphite
+    volumes:
+      - ./scripts/setup.sh:/tmp/setup.sh
+    command: bash /tmp/setup.sh
