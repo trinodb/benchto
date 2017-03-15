@@ -54,6 +54,7 @@ public class PrestoClient
             .put("totalBlockedTime", MILLI(SECOND))
             .put("processedInputDataSize", BYTE)
             .put("outputDataSize", BYTE)
+            .put("peakMemoryReservation", BYTE)
             .build();
 
     @Value("${presto.url}")
