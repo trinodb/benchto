@@ -32,7 +32,7 @@ public class BenchmarkByActiveVariablesFilterTest
         assertThat(filter.test(benchmarkWithVariable("ala", "pies"))).isFalse();
         assertThat(filter.test(benchmarkWithVariable("ala", "kot"))).isTrue();
         assertThat(filter.test(benchmarkWithVariable("ala", "kat"))).isTrue();
-        assertThat(filter.test(benchmarkWithVariable("ala", "katar"))).isTrue();
+        assertThat(filter.test(benchmarkWithVariable("ala", "katar"))).isFalse();
         assertThat(filter.test(benchmarkWithVariable("tola", "kot"))).isFalse();
         assertThat(filter.test(benchmarkWithVariable("tola", "pies"))).isFalse();
     }

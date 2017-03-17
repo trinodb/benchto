@@ -212,7 +212,7 @@ public class BenchmarkLoaderTest
     @Test
     public void getAllBenchmarks_activeVariables_with_regex()
     {
-        withActiveVariables("format=(rc)|(tx)");
+        withActiveVariables("format=(.rc)|(tx.)");
 
         assertLoadedBenchmarksCount(4).forEach(benchmark ->
                 assertThat(benchmark.getVariables().get("format")).isIn("orc", "txt")

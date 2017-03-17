@@ -53,7 +53,7 @@ class BenchmarkByActiveVariablesFilter
             if (benchmarkVariables.containsKey(variableKey)) {
                 Pattern valuePattern = variablePatterns.get(variableKey);
                 String benchmarkVariableValue = benchmarkVariables.get(variableKey);
-                if (!valuePattern.matcher(benchmarkVariableValue).find()) {
+                if (!valuePattern.matcher(benchmarkVariableValue).matches()) {
                     LOGGER.debug("Benchmark '{}' is EXCLUDED because mismatches on variable '{}', have '{}' does not match to '{}'",
                             benchmark.getName(), variableKey, valuePattern, benchmarkVariableValue);
                     return false;
