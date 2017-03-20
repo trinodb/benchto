@@ -23,7 +23,7 @@ $ ./mvnw verify
 ## Running service
 
 ```
-$ ./mvnw spring-boot:run -pl benchto-service
+$ env SERVER_PORT=8081 ./mvnw spring-boot:run -pl benchto-service
 
     ____                  __    __      
    / __ )___  ____  _____/ /_  / /_____ 
@@ -36,7 +36,7 @@ $ ./mvnw spring-boot:run -pl benchto-service
 ...
 ```
 
-Go to: [http://localhost:8080/](http://localhost:8080/)
+Go to: [http://localhost:8081/](http://localhost:8081/)
 
 ## Creating environment
 
@@ -47,7 +47,7 @@ $ curl -H 'Content-Type: application/json' -d '{
     "dashboardType": "grafana",
     "dashboardURL": "http://localhost:3000/dashboard/db/presto-devenv",
     "prestoURL": "http://presto-master:8080/"
-}' http://localhost:8080/v1/environment/PRESTO-DEVENV
+}' http://localhost:8081/v1/environment/PRESTO-DEVENV
 ```
 
 ## Creating tag
@@ -58,7 +58,7 @@ To create tag for environment PRESTO-DEVENV you need to run:
 $ curl -H 'Content-Type: application/json' -d '{
     "name": "Short tag desciption",
     "description": "Very long but optional tag description"
-}' http://localhost:8080/v1/tag/PRESTO-DEVENV
+}' http://localhost:8081/v1/tag/PRESTO-DEVENV
 
 ```
 
@@ -100,7 +100,7 @@ eg.
 $ curl -u user:password -H 'Content-Type: application/json' -d '{
     "name": "Short tag desciption",
     "description": "Very long but optional tag description"
-}' http://localhost:8080/v1/tag/PRESTO-DEVENV
+}' http://localhost:8081/v1/tag/PRESTO-DEVENV
 ```
 
 ## Benchto-service over HTTPS
