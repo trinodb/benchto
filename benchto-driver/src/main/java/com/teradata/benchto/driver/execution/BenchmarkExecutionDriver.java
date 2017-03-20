@@ -167,12 +167,15 @@ public class BenchmarkExecutionDriver
                         if (reportStatus) {
                             statusReporter.reportExecutionStarted(queryExecution);
                         }
+                        QueryExecutionResultBuilder failureResult = new QueryExecutionResultBuilder(queryExecution)
+                                .startTimer();
                         try {
                             result = queryExecutionDriver.execute(queryExecution, connection);
                         }
                         catch (Exception e) {
                             LOG.error("Query Execution failed for benchmark {}", benchmark.getName());
-                            result = new QueryExecutionResultBuilder(queryExecution)
+                            result = failureResult
+                                    .endTimer()
                                     .failed(e)
                                     .build();
                         }
