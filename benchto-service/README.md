@@ -23,7 +23,7 @@ $ ./mvnw verify
 ## Running service
 
 ```
-$ ./mvnw spring-boot:run
+$ ./mvnw spring-boot:run -pl benchto-service
 
     ____                  __    __      
    / __ )___  ____  _____/ /_  / /_____ 
