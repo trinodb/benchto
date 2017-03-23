@@ -56,7 +56,6 @@ import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.QUERY_NAMES
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.VARIABLES_KEY;
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.GenerateUniqueNamesRequestItem.generateUniqueNamesRequestItem;
 import static com.teradata.benchto.driver.utils.CartesianProductUtils.cartesianProduct;
-import static com.teradata.benchto.driver.utils.FilterUtils.pathContainsAny;
 import static com.teradata.benchto.driver.utils.YamlUtils.loadYamlFromString;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -277,9 +276,19 @@ public class BenchmarkLoader
     {
         Optional<List<String>> activeBenchmarks = properties.getActiveBenchmarks();
         if (activeBenchmarks.isPresent()) {
-            return pathContainsAny(activeBenchmarks.get());
+            return benchmarkNameIn(activeBenchmarks.get());
         }
         return path -> true;
+    }
+
+    private Predicate<Path> benchmarkNameIn(List<String> activeBenchmarks)
+    {
+        List<String> names = ImmutableList.copyOf(activeBenchmarks);
+
+        return benchmarkFile -> {
+            String benchmarkName = benchmarkName(benchmarkFile);
+            return names.contains(benchmarkName);
+        };
     }
 
     private void fillUniqueBenchmarkNames(List<Benchmark> benchmarks)
