@@ -165,7 +165,7 @@ public class BenchmarkLoader
     {
         try {
             String content = new String(readAllBytes(benchmarkFile), UTF_8);
-            Map<String, Object> yaml = loadYamlFromString(content);
+            Map<Object, Object> yaml = loadYamlFromString(content);
 
             checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", DATA_SOURCE_KEY, benchmarkFile);
             checkArgument(yaml.containsKey(QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", QUERY_NAMES_KEY, benchmarkFile);
@@ -200,7 +200,7 @@ public class BenchmarkLoader
         }
     }
 
-    private List<BenchmarkDescriptor> createBenchmarkDescriptors(Map<String, Object> yaml)
+    private List<BenchmarkDescriptor> createBenchmarkDescriptors(Map<Object, Object> yaml)
     {
         List<Map<String, String>> variablesCombinations = extractVariableMapList(yaml);
         Map<String, String> globalVariables = extractGlobalVariables(yaml);
@@ -248,17 +248,17 @@ public class BenchmarkLoader
         return removeExtension(relativePath);
     }
 
-    private Map<String, String> extractGlobalVariables(Map<String, Object> yaml)
+    private Map<String, String> extractGlobalVariables(Map<Object, Object> yaml)
     {
         return yaml.entrySet().stream()
-                .filter(entry -> !entry.getKey().equals(VARIABLES_KEY))
-                .collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue() == null ? null : entry.getValue().toString()));
+                .filter(entry -> !entry.getKey().toString().equals(VARIABLES_KEY))
+                .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue() == null ? null : entry.getValue().toString()));
     }
 
     @SuppressWarnings("unchecked")
-    private List<Map<String, String>> extractVariableMapList(Map<String, Object> yaml)
+    private List<Map<String, String>> extractVariableMapList(Map<Object, Object> yaml)
     {
-        Map<String, Map<String, Object>> variableMaps = (Map) yaml.getOrDefault(VARIABLES_KEY, newHashMap());
+        Map<Object, Map<Object, Object>> variableMaps = (Map) yaml.getOrDefault(VARIABLES_KEY, newHashMap());
         List<Map<String, String>> variableMapList = variableMaps.values()
                 .stream()
                 .map(YamlUtils::stringifyMultimap)

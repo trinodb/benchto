@@ -32,17 +32,17 @@ import static java.util.stream.Collectors.toMap;
 public final class YamlUtils
 {
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> loadYamlFromString(String string)
+    public static Map<Object, Object> loadYamlFromString(String string)
     {
         Yaml yaml = new Yaml();
-        return (Map<String, Object>) yaml.load(string);
+        return (Map) yaml.load(string);
     }
 
-    public static Map<String, List<String>> stringifyMultimap(Map<String, Object> variableMap)
+    public static Map<String, List<String>> stringifyMultimap(Map<Object, Object> variableMap)
     {
         return variableMap.entrySet()
                 .stream()
-                .map(entry -> immutableEntry(entry.getKey(),
+                .map(entry -> immutableEntry(entry.getKey().toString(),
                         asStringList(requireNonNull(entry.getValue(), "Null value for key: " + entry.getKey()))))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
