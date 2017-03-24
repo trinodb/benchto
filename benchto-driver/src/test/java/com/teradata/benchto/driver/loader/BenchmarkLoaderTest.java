@@ -109,6 +109,7 @@ public class BenchmarkLoaderTest
     public void shouldLoadSimpleBenchmark()
             throws IOException
     {
+        withOverridesPath("unit-overrides/simple-overrides.yaml");
         withActiveBenchmarks("simple-benchmark");
 
         Benchmark benchmark = assertLoadedBenchmarksCount(1).get(0);
@@ -119,6 +120,9 @@ public class BenchmarkLoaderTest
         assertThat(benchmark.getBeforeBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op", "no-op2"));
         assertThat(benchmark.getAfterBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op2"));
         assertThat(benchmark.getPrewarmRuns()).isEqualTo(2);
+
+        // variable overridden by profile
+        assertThat(benchmark.getVariables().get("to_be_overridden")).isEqualTo("bar");
     }
 
     @Test
@@ -165,6 +169,8 @@ public class BenchmarkLoaderTest
     public void benchmarkWithCycleVariables()
             throws IOException
     {
+        loader.setup();
+
         thrown.expect(BenchmarkExecutionException.class);
         thrown.expectMessage("Recursive value substitution is not supported, invalid a: ${b}");
 
@@ -211,6 +217,7 @@ public class BenchmarkLoaderTest
 
     @Test
     public void getAllBenchmarks_activeVariables_with_regex()
+        throws IOException
     {
         withActiveVariables("format=(.rc)|(tx.)");
 
@@ -221,6 +228,7 @@ public class BenchmarkLoaderTest
 
     @Test
     public void allBenchmarks_load_only_not_executed_within_two_days()
+        throws IOException
     {
         Duration executionAge = Duration.ofDays(2);
         withBenchmarkExecutionAge(executionAge);
@@ -237,6 +245,7 @@ public class BenchmarkLoaderTest
 
     @Test
     public void allBenchmarks_frequency_check_is_disabled()
+        throws IOException
     {
         withBenchmarkExecutionAge(Duration.ofDays(2));
         withFrequencyCheckEnabled(false);
@@ -264,12 +273,19 @@ public class BenchmarkLoaderTest
     }
 
     private List<Benchmark> assertLoadedBenchmarksCount(int expected)
+        throws IOException
     {
+        loader.setup();
         List<Benchmark> benchmarks = loader.loadBenchmarks("sequenceId");
 
         assertThat(benchmarks).hasSize(expected);
 
         return benchmarks;
+    }
+
+    private void withOverridesPath(String overridesPath)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "overridesPath", overridesPath);
     }
 
     private void withBenchmarksDir(String benchmarksDir)

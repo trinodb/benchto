@@ -15,6 +15,8 @@ package com.teradata.benchto.driver.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.nio.file.Path;
 import org.yaml.snakeyaml.Yaml;
 
 import java.util.List;
@@ -22,6 +24,8 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.collect.Maps.immutableEntry;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.readAllBytes;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -31,6 +35,12 @@ import static java.util.stream.Collectors.toMap;
  */
 public final class YamlUtils
 {
+    public static Map<Object, Object> loadYamlFromPath(Path path)
+        throws IOException
+    {
+        return loadYamlFromString(new String(readAllBytes(path), UTF_8));
+    }
+
     @SuppressWarnings("unchecked")
     public static Map<Object, Object> loadYamlFromString(String string)
     {

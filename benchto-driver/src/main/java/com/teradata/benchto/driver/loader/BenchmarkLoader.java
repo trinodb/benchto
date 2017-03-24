@@ -14,6 +14,7 @@
 package com.teradata.benchto.driver.loader;
 
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Benchmark.BenchmarkBuilder;
 import com.teradata.benchto.driver.BenchmarkExecutionException;
@@ -26,9 +27,12 @@ import com.teradata.benchto.driver.utils.YamlUtils;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import java.util.Collections;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -56,11 +60,12 @@ import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.QUERY_NAMES
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.VARIABLES_KEY;
 import static com.teradata.benchto.driver.service.BenchmarkServiceClient.GenerateUniqueNamesRequestItem.generateUniqueNamesRequestItem;
 import static com.teradata.benchto.driver.utils.CartesianProductUtils.cartesianProduct;
-import static com.teradata.benchto.driver.utils.YamlUtils.loadYamlFromString;
+import static com.teradata.benchto.driver.utils.YamlUtils.loadYamlFromPath;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isRegularFile;
 import static java.nio.file.Files.readAllBytes;
+import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
@@ -80,6 +85,9 @@ public class BenchmarkLoader
     private static final int DEFAULT_PREWARM_RUNS = 0;
 
     @Autowired
+    private Environment environment;
+
+    @Autowired
     private BenchmarkProperties properties;
 
     @Autowired
@@ -90,6 +98,19 @@ public class BenchmarkLoader
 
     @Autowired
     private Configuration freemarkerConfiguration;
+
+    private Map<Object, Object> overrides;
+
+    @PostConstruct
+    public void setup()
+        throws IOException
+    {
+        if (properties.getOverridesPath().isPresent()) {
+            overrides = loadYamlFromPath(properties.getOverridesPath().get());
+        } else {
+            overrides = emptyMap();
+        }
+    }
 
     public List<Benchmark> loadBenchmarks(String sequenceId)
     {
@@ -164,8 +185,8 @@ public class BenchmarkLoader
     private List<Benchmark> loadBenchmarks(String sequenceId, Path benchmarkFile)
     {
         try {
-            String content = new String(readAllBytes(benchmarkFile), UTF_8);
-            Map<Object, Object> yaml = loadYamlFromString(content);
+            Map<Object, Object> yaml = loadYamlFromPath(benchmarkFile);
+            yaml = overrideTopLevelVariables(yaml);
 
             checkArgument(yaml.containsKey(DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", DATA_SOURCE_KEY, benchmarkFile);
             checkArgument(yaml.containsKey(QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", QUERY_NAMES_KEY, benchmarkFile);
@@ -198,6 +219,21 @@ public class BenchmarkLoader
         catch (IOException e) {
             throw new BenchmarkExecutionException("Could not load benchmark: " + benchmarkFile, e);
         }
+    }
+
+    private Map<Object, Object> overrideTopLevelVariables(Map<Object, Object> baseYaml)
+    {
+        ImmutableMap.Builder<Object, Object> result = ImmutableMap.builder();
+        for (Map.Entry<Object, Object> entry : baseYaml.entrySet()) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            if (!(value instanceof Map) && overrides.containsKey(key)) {
+                result.put(key, overrides.get(key));
+            } else {
+                result.put(key, value);
+            }
+        }
+        return result.build();
     }
 
     private List<BenchmarkDescriptor> createBenchmarkDescriptors(Map<Object, Object> yaml)
