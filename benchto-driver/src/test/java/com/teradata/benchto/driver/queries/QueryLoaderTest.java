@@ -71,9 +71,4 @@ public class QueryLoaderTest
                 .put("schema", schema)
                 .build();
     }
-
-    private String trimSpaces(String string)
-    {
-        return string.replaceAll("\\s+", " ");
-    }
 }
