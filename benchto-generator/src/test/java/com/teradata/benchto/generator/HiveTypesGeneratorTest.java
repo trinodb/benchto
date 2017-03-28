@@ -40,7 +40,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class HiveTypesGeneratorTest
 {
-
     private static final String[] FORMATS = {"text"}; // mrunit does not work with "orc"
     private static final String[] TYPES = {"bigint", "int", "boolean", "double", "binary", "date", "timestamp", "string", "decimal(38,8)", "varchar(255)"};
 

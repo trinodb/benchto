@@ -15,10 +15,10 @@ package com.teradata.benchto.driver.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
-import java.nio.file.Path;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
@@ -36,7 +36,7 @@ import static java.util.stream.Collectors.toMap;
 public final class YamlUtils
 {
     public static Map<Object, Object> loadYamlFromPath(Path path)
-        throws IOException
+            throws IOException
     {
         return loadYamlFromString(new String(readAllBytes(path), UTF_8));
     }

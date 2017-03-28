@@ -18,11 +18,12 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MultipleDataSourcesProperties {
-
+public class MultipleDataSourcesProperties
+{
     private Map<String, DataSourceProperties> dataSources = new HashMap<>();
 
-    public Map<String, DataSourceProperties> getDataSources() {
+    public Map<String, DataSourceProperties> getDataSources()
+    {
         return dataSources;
     }
 }

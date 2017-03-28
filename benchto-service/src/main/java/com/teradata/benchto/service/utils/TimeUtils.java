@@ -18,7 +18,6 @@ import java.time.ZonedDateTime;
 
 public final class TimeUtils
 {
-
     public static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
     public static ZonedDateTime currentDateTime()

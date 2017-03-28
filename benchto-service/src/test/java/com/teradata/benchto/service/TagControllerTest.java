@@ -22,8 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.ZonedDateTime;
 
 import static com.teradata.benchto.service.utils.TimeUtils.currentDateTime;
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
-import static java.time.format.DateTimeFormatter.ISO_INSTANT;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;

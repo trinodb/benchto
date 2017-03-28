@@ -21,7 +21,6 @@ import java.util.Map;
 
 public final class CollectionUtils
 {
-
     private CollectionUtils()
     {
     }

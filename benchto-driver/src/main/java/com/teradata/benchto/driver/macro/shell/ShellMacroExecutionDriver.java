@@ -32,8 +32,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Executes macros using bash defined in application yaml file.
@@ -81,7 +81,7 @@ public class ShellMacroExecutionDriver
     private String getMacroCommand(String macroName)
     {
         checkArgument(macros.getMacros().containsKey(macroName), "Macro %s is not defined", macroName);
-        return checkNotNull(macros.getMacros().get(macroName).getCommand(), "Macro %s has no command defined", macroName);
+        return requireNonNull(macros.getMacros().get(macroName).getCommand(), "Macro " + macroName + " has no command defined");
     }
 
     private void printOutput(Process process, boolean stdoutAsError)

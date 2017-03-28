@@ -24,7 +24,6 @@ import java.util.concurrent.Future;
 public class DefaultBenchmarkExecutionListener
         implements BenchmarkExecutionListener
 {
-
     @Override
     public int getOrder()
     {

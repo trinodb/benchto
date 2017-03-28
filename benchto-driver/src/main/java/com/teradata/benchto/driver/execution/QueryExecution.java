@@ -17,7 +17,7 @@ import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Query;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 public class QueryExecution
 {
@@ -27,8 +27,8 @@ public class QueryExecution
 
     public QueryExecution(Benchmark benchmark, Query query, int run)
     {
-        this.benchmark = checkNotNull(benchmark);
-        this.query = checkNotNull(query);
+        this.benchmark = requireNonNull(benchmark);
+        this.query = requireNonNull(query);
         this.run = run;
     }
 

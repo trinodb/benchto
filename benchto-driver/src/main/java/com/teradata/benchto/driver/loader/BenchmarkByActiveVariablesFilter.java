@@ -58,7 +58,8 @@ class BenchmarkByActiveVariablesFilter
                             benchmark.getName(), variableKey, valuePattern, benchmarkVariableValue);
                     return false;
                 }
-            } else {
+            }
+            else {
                 return false;
             }
         }

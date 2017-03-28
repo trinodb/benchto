@@ -24,7 +24,6 @@ import static java.lang.String.format;
 public class FailedBenchmarkExecutionException
         extends BenchmarkExecutionException
 {
-
     private final List<BenchmarkExecutionResult> failedBenchmarkResults;
     private final int benchmarksCount;
 

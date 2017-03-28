@@ -32,7 +32,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +52,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ExecutionDriverTest
 {
-
     @Mock
     BenchmarkExecutionDriver benchmarkExecutionDriver;
 
@@ -94,7 +92,10 @@ public class ExecutionDriverTest
                 .thenReturn(Optional.empty());
     }
 
-    private BenchmarkExecutionResult successfulBenchmarkExecution() {return new BenchmarkExecutionResultBuilder(null).withExecutions(ImmutableList.of()).build();}
+    private BenchmarkExecutionResult successfulBenchmarkExecution()
+    {
+        return new BenchmarkExecutionResultBuilder(null).withExecutions(ImmutableList.of()).build();
+    }
 
     @Test
     public void finishWhenTimeLimitEnds()

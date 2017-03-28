@@ -20,7 +20,6 @@ import java.io.StringWriter;
 
 public final class ExceptionUtils
 {
-
     public static String stackTraceToString(QueryExecutionResult queryExecutionResult)
     {
         StringWriter sw = new StringWriter();

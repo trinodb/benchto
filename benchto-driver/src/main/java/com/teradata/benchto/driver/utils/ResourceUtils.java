@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 
 public final class ResourceUtils
 {
-
     public static Path asPath(String resourcePath)
     {
         URL resourceUrl = BenchmarkLoader.class.getClassLoader().getResource(resourcePath);

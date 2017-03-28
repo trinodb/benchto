@@ -23,8 +23,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    private final String API_WRITE_ROLE = "API_WRITE_ROLE";
+public class WebSecurityConfig
+        extends WebSecurityConfigurerAdapter
+{
+    private static final String API_WRITE_ROLE = "API_WRITE_ROLE";
 
     @Value("${benchto.security.api.protected:false}")
     private boolean isApiProtected;
@@ -36,7 +38,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private String userPassword;
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(HttpSecurity http)
+            throws Exception
+    {
         if (isApiProtected) {
             http.csrf().disable()
                     .authorizeRequests().antMatchers("/**")
@@ -58,7 +62,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobal(AuthenticationManagerBuilder auth)
+            throws Exception
+    {
         if (isApiProtected) {
             auth
                     .inMemoryAuthentication()

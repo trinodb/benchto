@@ -36,7 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @WebAppConfiguration
 public class IntegrationTestBase
 {
-
     @Autowired
     private WebApplicationContext webApplicationContext;
 

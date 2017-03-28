@@ -70,7 +70,6 @@ public class BenchmarkExecutionDriver
 
         BenchmarkExecutionResult benchmarkExecutionResult = null;
         try {
-
             macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
 
             benchmarkExecutionResult = executeBenchmark(benchmark);

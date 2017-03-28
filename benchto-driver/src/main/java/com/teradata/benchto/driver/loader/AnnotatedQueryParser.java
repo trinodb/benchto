@@ -47,7 +47,6 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class AnnotatedQueryParser
 {
-
     private static final String COMMENT_LINE_PREFIX = "--";
     private static final String PROPERTIES_LINE_PREFIX = "--!";
 

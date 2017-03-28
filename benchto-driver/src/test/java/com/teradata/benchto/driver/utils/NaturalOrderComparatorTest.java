@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class NaturalOrderComparatorTest
 {
-
     @Test
     public void testForStrings()
             throws Exception

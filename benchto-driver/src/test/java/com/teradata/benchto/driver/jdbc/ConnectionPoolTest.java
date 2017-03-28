@@ -42,7 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ConnectionPoolTest
         extends IntegrationTest
 {
-
     private static final String SQL_TEST_STATEMENT = "SELECT TOP 1 1 as VAL FROM INFORMATION_SCHEMA.SYSTEM_TABLES";
 
     @Autowired

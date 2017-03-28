@@ -27,8 +27,8 @@ public class RegexMatchingStringProducerTest
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    private final long SEED = 1234L;
-    private final int NUMBER_OF_STRINGS = 2;
+    private static final long SEED = 1234L;
+    private static final int NUMBER_OF_STRINGS = 2;
 
     @Test
     public void testGeneratesMatchingString()

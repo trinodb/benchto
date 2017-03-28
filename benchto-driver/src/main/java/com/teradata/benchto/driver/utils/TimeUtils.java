@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 public final class TimeUtils
 {
-
     public static ZonedDateTime nowUtc()
     {
         return ZonedDateTime.now(ZoneId.of("UTC"));

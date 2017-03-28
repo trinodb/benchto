@@ -23,7 +23,6 @@ import java.util.Map;
 
 public class GenerateBenchmarkNamesRequestItem
 {
-
     @NotNull
     @Size(min = 1, max = 255)
     private final String name;

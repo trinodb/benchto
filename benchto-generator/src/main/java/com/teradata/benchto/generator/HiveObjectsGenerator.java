@@ -26,7 +26,6 @@ import java.util.UUID;
 
 class HiveObjectsGenerator
 {
-
     private final Object[] values;
 
     private HiveObjectsGenerator(Object[] values)
@@ -41,7 +40,6 @@ class HiveObjectsGenerator
 
     public static class HiveObjectsGeneratorBuilder
     {
-
         private Random random = new Random(1410L);
         private int cardinality;
         private String hiveType;

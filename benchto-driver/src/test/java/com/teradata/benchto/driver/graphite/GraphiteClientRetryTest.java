@@ -28,7 +28,6 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class GraphiteClientRetryTest
         extends IntegrationTest
 {
-
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 

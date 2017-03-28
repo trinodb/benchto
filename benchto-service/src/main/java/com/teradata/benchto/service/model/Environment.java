@@ -50,7 +50,6 @@ import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 public class Environment
         implements Serializable
 {
-
     public static final String DEFAULT_ENVIRONMENT_NAME = "name";
 
     @Id

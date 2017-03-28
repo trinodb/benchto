@@ -49,7 +49,6 @@ import static org.springframework.http.HttpStatus.OK;
 @ConditionalOnProperty(prefix = "graphite", value = "url")
 public class GraphiteClient
 {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphiteClient.class);
 
     @Value("${graphite.url}")

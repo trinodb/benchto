@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.offset;
 
 public class UnitConverterTest
 {
-
     @Test
     public void testParseValueAsBytes()
     {

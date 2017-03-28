@@ -34,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class QueryLoaderTest
         extends IntegrationTest
 {
-
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 

@@ -88,7 +88,6 @@ public class HiveTypesGenerator
     public static class CounterInputFormat
             extends InputFormat<LongWritable, NullWritable>
     {
-
         /**
          * An input split consisting of a numbers form 0 to rowCount.
          */
@@ -97,8 +96,6 @@ public class HiveTypesGenerator
                 implements Writable
         {
             private long rowCount;
-
-            public CounterInputSplit() { }
 
             public CounterInputSplit(long rowCount)
             {
@@ -210,9 +207,8 @@ public class HiveTypesGenerator
     public static class HiveTypesMapper
             extends Mapper<LongWritable, NullWritable, NullWritable, Writable>
     {
-
-        private int DEFAULT_CARDINALITY = 100000;
-        private int REGEX_CARDINALITY = 1000;
+        private static final int DEFAULT_CARDINALITY = 100000;
+        private static final int REGEX_CARDINALITY = 1000;
 
         @SuppressWarnings("deprecated")
         private SerDe serDe;

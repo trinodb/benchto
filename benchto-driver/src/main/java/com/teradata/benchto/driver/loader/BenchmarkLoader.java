@@ -27,13 +27,13 @@ import com.teradata.benchto.driver.utils.YamlUtils;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import java.util.Collections;
-import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,9 +62,7 @@ import static com.teradata.benchto.driver.service.BenchmarkServiceClient.Generat
 import static com.teradata.benchto.driver.utils.CartesianProductUtils.cartesianProduct;
 import static com.teradata.benchto.driver.utils.YamlUtils.loadYamlFromPath;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isRegularFile;
-import static java.nio.file.Files.readAllBytes;
 import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -103,11 +101,12 @@ public class BenchmarkLoader
 
     @PostConstruct
     public void setup()
-        throws IOException
+            throws IOException
     {
         if (properties.getOverridesPath().isPresent()) {
             overrides = loadYamlFromPath(properties.getOverridesPath().get());
-        } else {
+        }
+        else {
             overrides = emptyMap();
         }
     }
@@ -229,7 +228,8 @@ public class BenchmarkLoader
             Object value = entry.getValue();
             if (!(value instanceof Map) && overrides.containsKey(key)) {
                 result.put(key, overrides.get(key));
-            } else {
+            }
+            else {
                 result.put(key, value);
             }
         }

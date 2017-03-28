@@ -21,7 +21,6 @@ import java.util.Map;
 
 public final class BenchmarkUniqueNameUtils
 {
-
     public static String generateBenchmarkUniqueName(String benchmarkName, Map<String, String> benchmarkVariables)
     {
         StringBuilder generatedName = new StringBuilder(benchmarkName);

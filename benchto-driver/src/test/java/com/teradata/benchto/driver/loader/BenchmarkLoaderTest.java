@@ -42,7 +42,6 @@ import static org.assertj.core.data.MapEntry.entry;
 
 public class BenchmarkLoaderTest
 {
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -217,7 +216,7 @@ public class BenchmarkLoaderTest
 
     @Test
     public void getAllBenchmarks_activeVariables_with_regex()
-        throws IOException
+            throws IOException
     {
         withActiveVariables("format=(.rc)|(tx.)");
 
@@ -228,7 +227,7 @@ public class BenchmarkLoaderTest
 
     @Test
     public void allBenchmarks_load_only_not_executed_within_two_days()
-        throws IOException
+            throws IOException
     {
         Duration executionAge = Duration.ofDays(2);
         withBenchmarkExecutionAge(executionAge);
@@ -245,7 +244,7 @@ public class BenchmarkLoaderTest
 
     @Test
     public void allBenchmarks_frequency_check_is_disabled()
-        throws IOException
+            throws IOException
     {
         withBenchmarkExecutionAge(Duration.ofDays(2));
         withFrequencyCheckEnabled(false);
@@ -273,7 +272,7 @@ public class BenchmarkLoaderTest
     }
 
     private List<Benchmark> assertLoadedBenchmarksCount(int expected)
-        throws IOException
+            throws IOException
     {
         loader.setup();
         List<Benchmark> benchmarks = loader.loadBenchmarks("sequenceId");

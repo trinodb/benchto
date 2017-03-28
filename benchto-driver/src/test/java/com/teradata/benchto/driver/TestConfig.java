@@ -37,7 +37,6 @@ import static org.mockito.Mockito.spy;
 
 public class TestConfig
 {
-
     @Primary
     @Bean
     public AsyncTaskExecutor defaultTaskExecutor()

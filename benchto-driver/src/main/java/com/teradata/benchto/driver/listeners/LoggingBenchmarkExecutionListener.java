@@ -29,7 +29,6 @@ import java.util.concurrent.Future;
 public class LoggingBenchmarkExecutionListener
         implements BenchmarkExecutionListener
 {
-
     private static final Logger LOG = LoggerFactory.getLogger(LoggingBenchmarkExecutionListener.class);
 
     @Override

@@ -14,10 +14,10 @@
 package com.teradata.benchto.driver.service;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.google.common.base.MoreObjects;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
 
 @JsonAutoDetect(fieldVisibility = ANY)
 public class Measurement
@@ -29,8 +29,8 @@ public class Measurement
     public static Measurement measurement(String name, String unit, double value)
     {
         Measurement measurement = new Measurement();
-        measurement.name = checkNotNull(name);
-        measurement.unit = checkNotNull(unit);
+        measurement.name = requireNonNull(name);
+        measurement.unit = requireNonNull(unit);
         measurement.value = value;
         return measurement;
     }
@@ -65,7 +65,7 @@ public class Measurement
     @Override
     public String toString()
     {
-        return MoreObjects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("name", name)
                 .add("unit", unit)
                 .add("value", value)

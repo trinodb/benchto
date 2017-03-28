@@ -24,4 +24,3 @@ public interface MacroExecutionDriver
 
     void runBenchmarkMacro(String macroName, Optional<Benchmark> benchmark, Optional<Connection> connection);
 }
-

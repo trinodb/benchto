@@ -13,12 +13,12 @@
  */
 package com.teradata.benchto.driver.execution;
 
-import com.google.common.base.MoreObjects;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Measurable;
 
 import java.util.Optional;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Optional.empty;
 
 public class QueryExecutionResult
@@ -82,7 +82,7 @@ public class QueryExecutionResult
     @Override
     public String toString()
     {
-        return MoreObjects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("queryExecution", queryExecution)
                 .add("successful", isSuccessful())
                 .add("rowsCount", rowsCount)
@@ -95,7 +95,6 @@ public class QueryExecutionResult
     public static class QueryExecutionResultBuilder
             extends MeasuredBuilder<QueryExecutionResult, QueryExecutionResultBuilder>
     {
-
         public QueryExecutionResultBuilder(QueryExecution queryExecution)
         {
             super(new QueryExecutionResult(queryExecution));

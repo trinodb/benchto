@@ -42,6 +42,10 @@ public final class UnitConverter
     private static final int VALUE_GROUP_INDEX = 1;
     private static final int UNIT_GROUP_INDEX = 2;
 
+    private UnitConverter()
+    {
+    }
+
     public static double parseValueAsUnit(String string, Unit<?> unit)
     {
         double parsedValue = parseValue(string);

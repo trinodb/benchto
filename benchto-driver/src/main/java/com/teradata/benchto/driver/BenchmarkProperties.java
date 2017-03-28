@@ -13,10 +13,9 @@
  */
 package com.teradata.benchto.driver;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Booleans;
 import com.teradata.benchto.driver.graphite.GraphiteProperties;
 import com.teradata.benchto.driver.utils.ResourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import static java.util.stream.Collectors.toMap;
 @Component
 public class BenchmarkProperties
 {
-
     @Value("${sql:sql}")
     private String sqlDir;
 
@@ -81,7 +79,6 @@ public class BenchmarkProperties
     @Value("${timeLimit:#{null}}")
     private String timeLimit;
 
-
     @Value("${frequencyCheckEnabled:true}")
     private String frequencyCheckEnabled;
 
@@ -103,7 +100,8 @@ public class BenchmarkProperties
         return asPath(getBenchmarksDir());
     }
 
-    public Optional<Path> getOverridesPath() {
+    public Optional<Path> getOverridesPath()
+    {
         return Optional.ofNullable(overridesPath).map(ResourceUtils::asPath);
     }
 
@@ -151,7 +149,7 @@ public class BenchmarkProperties
     @Override
     public String toString()
     {
-        MoreObjects.ToStringHelper toStringHelper = toStringHelper(this)
+        ToStringHelper toStringHelper = toStringHelper(this)
                 .add("sqlDir", sqlDir)
                 .add("benchmarksDir", benchmarksDir)
                 .add("executionSequenceId", executionSequenceId)
@@ -167,7 +165,7 @@ public class BenchmarkProperties
         return toStringHelper.toString();
     }
 
-    private void addForToStringOptionalField(MoreObjects.ToStringHelper toStringHelper, String fieldName, Optional optionalField)
+    private void addForToStringOptionalField(ToStringHelper toStringHelper, String fieldName, Optional optionalField)
     {
         optionalField.ifPresent(value -> toStringHelper.add(fieldName, value));
     }
@@ -196,9 +194,11 @@ public class BenchmarkProperties
     {
         if (booleanString.equalsIgnoreCase(Boolean.TRUE.toString())) {
             return true;
-        } else if (booleanString.equalsIgnoreCase(Boolean.FALSE.toString())) {
+        }
+        else if (booleanString.equalsIgnoreCase(Boolean.FALSE.toString())) {
             return false;
-        } else {
+        }
+        else {
             throw new IllegalStateException(String.format("Incorrect boolean value: %s.", this.frequencyCheckEnabled));
         }
     }

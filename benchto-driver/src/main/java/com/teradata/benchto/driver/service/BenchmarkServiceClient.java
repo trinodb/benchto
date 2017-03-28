@@ -16,7 +16,6 @@ package com.teradata.benchto.driver.service;
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
 import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.google.common.base.MoreObjects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Objects.requireNonNull;
@@ -162,7 +162,7 @@ public class BenchmarkServiceClient
         @Override
         public String toString()
         {
-            return MoreObjects.toStringHelper(this)
+            return toStringHelper(this)
                     .add("name", name)
                     .add("variables", variables)
                     .toString();
@@ -171,11 +171,11 @@ public class BenchmarkServiceClient
 
     @SuppressWarnings("unused")
     @JsonAutoDetect(fieldVisibility = ANY)
-    public static abstract class AttributeRequest
+    public abstract static class AttributeRequest
     {
         protected Map<String, String> attributes = newHashMap();
 
-        public static abstract class AttributeRequestBuilder<T extends AttributeRequest>
+        public abstract static class AttributeRequestBuilder<T extends AttributeRequest>
         {
             protected final T request;
 
@@ -234,7 +234,7 @@ public class BenchmarkServiceClient
         @Override
         public String toString()
         {
-            return MoreObjects.toStringHelper(this)
+            return toStringHelper(this)
                     .add("name", name)
                     .add("environmentName", environmentName)
                     .add("variables", variables)
@@ -253,7 +253,6 @@ public class BenchmarkServiceClient
         public static class ExecutionStartRequestBuilder
                 extends AttributeRequestBuilder<ExecutionStartRequest>
         {
-
             public ExecutionStartRequestBuilder()
             {
                 super(new ExecutionStartRequest());
@@ -263,7 +262,7 @@ public class BenchmarkServiceClient
         @Override
         public String toString()
         {
-            return MoreObjects.toStringHelper(this)
+            return toStringHelper(this)
                     .add("attributes", attributes)
                     .toString();
         }
@@ -288,7 +287,6 @@ public class BenchmarkServiceClient
         public static class FinishRequestBuilder
                 extends AttributeRequestBuilder<FinishRequest>
         {
-
             public FinishRequestBuilder()
             {
                 super(new FinishRequest());
@@ -322,7 +320,7 @@ public class BenchmarkServiceClient
         @Override
         public String toString()
         {
-            return MoreObjects.toStringHelper(this)
+            return toStringHelper(this)
                     .add("measurements", measurements)
                     .add("status", status)
                     .add("endTime", endTime)

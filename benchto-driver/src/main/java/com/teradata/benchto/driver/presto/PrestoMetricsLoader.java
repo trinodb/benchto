@@ -32,7 +32,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public class PrestoMetricsLoader
         implements PostExecutionMeasurementProvider
 {
-
     @Autowired
     private PrestoClient prestoClient;
 

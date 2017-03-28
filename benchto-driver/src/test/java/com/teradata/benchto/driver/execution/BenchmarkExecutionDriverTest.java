@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class BenchmarkExecutionDriverTest
 {
-
     @Mock
     MacroService macroService;
 
@@ -65,7 +64,6 @@ public class BenchmarkExecutionDriverTest
     @Test
     public void successfulRun()
     {
-
         BenchmarkExecutionResult benchmarkExecutionResult = driver.execute(mock(Benchmark.class), 0, 0);
 
         assertThat(benchmarkExecutionResult.getFailureCauses()).isEmpty();

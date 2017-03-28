@@ -37,7 +37,6 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 public class Measurement
         implements Serializable
 {
-
     @Id
     @SequenceGenerator(name = "measurements_id_seq",
             sequenceName = "measurements_id_seq",

@@ -23,7 +23,11 @@ public class AggregatedMeasurement
         implements Serializable
 {
     private final MeasurementUnit unit;
-    private final double min, max, mean, stdDev, stdDevPercent;
+    private final double min;
+    private final double max;
+    private final double mean;
+    private final double stdDev;
+    private final double stdDevPercent;
 
     public AggregatedMeasurement(MeasurementUnit unit, double min, double max, double mean, double stdDev, double stdDevPercent)
     {

@@ -16,7 +16,6 @@ package com.teradata.benchto.driver;
 public class BenchmarkExecutionException
         extends RuntimeException
 {
-
     public BenchmarkExecutionException(String message)
     {
         super(message);

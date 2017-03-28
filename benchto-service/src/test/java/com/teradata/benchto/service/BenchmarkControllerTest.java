@@ -48,7 +48,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class BenchmarkControllerTest
         extends IntegrationTestBase
 {
-
     @Autowired
     private BenchmarkRunRepo benchmarkRunRepo;
 
@@ -139,8 +138,8 @@ public class BenchmarkControllerTest
                     uniqueName, benchmarkSequenceId, executionSequenceId)
                     .contentType(APPLICATION_JSON)
                     .content("{\"measurements\":[{\"name\": \"duration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"bytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
-                                    "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"" +
-                                    (sendEndTimeWithExecutionFinish ? (", \"endTime\": " + toJsonRepresentation(executionFinish)) : "") +
+                            "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"" +
+                            (sendEndTimeWithExecutionFinish ? (", \"endTime\": " + toJsonRepresentation(executionFinish)) : "") +
                             "}"))
                     .andExpect(status().isOk());
 

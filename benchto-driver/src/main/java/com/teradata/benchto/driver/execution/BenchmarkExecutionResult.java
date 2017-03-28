@@ -13,15 +13,15 @@
  */
 package com.teradata.benchto.driver.execution;
 
-import com.google.common.base.MoreObjects;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Measurable;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 public class BenchmarkExecutionResult
@@ -72,7 +72,7 @@ public class BenchmarkExecutionResult
     @Override
     public String toString()
     {
-        return MoreObjects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("benchmark", benchmark.getName())
                 .add("successful", isSuccessful())
                 .add("duration", getQueryDuration().toMillis() + " ms")
@@ -82,7 +82,6 @@ public class BenchmarkExecutionResult
     public static class BenchmarkExecutionResultBuilder
             extends Measurable.MeasuredBuilder<BenchmarkExecutionResult, BenchmarkExecutionResultBuilder>
     {
-
         public BenchmarkExecutionResultBuilder(Benchmark benchmark)
         {
             super(new BenchmarkExecutionResult(benchmark));
@@ -104,7 +103,7 @@ public class BenchmarkExecutionResult
         @Override
         public BenchmarkExecutionResult build()
         {
-            checkNotNull(object.executions, "Executions are not set");
+            requireNonNull(object.executions, "Executions are not set");
             return super.build();
         }
     }

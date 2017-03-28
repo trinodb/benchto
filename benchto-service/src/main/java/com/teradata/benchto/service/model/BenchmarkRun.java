@@ -63,7 +63,6 @@ import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 public class BenchmarkRun
         implements Serializable
 {
-
     @Id
     @SequenceGenerator(name = "benchmark_runs_id_seq",
             sequenceName = "benchmark_runs_id_seq",

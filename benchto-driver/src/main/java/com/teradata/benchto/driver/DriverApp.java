@@ -55,7 +55,6 @@ import static com.google.common.base.Preconditions.checkState;
 @ComponentScan(basePackages = "com.teradata.benchto")
 public class DriverApp
 {
-
     private static final Logger LOG = LoggerFactory.getLogger(DriverApp.class);
 
     public static void main(String[] args)
@@ -178,7 +177,8 @@ public class DriverApp
     }
 
     @Bean
-    public QueryExecutionDriver queryExecutionDriver() {
+    public QueryExecutionDriver queryExecutionDriver()
+    {
         return new QueryExecutionDriver();
     }
 }

@@ -20,7 +20,7 @@
         <property name="message" value="Blank line after opening brace"/>
     </module>
     <module name="RegexpMultiline">
-        <property name="format" value="\n\n\}"/>
+        <property name="format" value="\n\n\s*\}"/>
         <property name="message" value="Blank line before closing brace"/>
     </module>
     <module name="RegexpMultiline">
@@ -31,8 +31,55 @@
         <property name="format" value="\n\n\Z"/>
         <property name="message" value="Blank line before end of file"/>
     </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="Preconditions\.checkNotNull"/>
+        <property name="message"
+                  value="Use java.util.Objects.requireNonNull instead of Preconditions\.checkNotNull"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format"
+                  value="^([^i]|i[^m]|im[^p]|imp[^o]|impo[^r]|impor[^t]|import[^ ]).*Objects\.requireNonNull"/>
+        <property name="message"
+                  value="Objects.requireNonNull should only be used with static imports"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="Ints\.checkedCast"/>
+        <property name="message"
+                  value="Use Math.toIntExact instead of Ints.checkedCast"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format"
+                  value="^([^i]|i[^m]|im[^p]|imp[^o]|impo[^r]|impor[^t]|import[^ ]).*Math\.toIntExact"/>
+        <property name="message"
+                  value="Math.toIntExact should only be used with static imports"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="format"
+                  value="^[ \t]*import com.google.common.base.MoreObjects;$"/>
+        <property name="message"
+                  value="com.google.common.base.MoreObjects should only be used with static imports"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="format" value="^[ \t]*import org.testng.Assert;$"/>
+        <property name="message"
+                  value="org.testng.Assert should only be used with static imports"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="format"
+                  value="^[ \t]*import org.jetbrains.annotations.NotNull;$"/>
+        <property name="message"
+                  value="Not null is the default for the codebase and should not be annotated"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="format"
+                  value="^[ \t]*import org.jetbrains.annotations.Nullable;$"/>
+        <property name="message"
+                  value="Use javax.annotation.Nullable instead of org.jetbrains.annotations.Nullable"/>
+    </module>
 
+    <module name="SuppressWarningsFilter"/>
     <module name="TreeWalker">
+        <module name="SuppressWarningsHolder"/>
         <module name="EmptyBlock">
             <property name="option" value="text"/>
             <property name="tokens" value="
@@ -53,7 +100,8 @@
         <module name="NeedBraces"/>
         <module name="LeftCurly">
             <property name="option" value="nl"/>
-            <property name="tokens" value="CLASS_DEF, CTOR_DEF, INTERFACE_DEF, METHOD_DEF"/>
+            <property name="tokens"
+                      value="CLASS_DEF, CTOR_DEF, INTERFACE_DEF, METHOD_DEF"/>
         </module>
         <module name="LeftCurly">
             <property name="option" value="eol"/>
@@ -98,6 +146,12 @@
         <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
+        <module name="ImportOrder">
+            <property name="groups" value="*,javax,java"/>
+            <property name="separated" value="true"/>
+            <property name="option" value="bottom"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+        </module>
 
         <module name="WhitespaceAround">
             <property name="allowEmptyConstructors" value="true"/>
@@ -112,6 +166,24 @@
                 LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL,
                 PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN,
                 STAR, STAR_ASSIGN, TYPE_EXTENSION_AND"/>
+        </module>
+
+        <module name="IllegalToken">
+            <property name="tokens" value="LITERAL_ASSERT"/>
+        </module>
+
+        <module name="IllegalImport">
+            <property name="illegalPkgs" value="
+                com.facebook.presto.hadoop.shaded,
+                com.facebook.presto.hadoop.$internal,
+                com.facebook.presto.hive.$internal,
+                com.facebook.hive.orc.$internal,
+                com.datastax.driver.$internal,
+                org.apache.cassandra.$internal,
+                org.weakref.jmx.internal,
+                jersey.repackaged,
+                jdk.nashorn.internal,
+                jdk.internal"/>
         </module>
     </module>
 </module>

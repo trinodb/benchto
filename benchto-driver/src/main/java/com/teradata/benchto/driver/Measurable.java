@@ -23,8 +23,10 @@ import static java.time.temporal.ChronoUnit.NANOS;
 
 public abstract class Measurable
 {
-    protected long start, end;
-    protected ZonedDateTime utcStart, utcEnd;
+    protected long start;
+    protected long end;
+    protected ZonedDateTime utcStart;
+    protected ZonedDateTime utcEnd;
 
     public ZonedDateTime getUtcStart()
     {
@@ -47,10 +49,9 @@ public abstract class Measurable
 
     public abstract boolean isSuccessful();
 
-    @Override
     public abstract String toString();
 
-    public static abstract class MeasuredBuilder<T extends Measurable, B extends MeasuredBuilder>
+    public abstract static class MeasuredBuilder<T extends Measurable, B extends MeasuredBuilder>
     {
         protected final T object;
 

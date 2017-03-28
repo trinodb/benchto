@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 
 public class QueryExecutionResultTest
 {
-
     @Test
     public void testBuilder_successful_run()
             throws InterruptedException

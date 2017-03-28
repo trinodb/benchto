@@ -44,7 +44,8 @@ public class ServiceApp
     }
 
     @Bean
-    public ZonedDateTimeConverter zonedDateTimeConverter() {
+    public ZonedDateTimeConverter zonedDateTimeConverter()
+    {
         return new ZonedDateTimeConverter();
     }
 }

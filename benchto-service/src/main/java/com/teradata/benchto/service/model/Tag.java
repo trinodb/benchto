@@ -14,7 +14,6 @@
 package com.teradata.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.MoreObjects;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -33,6 +32,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static javax.persistence.FetchType.LAZY;
 
 @Entity
@@ -133,7 +133,7 @@ public class Tag
     @Override
     public String toString()
     {
-        return MoreObjects.toStringHelper(this)
+        return toStringHelper(this)
                 .add("id", id)
                 .add("description", description)
                 .add("environment", environment)

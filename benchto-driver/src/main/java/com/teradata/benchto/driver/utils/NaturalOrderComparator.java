@@ -22,7 +22,6 @@ import java.util.Comparator;
 public class NaturalOrderComparator
         implements Comparator<String>
 {
-
     private static final Comparator<String> FOR_STRINGS = new NaturalOrderComparator();
 
     private static final Comparator<Path> FOR_PATHS = (o1, o2) -> forStrings().compare(o1.toString(), o2.toString());
@@ -39,14 +38,18 @@ public class NaturalOrderComparator
 
     public int compare(String a, String b)
     {
-        int ia = 0, ib = 0;
-        int nza, nzb;
-        char ca, cb;
+        int ia = 0;
+        int ib = 0;
+        int nza;
+        int nzb;
+        char ca;
+        char cb;
         int result;
 
         while (true) {
             // only count the number of zeroes leading the last number compared
-            nza = nzb = 0;
+            nza = 0;
+            nzb = 0;
 
             ca = charAt(a, ia);
             cb = charAt(b, ib);
@@ -78,7 +81,8 @@ public class NaturalOrderComparator
 
             // process run of digits
             if (Character.isDigit(ca) && Character.isDigit(cb)) {
-                if ((result = compareRight(a.substring(ia), b.substring(ib))) != 0) {
+                result = compareRight(a.substring(ia), b.substring(ib));
+                if (result != 0) {
                     return result;
                 }
             }
@@ -111,7 +115,7 @@ public class NaturalOrderComparator
         // value wins, but we can't know that it will until we've scanned
         // both numbers to know that they have the same magnitude, so we
         // remember it in BIAS.
-        for (; ; ia++, ib++) {
+        for (;; ia++, ib++) {
             char ca = charAt(a, ia);
             char cb = charAt(b, ib);
 
