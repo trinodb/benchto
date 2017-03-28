@@ -18,6 +18,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Booleans;
 import com.teradata.benchto.driver.graphite.GraphiteProperties;
+import com.teradata.benchto.driver.utils.ResourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,9 @@ public class BenchmarkProperties
 
     @Value("${benchmarks:benchmarks}")
     private String benchmarksDir;
+
+    @Value("${overrides:#{null}}")
+    private String overridesPath;
 
     /**
      * Active benchmarks. If this property is set benchmarks will be filtered by name.
@@ -97,6 +101,10 @@ public class BenchmarkProperties
     public Path benchmarksFilesPath()
     {
         return asPath(getBenchmarksDir());
+    }
+
+    public Optional<Path> getOverridesPath() {
+        return Optional.ofNullable(overridesPath).map(ResourceUtils::asPath);
     }
 
     public Optional<String> getExecutionSequenceId()

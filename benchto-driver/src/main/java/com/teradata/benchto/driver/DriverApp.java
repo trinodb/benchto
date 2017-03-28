@@ -111,6 +111,7 @@ public class DriverApp
         Options options = new Options();
         addOption(options, "sql", "DIR", "sql queries directory", "sql");
         addOption(options, "benchmarks", "DIR", "benchmark descriptors directory", "benchmarks");
+        addOption(options, "overrides", "PATH", "Path to benchmark overrides", "none");
         addOption(options, "activeBenchmarks", "BENCHMARK_NAME,...", "list of active benchmarks", "all benchmarks");
         addOption(options, "activeVariables", "VARIABLE_NAME=VARIABLE_VALUE,...", "list of active variables", "no filtering by variables");
         addOption(options, "executionSequenceId", "SEQUENCE_ID", "sequence id of benchmark execution", "generated");

@@ -1,3 +1,4 @@
+to_be_overridden: 42
 datasource: foo
 before-benchmark: no-op, no-op2
 after-benchmark: no-op2
