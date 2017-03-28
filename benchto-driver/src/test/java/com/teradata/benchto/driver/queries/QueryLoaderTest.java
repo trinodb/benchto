@@ -47,10 +47,35 @@ public class QueryLoaderTest
     public void shouldLoadPrestoQuery()
             throws Exception
     {
-        Query query = queryLoader.loadFromFile("presto/simple_select.sql");
+        verifySimpleSelect("presto/simple_select.sql", "simple_select", "1");
+        verifySimpleSelect("presto/second_simple_select.sql", "second_simple_select", "2");
+    }
+
+    private void verifySimpleSelect(String path, String queryName, String rowValue)
+    {
+        Query query = queryLoader.loadFromFile(path);
         List<String> sqlStatements = sqlStatementGenerator.generateQuerySqlStatement(query, createAttributes("database", "schema"));
-        assertThat(query.getName()).isEqualTo("simple_select");
-        assertThat(sqlStatements).containsExactly("SELECT 1 FROM \"schema\".SYSTEM_USERS");
+        assertThat(query.getName()).isEqualTo(queryName);
+        assertThat(sqlStatements).containsExactly("SELECT " + rowValue + " FROM \"schema\".SYSTEM_USERS");
+    }
+
+    @Test
+    public void shouldFailWhenNoQueryFile()
+            throws Exception
+    {
+        expectedException.expect(BenchmarkExecutionException.class);
+        expectedException.expectMessage("Could not find any SQL query file for query name: presto/non_existing_file.sql");
+
+        queryLoader.loadFromFile("presto/non_existing_file.sql");
+    }
+
+    @Test
+    public void shouldFailWhenQueryFileIsDuplicated()
+    {
+        expectedException.expect(BenchmarkExecutionException.class);
+        expectedException.expectMessage("Found multiple SQL query files for query name: presto/duplicate_query.sql");
+
+        queryLoader.loadFromFile("presto/duplicate_query.sql");
     }
 
     @Test

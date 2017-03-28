@@ -20,10 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
+import static com.facebook.presto.jdbc.internal.guava.collect.Iterables.getOnlyElement;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -45,7 +46,20 @@ public class QueryLoader
      */
     public Query loadFromFile(String queryName)
     {
-        Path queryPath = sqlFilesPath().resolve(queryName);
+        List<Path> queryPaths = properties.sqlFilesDirs().stream()
+                .map(sqlFilesDir -> sqlFilesDir.resolve(queryName))
+                .filter(Files::isRegularFile)
+                .collect(toList());
+
+        if (queryPaths.isEmpty()) {
+            throw new BenchmarkExecutionException(format("Could not find any SQL query file for query name: %s", queryName));
+        }
+
+        if (queryPaths.size() > 1) {
+            throw new BenchmarkExecutionException(format("Found multiple SQL query files for query name: %s", queryName));
+        }
+
+        Path queryPath = getOnlyElement(queryPaths);
         try {
             String queryNameWithoutExtension = getNameWithoutExtension(queryPath.toString());
             return annotatedQueryParser.parseFile(queryNameWithoutExtension, queryPath);
@@ -61,10 +75,5 @@ public class QueryLoader
                 .stream()
                 .map(this::loadFromFile)
                 .collect(toList());
-    }
-
-    private Path sqlFilesPath()
-    {
-        return Paths.get(properties.getSqlDir());
     }
 }

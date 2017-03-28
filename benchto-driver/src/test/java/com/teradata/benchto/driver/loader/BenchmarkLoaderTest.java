@@ -35,8 +35,11 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
 
@@ -66,7 +69,7 @@ public class BenchmarkLoaderTest
         ReflectionTestUtils.setField(loader, "benchmarkServiceClient", benchmarkServiceClient);
         ReflectionTestUtils.setField(loader, "freemarkerConfiguration", freemarkerConfiguration);
 
-        withBenchmarksDir("unit-benchmarks");
+        withBenchmarksDirs("unit-benchmarks");
         withFrequencyCheckEnabled(true);
     }
 
@@ -125,6 +128,49 @@ public class BenchmarkLoaderTest
     }
 
     @Test
+    public void shouldLoadBenchmarksFromMultiplePaths()
+            throws IOException
+    {
+        withActiveBenchmarks("test_benchmark,concurrent-benchmark");
+        withBenchmarksDirs("benchmarks", "unit-benchmarks");
+
+        List<Benchmark> benchmarks = assertLoadedBenchmarksCount(2);
+        Set<String> benchmarkNames = benchmarks.stream()
+                .map(Benchmark::getName)
+                .collect(toSet());
+        assertThat(benchmarkNames).containsExactly("test_benchmark", "concurrent-benchmark");
+    }
+
+    @Test
+    public void shouldFailDuplicatedBenchmarkInMultiplePaths()
+            throws IOException
+    {
+        loader.setup();
+
+        thrown.expect(BenchmarkExecutionException.class);
+        thrown.expectMessage("Benchmark with name \"duplicate_benchmark\" in multiple locations");
+
+        withActiveBenchmarks("duplicate_benchmark");
+        withBenchmarksDirs("duplicate_benchmark_dir1", "duplicate_benchmark_dir2");
+
+        loader.loadBenchmarks("sequenceId");
+    }
+
+    @Test
+    public void shouldFailNestedBenchmarkDirs()
+            throws IOException
+    {
+        loader.setup();
+
+        thrown.expect(BenchmarkExecutionException.class);
+        thrown.expectMessage("Benchmark directories contain nested paths");
+
+        withBenchmarksDirs("benchmark_dir", "benchmark_dir/nested");
+
+        loader.loadBenchmarks("sequenceId");
+    }
+
+    @Test
     public void shouldLoadConcurrentBenchmark()
             throws IOException
     {
@@ -173,7 +219,7 @@ public class BenchmarkLoaderTest
         thrown.expect(BenchmarkExecutionException.class);
         thrown.expectMessage("Recursive value substitution is not supported, invalid a: ${b}");
 
-        withBenchmarksDir("unit-benchmarks-invalid");
+        withBenchmarksDirs("unit-benchmarks-invalid");
         withActiveBenchmarks("cycle-variables-benchmark");
 
         loader.loadBenchmarks("sequenceId");
@@ -287,9 +333,12 @@ public class BenchmarkLoaderTest
         ReflectionTestUtils.setField(benchmarkProperties, "overridesPath", "src/test/resources/" + overridesPath);
     }
 
-    private void withBenchmarksDir(String benchmarksDir)
+    private void withBenchmarksDirs(String... benchmarksDirs)
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "src/test/resources/" + benchmarksDir);
+        List<String> benchmarkDirsList = asList(benchmarksDirs).stream()
+                .map(dir -> "src/test/resources/" + dir)
+                .collect(toList());
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDirs", Joiner.on(',').join(benchmarkDirsList));
     }
 
     private void withActiveBenchmarks(String benchmarkName)

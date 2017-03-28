@@ -21,10 +21,14 @@ import org.springframework.boot.bind.PropertiesConfigurationFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.validation.BindException;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 public final class PropertiesUtils
 {
@@ -47,6 +51,14 @@ public final class PropertiesUtils
         catch (BindException ex) {
             throw new FatalBeanException("Could not bind " + clazz + " properties", ex);
         }
+    }
+
+    public static List<Path> extractPaths(String paths)
+    {
+        return splitProperty(paths).map(dirs -> dirs.stream()
+                .map(Paths::get)
+                .collect(toList()))
+                .orElse(emptyList());
     }
 
     public static Optional<List<String>> splitProperty(String value)
