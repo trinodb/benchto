@@ -175,3 +175,17 @@ CREATE TABLE blackhole.default.lineitem_${splits_count}m
     WITH (splits_count=${splits_count},pages_per_split=1000,rows_per_page=1000)
     AS SELECT * FROM tpch.tiny.lineitem;
 ```
+
+## Overrides
+
+It is possible to override benchmark top level variables by specifying
+overrides YAML file:
+```
+--overrides path_to_overrides_file
+```
+
+An example overrides file:
+```
+runs: 5
+prewarm-runs: 10
+```
