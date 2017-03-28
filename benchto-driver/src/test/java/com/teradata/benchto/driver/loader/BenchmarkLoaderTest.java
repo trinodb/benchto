@@ -284,12 +284,12 @@ public class BenchmarkLoaderTest
 
     private void withOverridesPath(String overridesPath)
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "overridesPath", overridesPath);
+        ReflectionTestUtils.setField(benchmarkProperties, "overridesPath", "src/test/resources/" + overridesPath);
     }
 
     private void withBenchmarksDir(String benchmarksDir)
     {
-        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", benchmarksDir);
+        ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDir", "src/test/resources/" + benchmarksDir);
     }
 
     private void withActiveBenchmarks(String benchmarkName)

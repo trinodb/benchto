@@ -21,10 +21,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.google.common.io.Files.getNameWithoutExtension;
-import static com.teradata.benchto.driver.utils.ResourceUtils.asPath;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
@@ -65,6 +65,6 @@ public class QueryLoader
 
     private Path sqlFilesPath()
     {
-        return asPath(properties.getSqlDir());
+        return Paths.get(properties.getSqlDir());
     }
 }
