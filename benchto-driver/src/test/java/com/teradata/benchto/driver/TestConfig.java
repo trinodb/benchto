@@ -31,8 +31,8 @@ import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import static com.facebook.presto.jdbc.internal.guava.util.concurrent.MoreExecutors.newDirectExecutorService;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
 import static org.mockito.Mockito.spy;
 
 public class TestConfig

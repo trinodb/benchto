@@ -20,7 +20,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
-import static com.facebook.presto.jdbc.internal.guava.base.MoreObjects.toStringHelper;
+import static com.google.common.base.MoreObjects.toStringHelper;
 
 @Component
 public class GraphiteProperties

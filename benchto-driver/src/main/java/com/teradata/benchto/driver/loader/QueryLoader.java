@@ -24,7 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static com.facebook.presto.jdbc.internal.guava.collect.Iterables.getOnlyElement;
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.io.Files.getNameWithoutExtension;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;

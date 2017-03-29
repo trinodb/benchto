@@ -14,7 +14,7 @@
 package com.teradata.benchto.driver.execution;
 
 import com.facebook.presto.jdbc.PrestoResultSet;
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import com.teradata.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import com.teradata.benchto.driver.loader.SqlStatementGenerator;
 import org.slf4j.Logger;

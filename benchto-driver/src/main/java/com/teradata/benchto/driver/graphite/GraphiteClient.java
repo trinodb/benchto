@@ -13,9 +13,9 @@
  */
 package com.teradata.benchto.driver.graphite;
 
-import com.facebook.presto.jdbc.internal.guava.base.Joiner;
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.teradata.benchto.driver.BenchmarkExecutionException;
 import com.teradata.benchto.driver.utils.TimeUtils;
 import org.slf4j.Logger;

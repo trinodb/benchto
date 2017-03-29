@@ -13,7 +13,7 @@
  */
 package com.teradata.benchto.driver.loader;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Benchmark.BenchmarkBuilder;
@@ -51,11 +51,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.facebook.presto.jdbc.internal.guava.base.Preconditions.checkState;
-import static com.facebook.presto.jdbc.internal.guava.collect.Lists.newArrayListWithCapacity;
-import static com.facebook.presto.jdbc.internal.guava.collect.Sets.newLinkedHashSet;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.DATA_SOURCE_KEY;
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.QUERY_NAMES_KEY;
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.VARIABLES_KEY;

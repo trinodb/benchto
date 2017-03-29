@@ -13,9 +13,9 @@
  */
 package com.teradata.benchto.driver.service;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

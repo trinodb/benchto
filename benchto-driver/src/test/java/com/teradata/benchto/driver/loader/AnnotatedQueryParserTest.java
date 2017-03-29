@@ -13,7 +13,7 @@
  */
 package com.teradata.benchto.driver.loader;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.teradata.benchto.driver.Query;
 import org.junit.Test;
 

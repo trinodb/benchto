@@ -177,6 +177,7 @@
                 com.facebook.presto.hadoop.shaded,
                 com.facebook.presto.hadoop.$internal,
                 com.facebook.presto.hive.$internal,
+                com.facebook.presto.jdbc.internal,
                 com.facebook.hive.orc.$internal,
                 com.datastax.driver.$internal,
                 org.apache.cassandra.$internal,

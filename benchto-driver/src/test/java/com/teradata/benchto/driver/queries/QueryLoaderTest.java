@@ -13,7 +13,7 @@
  */
 package com.teradata.benchto.driver.queries;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import com.teradata.benchto.driver.BenchmarkExecutionException;
 import com.teradata.benchto.driver.IntegrationTest;
 import com.teradata.benchto.driver.Query;

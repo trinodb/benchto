@@ -13,7 +13,7 @@
  */
 package com.teradata.benchto.driver.listeners;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.common.math.LongMath;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.Measurable;

@@ -13,9 +13,9 @@
  */
 package com.teradata.benchto.driver.listeners.benchmark;
 
-import com.facebook.presto.jdbc.internal.guava.collect.Ordering;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
 import com.teradata.benchto.driver.Benchmark;
 import com.teradata.benchto.driver.execution.BenchmarkExecutionResult;
 import com.teradata.benchto.driver.execution.QueryExecution;

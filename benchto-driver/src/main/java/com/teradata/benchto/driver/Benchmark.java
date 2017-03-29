@@ -13,18 +13,18 @@
  */
 package com.teradata.benchto.driver;
 
-import com.facebook.presto.jdbc.internal.guava.collect.ImmutableMap;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.facebook.presto.jdbc.internal.guava.collect.Maps.newHashMap;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.teradata.benchto.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORDS;
 
 public class Benchmark
