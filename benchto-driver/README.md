@@ -26,7 +26,7 @@ jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>1.2.5.RELEASE</version></version>
+                <version>1.2.5.RELEASE</version>
                  <configuration>
                     <mainClass>com.teradata.benchto.driver.DriverApp</mainClass>
                     <layout>ZIP</layout>
