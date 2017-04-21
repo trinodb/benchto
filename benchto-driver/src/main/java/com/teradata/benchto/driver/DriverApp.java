@@ -69,6 +69,10 @@ public class DriverApp
         if (commandLine.hasOption("profile")) {
             applicationBuilder.profiles(commandLine.getOptionValue("profile"));
         }
+        if (commandLine.hasOption("profiles.directory")) {
+            String profilesDirectory = commandLine.getOptionValue("profiles.directory");
+            applicationBuilder.properties("spring.config.location=" + profilesDirectory);
+        }
 
         try (ConfigurableApplicationContext ctx = applicationBuilder.run()) {
             ExecutionDriver executionDriver = ctx.getBean(ExecutionDriver.class);
@@ -116,6 +120,7 @@ public class DriverApp
         addOption(options, "executionSequenceId", "SEQUENCE_ID", "sequence id of benchmark execution", "generated");
         addOption(options, "timeLimit", "DURATION", "amount of time while benchmarks will be executed", "unlimited");
         addOption(options, "profile", "PROFILE", "configuration profile", "none");
+        addOption(options, "profiles.directory", "PROFILES_DIRECTORY", "configuration profiles directory", "none");
         addOption(options, "frequencyCheckEnabled", "boolean", "if set no fresh benchmark will be executed", "true");
         options.addOption("h", "help", false, "Display help message.");
         return options;
