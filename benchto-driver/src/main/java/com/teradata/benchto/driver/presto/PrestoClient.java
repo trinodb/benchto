@@ -15,6 +15,7 @@ package com.teradata.benchto.driver.presto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.collect.ImmutableMap;
+import com.teradata.benchto.driver.BenchmarkProperties;
 import com.teradata.benchto.driver.service.Measurement;
 import com.teradata.benchto.driver.utils.UnitConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +58,11 @@ public class PrestoClient
             .put("peakMemoryReservation", BYTE)
             .build();
 
-    @Value("${presto.url}")
-    private String prestoURL;
-
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private BenchmarkProperties properties;
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<Measurement> loadMetrics(String queryId)
@@ -84,10 +85,10 @@ public class PrestoClient
 
     private URI buildQueryInfoURI(String queryId)
     {
-        checkState(!prestoURL.isEmpty());
+        checkState(!properties.getPrestoURL().isEmpty());
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromUriString(prestoURL)
+                .fromUriString(properties.getPrestoURL())
                 .pathSegment("v1", "query", queryId);
 
         return URI.create(uriBuilder.toUriString());
