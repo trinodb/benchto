@@ -16,6 +16,8 @@ package com.teradata.benchto.driver.service;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.teradata.benchto.driver.BenchmarkProperties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +46,8 @@ public class BenchmarkServiceClient
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkServiceClient.class);
 
-    @Value("${benchmark-service.url}")
-    private String serviceUrl;
+    @Autowired
+    private BenchmarkProperties properties;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -53,7 +55,7 @@ public class BenchmarkServiceClient
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public Instant getServiceCurrentTime()
     {
-        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
+        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", properties.getServiceURL());
         Long serviceCurrentTime = postForObject("{serviceUrl}/v1/time/current-time-millis", null, Long.class, requestParams);
         return Instant.ofEpochMilli(requireNonNull(serviceCurrentTime, "service returned null time"));
     }
@@ -61,7 +63,7 @@ public class BenchmarkServiceClient
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<String> generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
     {
-        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
+        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", properties.getServiceURL());
         String[] uniqueNames = postForObject("{serviceUrl}/v1/benchmark/generate-unique-names", generateUniqueNamesRequestItems, String[].class, requestParams);
         return ImmutableList.copyOf(uniqueNames);
     }
@@ -69,7 +71,7 @@ public class BenchmarkServiceClient
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<Duration> getBenchmarkSuccessfulExecutionAges(List<String> benchmarkUniqueNames)
     {
-        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", serviceUrl);
+        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", properties.getServiceURL());
         Duration[] ages = postForObject("{serviceUrl}/v1/benchmark/get-successful-execution-ages", benchmarkUniqueNames, Duration[].class, requestParams);
         return ImmutableList.copyOf(ages);
     }
@@ -111,7 +113,7 @@ public class BenchmarkServiceClient
     private Map<String, String> requestParams(String uniqueBenchmarkName, String benchmarkSequenceId)
     {
         Map<String, String> params = newHashMap();
-        params.put("serviceUrl", serviceUrl);
+        params.put("serviceUrl", properties.getServiceURL());
         params.put("uniqueBenchmarkName", uniqueBenchmarkName);
         params.put("benchmarkSequenceId", benchmarkSequenceId);
         return params;

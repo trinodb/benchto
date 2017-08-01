@@ -43,6 +43,12 @@ public class BenchmarkProperties
     @Value("${benchmarks}")
     private String benchmarksDirs;
 
+    @Value("${presto.url}")
+    private String prestoURL;
+
+    @Value("${benchmark-service.url}")
+    private String serviceUrl;
+
     @Value("${overrides:#{null}}")
     private String overridesPath;
 
@@ -93,6 +99,14 @@ public class BenchmarkProperties
     public List<Path> benchmarksFilesDirs()
     {
         return extractPaths(benchmarksDirs);
+    }
+
+    public String getServiceURL(){
+        return serviceUrl;
+    }
+
+    public String getPrestoURL(){
+        return prestoURL;
     }
 
     public Optional<Path> getOverridesPath()
