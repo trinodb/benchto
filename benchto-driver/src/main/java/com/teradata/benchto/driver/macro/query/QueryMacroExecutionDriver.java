@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -99,7 +100,13 @@ public class QueryMacroExecutionDriver
             }
             else {
                 try (Statement statement = connection.createStatement()) {
-                    statement.execute(sqlStatement);
+                    if (statement.execute(sqlStatement)) {
+                        try (ResultSet resultSet = statement.getResultSet()) {
+                            while (resultSet.next()) {
+                                // ignore rows
+                            }
+                        }
+                    }
                 }
             }
         }
