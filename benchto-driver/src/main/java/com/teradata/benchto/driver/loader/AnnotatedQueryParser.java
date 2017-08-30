@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -58,7 +59,9 @@ public class AnnotatedQueryParser
     public Query parseFile(String queryName, Path inputFile)
             throws IOException
     {
-        return parseLines(queryName, Files.lines(inputFile, UTF_8).collect(toList()));
+        try (Stream<String> lines = Files.lines(inputFile, UTF_8)) {
+            return parseLines(queryName, lines.collect(toList()));
+        }
     }
 
     public Query parseLines(String queryName, List<String> lines)
