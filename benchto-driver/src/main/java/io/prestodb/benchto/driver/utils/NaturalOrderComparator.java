@@ -115,7 +115,7 @@ public class NaturalOrderComparator
         // value wins, but we can't know that it will until we've scanned
         // both numbers to know that they have the same magnitude, so we
         // remember it in BIAS.
-        for (;; ia++, ib++) {
+        while (true) {
             char ca = charAt(a, ia);
             char cb = charAt(b, ib);
 
@@ -141,6 +141,9 @@ public class NaturalOrderComparator
             else if (ca == 0 && cb == 0) {
                 return bias;
             }
+
+            ia++;
+            ib++;
         }
     }
 
