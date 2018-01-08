@@ -101,11 +101,13 @@ public class BenchmarkProperties
         return extractPaths(benchmarksDirs);
     }
 
-    public String getServiceURL(){
+    public String getServiceURL()
+    {
         return serviceUrl;
     }
 
-    public String getPrestoURL(){
+    public String getPrestoURL()
+    {
         return prestoURL;
     }
 

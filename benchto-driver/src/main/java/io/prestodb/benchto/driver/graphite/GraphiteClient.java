@@ -80,8 +80,7 @@ public class GraphiteClient
 
         return Arrays.stream(response.getBody()).collect(toMap(
                 GraphiteRenderResponseItem::getTarget,
-                responseItem -> parseDataPoints(responseItem.datapoints)
-        ));
+                responseItem -> parseDataPoints(responseItem.datapoints)));
     }
 
     private URI buildLoadMetricsURI(Map<String, String> metrics, long fromEpochSecond, long toEpochSecond)

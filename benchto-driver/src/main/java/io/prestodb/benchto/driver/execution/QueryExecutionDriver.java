@@ -65,10 +65,8 @@ public class QueryExecutionDriver
     private QueryExecutionResult executeSelectQuery(Connection connection, QueryExecutionResultBuilder queryExecutionResultBuilder, String sqlStatement)
             throws SQLException
     {
-        try (
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sqlStatement)
-        ) {
+        try (Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sqlStatement)) {
             LOG.info("First {} rows for query: {}", LOGGED_ROWS, sqlStatement);
 
             int rowsCount = 0;

@@ -59,8 +59,7 @@ public class AggregatedMeasurement
                 statistics.getMax(),
                 statistics.getMean(),
                 statistics.getStandardDeviation(),
-                stdDevPercent
-        );
+                stdDevPercent);
     }
 
     public MeasurementUnit getUnit()

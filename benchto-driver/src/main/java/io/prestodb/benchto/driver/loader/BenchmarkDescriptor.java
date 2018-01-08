@@ -52,8 +52,7 @@ public class BenchmarkDescriptor
             AFTER_EXECUTION_MACROS_KEY,
             VARIABLES_KEY,
             QUARANTINE_KEY,
-            FREQUENCY_KEY
-    );
+            FREQUENCY_KEY);
 
     private final Map<String, String> variables;
 

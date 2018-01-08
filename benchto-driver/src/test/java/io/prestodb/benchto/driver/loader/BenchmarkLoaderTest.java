@@ -267,8 +267,7 @@ public class BenchmarkLoaderTest
         withActiveVariables("format=(.rc)|(tx.)");
 
         assertLoadedBenchmarksCount(4).forEach(benchmark ->
-                assertThat(benchmark.getVariables().get("format")).isIn("orc", "txt")
-        );
+                assertThat(benchmark.getVariables().get("format")).isIn("orc", "txt"));
     }
 
     @Test
@@ -280,12 +279,11 @@ public class BenchmarkLoaderTest
         withFrequencyCheckEnabled(true);
 
         assertLoadedBenchmarksCount(6).forEach(benchmark -> {
-                    Optional<Duration> frequency = benchmark.getFrequency();
-                    if (frequency.isPresent()) {
-                        assertThat(frequency.get()).isLessThanOrEqualTo(executionAge);
-                    }
-                }
-        );
+            Optional<Duration> frequency = benchmark.getFrequency();
+            if (frequency.isPresent()) {
+                assertThat(frequency.get()).isLessThanOrEqualTo(executionAge);
+            }
+        });
     }
 
     @Test

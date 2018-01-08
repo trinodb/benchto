@@ -7,12 +7,12 @@
         </encoder>
     </appender>
 
-    <logger name="io.prestodb.benchto.service" level="TRACE"/>
-    <logger name="org.springframework" level="WARN"/>
+    <logger name="io.prestodb.benchto.service" level="TRACE" />
+    <logger name="org.springframework" level="WARN" />
     <!--<logger name="org.hibernate.SQL" level="DEBUG"/>-->
     <!--<logger name="org.hibernate.type" level="TRACE"/>-->
 
     <root level="info">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDOUT" />
     </root>
 </configuration>

@@ -135,8 +135,7 @@ public class BenchmarkController
 
     @RequestMapping(value = "/v1/benchmark/latest/{environmentName}", method = GET)
     public List<BenchmarkRun> findLatestBenchmarkRuns(
-            @PathVariable("environmentName") String environmentName
-    )
+            @PathVariable("environmentName") String environmentName)
     {
         return benchmarkService.findLatest(environmentName);
     }

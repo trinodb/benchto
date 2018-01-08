@@ -135,7 +135,7 @@ public class HiveTypesGenerator
         {
             private long currentRow;
             private long rowCount;
-            private LongWritable key = null;
+            private LongWritable key;
 
             public void initialize(InputSplit split, TaskAttemptContext context)
                     throws IOException, InterruptedException

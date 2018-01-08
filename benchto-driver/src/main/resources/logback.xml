@@ -7,14 +7,14 @@
         </encoder>
     </appender>
 
-    <logger name="io.prestodb.benchto.driver" level="INFO"/>
-    <logger name="org.springframework" level="WARN"/>
+    <logger name="io.prestodb.benchto.driver" level="INFO" />
+    <logger name="org.springframework" level="WARN" />
 
     <!-- Logs messages related to template execution -->
     <!-- We don't need any logs printed by freemarker. When template processing fails - we will get an exception -->
-    <logger name="freemarker.runtime" level="OFF"/>
+    <logger name="freemarker.runtime" level="OFF" />
 
     <root level="info">
-        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDOUT" />
     </root>
 </configuration>

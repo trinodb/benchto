@@ -39,8 +39,7 @@ public class CartesianProductUtilsTest
                 ImmutableMap.of(1, "2", 2, "foo"),
                 ImmutableMap.of(1, "2", 2, "bar"),
                 ImmutableMap.of(1, "3", 2, "foo"),
-                ImmutableMap.of(1, "3", 2, "bar")
-        );
+                ImmutableMap.of(1, "3", 2, "bar"));
     }
 
     @Test

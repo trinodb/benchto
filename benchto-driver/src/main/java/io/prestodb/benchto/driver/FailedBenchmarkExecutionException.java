@@ -44,8 +44,7 @@ public class FailedBenchmarkExecutionException
 
         return format("%s benchmarks failed, first failure was: %s",
                 failedBenchmarkResults.size(),
-                Iterables.getFirst(failedBenchmarkResults.get(0).getFailureCauses(), null)
-        );
+                Iterables.getFirst(failedBenchmarkResults.get(0).getFailureCauses(), null));
     }
 
     public List<BenchmarkExecutionResult> getFailedBenchmarkResults()

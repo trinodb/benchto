@@ -52,8 +52,7 @@ public class PrestoClientIntegrationTest
                 measurement("prestoQuery-totalUserTime", "MILLISECONDS", 3744000.0),
                 measurement("prestoQuery-totalBlockedTime", "MILLISECONDS", 287400.0),
                 measurement("prestoQuery-processedInputDataSize", "BYTES", 7.3961E8),
-                measurement("prestoQuery-outputDataSize", "BYTES", 6900.0)
-        );
+                measurement("prestoQuery-outputDataSize", "BYTES", 6900.0));
 
         restServiceServer.verify();
     }
