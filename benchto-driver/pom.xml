@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.teradata.benchto</groupId>
+        <groupId>io.prestodb.benchto</groupId>
         <artifactId>benchto-base</artifactId>
         <version>0.5-SNAPSHOT</version>
     </parent>

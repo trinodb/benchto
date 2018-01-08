@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.teradata.benchto</groupId>
+        <groupId>io.prestodb.benchto</groupId>
         <artifactId>benchto-base</artifactId>
         <version>0.5-SNAPSHOT</version>
     </parent>
@@ -20,7 +20,7 @@
         <powermock.version>1.6.2</powermock.version>
         <javassist.version>3.19.0-GA</javassist.version>
         <objenesis.version>2.1</objenesis.version>
-        <shadeBase>com.teradata.benchto.generator.\$internal</shadeBase>
+        <shadeBase>io.prestodb.benchto.generator.\$internal</shadeBase>
     </properties>
 
     <dependencyManagement>
@@ -201,7 +201,7 @@
                             </relocations>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.teradata.benchto.generator.HiveTypesGenerator</mainClass>
+                                    <mainClass>io.prestodb.benchto.generator.HiveTypesGenerator</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

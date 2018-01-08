@@ -6,12 +6,12 @@ Benchto driver is standalone java application which sql statements using JDBC.
 
 It is most convenient to run benchmark driver using maven. Declare dependency to `benchto-driver` and any
 jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver main class 
-`com.teradata.benchto.driver.DriverApp`:
+`io.prestodb.benchto.driver.DriverApp`:
 
 ```
     <dependencies>
         <dependency>
-            <groupId>com.teradata.benchmark</groupId>
+            <groupId>io.prestodb.benchto</groupId>
             <artifactId>benchto-driver</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
@@ -28,7 +28,7 @@ jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>1.2.5.RELEASE</version>
                  <configuration>
-                    <mainClass>com.teradata.benchto.driver.DriverApp</mainClass>
+                    <mainClass>io.prestodb.benchto.driver.DriverApp</mainClass>
                     <layout>ZIP</layout>
                 </configuration>
                 <executions>

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.teradata.benchto</groupId>
+    <groupId>io.prestodb.benchto</groupId>
     <artifactId>benchto-getting-started</artifactId>
     <packaging>jar</packaging>
     <name>benchto-getting-started</name>
@@ -30,7 +30,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.teradata.benchto</groupId>
+            <groupId>io.prestodb.benchto</groupId>
             <artifactId>benchto-driver</artifactId>
             <version>${dep.benchto-driver.version}</version>
         </dependency>
@@ -85,7 +85,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.teradata.benchto.driver.DriverApp</mainClass>
+                    <mainClass>io.prestodb.benchto.driver.DriverApp</mainClass>
                     <arguments>
                         <argument>--profile=classpath:/application.yaml</argument>
                         <argument>--activeBenchmarks=${activeBenchmarks}</argument>
