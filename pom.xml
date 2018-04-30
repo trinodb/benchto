@@ -3,7 +3,7 @@
 
     <groupId>io.prestodb.benchto</groupId>
     <artifactId>benchto-base</artifactId>
-    <version>0.6</version>
+    <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>benchto-base</name>
 
