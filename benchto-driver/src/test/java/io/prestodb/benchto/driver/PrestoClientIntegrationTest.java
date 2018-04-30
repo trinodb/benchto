@@ -51,6 +51,7 @@ public class PrestoClientIntegrationTest
                 measurement("prestoQuery-totalCpuTime", "MILLISECONDS", 63600.0),
                 measurement("prestoQuery-totalUserTime", "MILLISECONDS", 3744000.0),
                 measurement("prestoQuery-totalBlockedTime", "MILLISECONDS", 287400.0),
+                measurement("prestoQuery-rawInputDataSize", "BYTES", 1.34E9),
                 measurement("prestoQuery-processedInputDataSize", "BYTES", 7.3961E8),
                 measurement("prestoQuery-outputDataSize", "BYTES", 6900.0));
 
