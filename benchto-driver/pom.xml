@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.prestodb.benchto</groupId>
+        <groupId>io.prestosql.benchto</groupId>
         <artifactId>benchto-base</artifactId>
         <version>0.7-SNAPSHOT</version>
     </parent>

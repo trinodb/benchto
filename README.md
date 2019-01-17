@@ -1,9 +1,9 @@
-# Benchto [![Build Status](https://travis-ci.org/prestodb/benchto.svg?branch=master)](https://travis-ci.org/prestodb/benchto)
+# Benchto [![Build Status](https://travis-ci.com/prestosql/benchto.svg?branch=master)](https://travis-ci.com/prestosql/benchto)
 
 The purpose of _Benchto_ project is to provide easy and manageable way to define, run and analyze _macro benchmarks_
 in clustered environment. Understanding behaviour of distributed systems is hard and requires good visibility into
 state of the cluster and internals of tested system. This project was developed for repeatable benchmarking of
-Hadoop SQL engines, most importantly [Presto](https://prestodb.io/).
+Hadoop SQL engines, most importantly [Presto](https://prestosql.io/).
 
 _Benchto_ consists of two main components: `benchto-service` and `benchto-driver`. To utilize all features of _Benchto_,
 it is also recommended to configure _Graphite_ and _Grafana_. Image below depicts high level architecture:

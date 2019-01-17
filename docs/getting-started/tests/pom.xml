@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.prestodb.benchto</groupId>
+    <groupId>io.prestosql.benchto</groupId>
     <artifactId>benchto-getting-started</artifactId>
     <packaging>jar</packaging>
     <name>benchto-getting-started</name>
@@ -30,7 +30,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.prestodb.benchto</groupId>
+            <groupId>io.prestosql.benchto</groupId>
             <artifactId>benchto-driver</artifactId>
             <version>${dep.benchto-driver.version}</version>
         </dependency>
