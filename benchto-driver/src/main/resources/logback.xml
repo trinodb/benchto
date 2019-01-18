@@ -7,7 +7,7 @@
         </encoder>
     </appender>
 
-    <logger name="io.prestodb.benchto.driver" level="INFO" />
+    <logger name="io.prestosql.benchto.driver" level="INFO" />
     <logger name="org.springframework" level="WARN" />
 
     <!-- Logs messages related to template execution -->

@@ -17,32 +17,32 @@
            memoryStoreEvictionPolicy="FIFO" />
 
     <!-- Entities cache -->
-    <cache name="io.prestodb.benchto.service.model.Environment"
+    <cache name="io.prestosql.benchto.service.model.Environment"
            maxEntriesLocalHeap="50"
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
 
-    <cache name="io.prestodb.benchto.service.model.BenchmarkRunExecution"
+    <cache name="io.prestosql.benchto.service.model.BenchmarkRunExecution"
            maxEntriesLocalHeap="1000"
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
 
-    <cache name="io.prestodb.benchto.service.model.BenchmarkRunExecution.attributes"
+    <cache name="io.prestosql.benchto.service.model.BenchmarkRunExecution.attributes"
            maxEntriesLocalHeap="5000"
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
 
-    <cache name="io.prestodb.benchto.service.model.BenchmarkRun.variables"
+    <cache name="io.prestosql.benchto.service.model.BenchmarkRun.variables"
            maxEntriesLocalHeap="5000"
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
 
-    <cache name="io.prestodb.benchto.service.model.BenchmarkRun.attributes"
+    <cache name="io.prestosql.benchto.service.model.BenchmarkRun.attributes"
            maxEntriesLocalHeap="5000"
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
 
-    <cache name="io.prestodb.benchto.service.model.Environment.attributes"
+    <cache name="io.prestosql.benchto.service.model.Environment.attributes"
            maxEntriesLocalHeap="5000"
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
