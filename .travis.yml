@@ -1,17 +1,4 @@
 language: java
 
 jdk:
-  - oraclejdk8
-
-cache:
-  directories:
-    - $HOME/.m2/repository
-
-before_cache:
-  #make the cache stable between builds by removing build output
-  - rm -rf $HOME/.m2/repository/io/prestosql/benchto
-
-install: ./mvnw install -DskipTests -Dmaven.javadoc.skip=true -B -V -T C1
-
-script: ./mvnw test -B -T C1
-
+  - openjdk8
