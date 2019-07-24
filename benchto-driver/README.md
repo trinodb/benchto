@@ -15,7 +15,7 @@ jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver
             <artifactId>benchto-driver</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.facebook.presto</groupId>
+            <groupId>io.prestosql</groupId>
             <artifactId>presto-jdbc</artifactId>
         </dependency>
     </dependencies>
@@ -59,7 +59,7 @@ data-sources:       # data-sources section which lists all jdbc drivers which ca
     url: jdbc:presto://example.com:8888
     username: example
     password: example
-    driver-class-name: com.facebook.presto.jdbc.PrestoDriver
+    driver-class-name: io.prestosql.jdbc.PrestoDriver
   teradata:
     url: jdbc:teradata://example.com
     username: example

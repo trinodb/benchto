@@ -13,13 +13,13 @@
  */
 package io.prestosql.benchto.driver.macro.query;
 
-import com.facebook.presto.jdbc.PrestoConnection;
 import io.prestosql.benchto.driver.Benchmark;
 import io.prestosql.benchto.driver.BenchmarkExecutionException;
 import io.prestosql.benchto.driver.Query;
 import io.prestosql.benchto.driver.loader.QueryLoader;
 import io.prestosql.benchto.driver.loader.SqlStatementGenerator;
 import io.prestosql.benchto.driver.macro.MacroExecutionDriver;
+import io.prestosql.jdbc.PrestoConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

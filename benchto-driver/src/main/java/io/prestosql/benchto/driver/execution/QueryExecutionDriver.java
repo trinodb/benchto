@@ -13,10 +13,10 @@
  */
 package io.prestosql.benchto.driver.execution;
 
-import com.facebook.presto.jdbc.PrestoResultSet;
 import com.google.common.collect.ImmutableMap;
 import io.prestosql.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import io.prestosql.benchto.driver.loader.SqlStatementGenerator;
+import io.prestosql.jdbc.PrestoResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
