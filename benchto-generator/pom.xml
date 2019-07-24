@@ -15,7 +15,7 @@
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
         <hadoop-core.version>2.6.0-cdh5.4.5</hadoop-core.version>
-        <hive-apache.version>0.14</hive-apache.version>
+        <hive-apache.version>1.2.2-3</hive-apache.version>
         <mrunit.version>1.1.0</mrunit.version>
         <powermock.version>1.6.2</powermock.version>
         <javassist.version>3.19.0-GA</javassist.version>
@@ -70,7 +70,7 @@
                 <version>${hadoop-core.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.facebook.presto.hive</groupId>
+                <groupId>io.prestosql.hive</groupId>
                 <artifactId>hive-apache</artifactId>
                 <version>${hive-apache.version}</version>
             </dependency>
@@ -94,7 +94,7 @@
             <artifactId>hadoop-hdfs</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.facebook.presto.hive</groupId>
+            <groupId>io.prestosql.hive</groupId>
             <artifactId>hive-apache</artifactId>
         </dependency>
         <!-- Downgrade guava: https://issues.apache.org/jira/browse/HADOOP-10961 - tests are failing due to API changes -->
@@ -187,7 +187,7 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>com.facebook.presto.hive:hive-apache</include>
+                                    <include>io.prestosql.hive:hive-apache</include>
                                     <include>dk.brics.automaton:automaton</include>
                                     <include>com.google.guava:guava</include>
                                     <include>commons-cli:commons-cli</include>
