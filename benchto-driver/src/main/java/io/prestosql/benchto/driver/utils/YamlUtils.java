@@ -15,12 +15,14 @@ package io.prestosql.benchto.driver.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.collect.Maps.immutableEntry;
@@ -45,7 +47,7 @@ public final class YamlUtils
     public static Map<Object, Object> loadYamlFromString(String string)
     {
         Yaml yaml = new Yaml();
-        return (Map) yaml.load(string);
+        return Optional.ofNullable((Map) yaml.load(string)).orElse(ImmutableMap.of());
     }
 
     public static Map<String, List<String>> stringifyMultimap(Map<Object, Object> variableMap)
