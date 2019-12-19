@@ -17,7 +17,7 @@
         <activeVariables>nonExistingKey=nonExistingValue</activeVariables>
 
         <dep.benchto-driver.version>1.0.0-SNAPSHOT</dep.benchto-driver.version>
-        <dep.hive-jdbc.version>1.1.0-cdh5.4.5</dep.hive-jdbc.version>
+        <dep.hive-jdbc.version>2.3.4</dep.hive-jdbc.version>
         <dep.hadoop.version>2.6.0-cdh5.4.5</dep.hadoop.version>
     </properties>
 
