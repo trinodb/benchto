@@ -46,14 +46,16 @@ public class PrestoClientIntegrationTest
         List<Measurement> measurements = prestoClient.loadMetrics("test_query_id");
 
         assertThat(measurements).containsExactly(
-                measurement("prestoQuery-totalPlanningTime", "MILLISECONDS", 24.72),
+                measurement("prestoQuery-planningTime", "MILLISECONDS", 24.72),
                 measurement("prestoQuery-totalScheduledTime", "MILLISECONDS", 66000.0),
                 measurement("prestoQuery-totalCpuTime", "MILLISECONDS", 63600.0),
-                measurement("prestoQuery-totalUserTime", "MILLISECONDS", 3744000.0),
                 measurement("prestoQuery-totalBlockedTime", "MILLISECONDS", 287400.0),
                 measurement("prestoQuery-rawInputDataSize", "BYTES", 1.34E9),
                 measurement("prestoQuery-processedInputDataSize", "BYTES", 7.3961E8),
-                measurement("prestoQuery-outputDataSize", "BYTES", 6900.0));
+                measurement("prestoQuery-internalNetworkInputDataSize", "BYTES", 7.2961E8),
+                measurement("prestoQuery-physicalInputDataSize", "BYTES", 1.35E9),
+                measurement("prestoQuery-outputDataSize", "BYTES", 6900.0),
+                measurement("prestoQuery-peakTotalMemoryReservation", "BYTES", 6800.0));
 
         restServiceServer.verify();
     }
