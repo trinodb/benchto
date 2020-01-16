@@ -47,15 +47,16 @@ import static javax.measure.unit.SI.SECOND;
 public class PrestoClient
 {
     private static final Map<String, Unit> DEFAULT_METRICS = ImmutableMap.<String, Unit>builder()
-            .put("totalPlanningTime", MILLI(SECOND))
+            .put("planningTime", MILLI(SECOND))
             .put("totalScheduledTime", MILLI(SECOND))
             .put("totalCpuTime", MILLI(SECOND))
-            .put("totalUserTime", MILLI(SECOND))
             .put("totalBlockedTime", MILLI(SECOND))
             .put("rawInputDataSize", BYTE)
+            .put("physicalInputDataSize", BYTE)
             .put("processedInputDataSize", BYTE)
+            .put("internalNetworkInputDataSize", BYTE)
             .put("outputDataSize", BYTE)
-            .put("peakMemoryReservation", BYTE)
+            .put("peakTotalMemoryReservation", BYTE)
             .build();
 
     @Autowired
