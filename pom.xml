@@ -3,7 +3,7 @@
 
     <groupId>io.prestosql.benchto</groupId>
     <artifactId>benchto-base</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.8</version>
     <packaging>pom</packaging>
     <name>benchto-base</name>
 
@@ -79,7 +79,7 @@
     <scm>
         <connection>scm:git:https://github.com/prestosql/benchto.git</connection>
         <url>https://github.com/prestosql/benchto.git</url>
-        <tag>HEAD</tag>
+        <tag>0.8</tag>
     </scm>
 
     <distributionManagement>
