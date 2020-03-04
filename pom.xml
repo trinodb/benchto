@@ -56,7 +56,7 @@
         <dep.commons.math3>3.6.1</dep.commons.math3>
         <dep.commons.io>2.4</dep.commons.io>
         <dep.presto.jdbc.version>316</dep.presto.jdbc.version>
-        <dep.jackson.version>2.4.5</dep.jackson.version>
+        <dep.jackson.version>2.9.10.3</dep.jackson.version>
         <dep.jsonpath.version>2.0.0</dep.jsonpath.version>
         <dep.junit.version>4.12</dep.junit.version>
         <dep.hsqldb.version>2.3.4</dep.hsqldb.version>
