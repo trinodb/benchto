@@ -22,6 +22,7 @@ environment:
 
 presto:
   url: http://presto-test-master:8090
+  username: sa
 
 graphite:
   url: http://graphite:18088
