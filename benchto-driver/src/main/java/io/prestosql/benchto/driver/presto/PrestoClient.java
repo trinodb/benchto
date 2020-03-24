@@ -20,6 +20,9 @@ import io.prestosql.benchto.driver.service.Measurement;
 import io.prestosql.benchto.driver.utils.UnitConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -74,7 +77,12 @@ public class PrestoClient
     private List<Measurement> loadMetrics(String queryId, Map<String, Unit> requiredStatistics)
     {
         URI uri = buildQueryInfoURI(queryId);
-        ResponseEntity<QueryInfoResponseItem> response = restTemplate.getForEntity(uri, QueryInfoResponseItem.class);
+
+        HttpHeaders headers = new HttpHeaders();
+        properties.getPrestoUsername().ifPresent(username -> headers.set("X-Presto-User", properties.getPrestoURL()));
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<QueryInfoResponseItem> response = restTemplate.exchange(uri, HttpMethod.GET, entity, QueryInfoResponseItem.class);
 
         Map<String, Object> queryStats = response.getBody().getQueryStats();
         return queryStats.keySet()
