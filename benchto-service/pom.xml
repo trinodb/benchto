@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.prestosql.benchto</groupId>
         <artifactId>benchto-base</artifactId>
-        <version>0.10</version>
+        <version>0.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>benchto-service</artifactId>
