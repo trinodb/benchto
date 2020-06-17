@@ -23,14 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 
 import static com.google.common.base.Preconditions.checkState;
+import static io.prestosql.benchto.driver.utils.QueryUtils.fetchRows;
 
 public class QueryExecutionDriver
 {
@@ -67,18 +66,7 @@ public class QueryExecutionDriver
     {
         try (Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sqlStatement)) {
-            LOG.info("First {} rows for query: {}", LOGGED_ROWS, sqlStatement);
-
-            int rowsCount = 0;
-            while (resultSet.next()) {
-                if (rowsCount < LOGGED_ROWS) {
-                    logRow(rowsCount + 1, resultSet);
-                }
-                else if (rowsCount == LOGGED_ROWS) {
-                    LOG.info("There are more unlogged rows");
-                }
-                rowsCount++;
-            }
+            int rowsCount = fetchRows(sqlStatement, resultSet);
 
             try {
                 if (resultSet.isWrapperFor(PrestoResultSet.class)) {
@@ -119,17 +107,5 @@ public class QueryExecutionDriver
         List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(queryExecution.getQuery(), variables);
         checkState(sqlQueries.size() == 1, "Multiple statements in one query file are not supported");
         return sqlQueries.get(0);
-    }
-
-    private void logRow(int rowNumber, ResultSet resultSet)
-            throws SQLException
-    {
-        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        StringJoiner joiner = new StringJoiner("; ", "[", "]");
-        for (int i = 1; i <= resultSetMetaData.getColumnCount(); ++i) {
-            joiner.add(resultSetMetaData.getColumnName(i) + ": " + resultSet.getObject(i));
-        }
-
-        LOG.info("Row: " + rowNumber + ", column values: " + joiner.toString());
     }
 }
