@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static io.prestosql.benchto.driver.loader.BenchmarkDescriptor.DATA_SOURCE_KEY;
+import static io.prestosql.benchto.driver.utils.QueryUtils.fetchRows;
 import static java.lang.String.format;
 
 @Component
@@ -102,9 +103,7 @@ public class QueryMacroExecutionDriver
                 try (Statement statement = connection.createStatement()) {
                     if (statement.execute(sqlStatement)) {
                         try (ResultSet resultSet = statement.getResultSet()) {
-                            while (resultSet.next()) {
-                                // ignore rows
-                            }
+                            fetchRows(sqlStatement, resultSet);
                         }
                     }
                 }
