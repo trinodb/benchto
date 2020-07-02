@@ -46,6 +46,7 @@ public class PrestoClientIntegrationTest
         List<Measurement> measurements = prestoClient.loadMetrics("test_query_id");
 
         assertThat(measurements).containsExactly(
+                measurement("prestoQuery-analysisTime", "MILLISECONDS", 21.07),
                 measurement("prestoQuery-planningTime", "MILLISECONDS", 24.72),
                 measurement("prestoQuery-totalScheduledTime", "MILLISECONDS", 66000.0),
                 measurement("prestoQuery-totalCpuTime", "MILLISECONDS", 63600.0),
