@@ -1,0 +1,18 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0 # checkout tags so version in Manifest is set properly
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - name: Maven Install Dependencies
+      run: mvn install -B -V -DskipTests -Dair.check.skip-all
+    - name: Maven Test
+      run: mvn install -B
