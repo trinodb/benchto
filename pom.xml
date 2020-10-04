@@ -64,7 +64,7 @@
         <dep.postgresql.jdbc.version>9.1-901-1.jdbc4</dep.postgresql.jdbc.version>
         <dep.slf4j.version>1.7.11</dep.slf4j.version>
         <dep.jadira.usertype>3.2.0.GA</dep.jadira.usertype>
-        <dep.jackson.jsr310>2.4.0</dep.jackson.jsr310>
+        <dep.jackson.jsr310>2.9.8</dep.jackson.jsr310>
         <dep.jackson.hibernate>2.5.4</dep.jackson.hibernate>
         <dep.spring.boot.version>1.2.3.RELEASE</dep.spring.boot.version>
         <dep.spring.retry.version>1.1.2.RELEASE</dep.spring.retry.version>
