@@ -279,6 +279,7 @@ public class BenchmarkServiceClient
         private Status status;
         private Instant endTime;
         private List<Measurement> measurements = newArrayList();
+        private String queryInfo;
 
         private FinishRequest()
         {
@@ -313,6 +314,12 @@ public class BenchmarkServiceClient
             public FinishRequestBuilder addMeasurements(Collection<Measurement> measurements)
             {
                 request.measurements.addAll(measurements);
+                return this;
+            }
+
+            public FinishRequestBuilder addQueryInfo(String queryInfo)
+            {
+                request.queryInfo = queryInfo;
                 return this;
             }
         }

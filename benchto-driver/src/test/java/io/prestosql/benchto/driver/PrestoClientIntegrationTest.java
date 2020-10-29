@@ -60,4 +60,17 @@ public class PrestoClientIntegrationTest
 
         restServiceServer.verify();
     }
+
+    @Test
+    public void testPrestoClientGetQueryInfo()
+            throws IOException
+    {
+        String response = Resources.toString(Resources.getResource("json/presto_query_info_response.json"), Charsets.UTF_8);
+        restServiceServer.expect(requestTo("http://presto-test-master:8090/v1/query/test_query_id"))
+                .andRespond(withSuccess(response, APPLICATION_JSON));
+
+        assertThat(prestoClient.getQueryInfo("test_query_id")).isEqualTo(response);
+
+        restServiceServer.verify();
+    }
 }

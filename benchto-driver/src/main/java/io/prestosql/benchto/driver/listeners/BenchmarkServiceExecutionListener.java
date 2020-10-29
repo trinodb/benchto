@@ -22,6 +22,7 @@ import io.prestosql.benchto.driver.execution.QueryExecution;
 import io.prestosql.benchto.driver.execution.QueryExecutionResult;
 import io.prestosql.benchto.driver.listeners.benchmark.BenchmarkExecutionListener;
 import io.prestosql.benchto.driver.listeners.measurements.PostExecutionMeasurementProvider;
+import io.prestosql.benchto.driver.listeners.queryinfo.QueryInfoProvider;
 import io.prestosql.benchto.driver.service.BenchmarkServiceClient;
 import io.prestosql.benchto.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
 import io.prestosql.benchto.driver.service.BenchmarkServiceClient.ExecutionStartRequest;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -49,6 +51,8 @@ import static io.prestosql.benchto.driver.service.BenchmarkServiceClient.FinishR
 import static io.prestosql.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.FAILED;
 import static io.prestosql.benchto.driver.utils.ExceptionUtils.stackTraceToString;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 @Component
 public class BenchmarkServiceExecutionListener
@@ -67,6 +71,9 @@ public class BenchmarkServiceExecutionListener
 
     @Autowired
     private List<PostExecutionMeasurementProvider> measurementProviders;
+
+    @Autowired(required = false)
+    private QueryInfoProvider queryInfoProvider;
 
     @Override
     public int getOrder()
@@ -148,7 +155,7 @@ public class BenchmarkServiceExecutionListener
     @Override
     public Future<?> executionFinished(QueryExecutionResult executionResult)
     {
-        return CompletableFuture.supplyAsync(() -> getMeasurements(executionResult), taskExecutor::execute)
+        return CompletableFuture.supplyAsync(() -> getMeasurementsWithQueryInfo(executionResult), taskExecutor::execute)
                 .thenCompose(future -> future)
                 .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
                 .thenAccept(request -> {
@@ -160,12 +167,14 @@ public class BenchmarkServiceExecutionListener
                 });
     }
 
-    private FinishRequest buildExecutionFinishedRequest(QueryExecutionResult executionResult, List<Measurement> measurements)
+    private FinishRequest buildExecutionFinishedRequest(QueryExecutionResult executionResult, MeasurementsWithQueryInfo measurementsWithQueryInfo)
     {
         FinishRequestBuilder requestBuilder = new FinishRequestBuilder()
                 .withStatus(executionResult.isSuccessful() ? ENDED : FAILED)
                 .withEndTime(executionResult.getUtcEnd().toInstant())
-                .addMeasurements(measurements);
+                .addMeasurements(measurementsWithQueryInfo.getMeasurements());
+        measurementsWithQueryInfo.getQueryInfo()
+                .ifPresent(requestBuilder::addQueryInfo);
 
         if (executionResult.getPrestoQueryId().isPresent()) {
             requestBuilder.addAttribute("prestoQueryId", executionResult.getPrestoQueryId().get());
@@ -182,6 +191,13 @@ public class BenchmarkServiceExecutionListener
         return requestBuilder.build();
     }
 
+    private CompletableFuture<MeasurementsWithQueryInfo> getMeasurementsWithQueryInfo(Measurable measurable)
+    {
+        CompletableFuture<List<Measurement>> measurementsFuture = getMeasurements(measurable);
+        CompletableFuture<Optional<String>> queryInfoFuture = getQueryInfo(measurable);
+        return measurementsFuture.thenCombine(queryInfoFuture, MeasurementsWithQueryInfo::new);
+    }
+
     private CompletableFuture<List<Measurement>> getMeasurements(Measurable measurable)
     {
         List<CompletableFuture<?>> providerFutures = new ArrayList<>();
@@ -196,8 +212,39 @@ public class BenchmarkServiceExecutionListener
                 .thenApply(aVoid -> ImmutableList.copyOf(measurementsList));
     }
 
+    private CompletableFuture<Optional<String>> getQueryInfo(Measurable measurable)
+    {
+        if (queryInfoProvider == null) {
+            return completedFuture(Optional.empty());
+        }
+
+        return queryInfoProvider.loadQueryInfo(measurable);
+    }
+
     private String executionSequenceId(QueryExecution execution)
     {
         return "" + execution.getRun();
+    }
+
+    private static class MeasurementsWithQueryInfo
+    {
+        private final List<Measurement> measurements;
+        private final Optional<String> queryInfo;
+
+        private MeasurementsWithQueryInfo(List<Measurement> measurements, Optional<String> queryInfo)
+        {
+            this.measurements = requireNonNull(measurements, "measurements is null");
+            this.queryInfo = requireNonNull(queryInfo, "queryInfo is null");
+        }
+
+        public List<Measurement> getMeasurements()
+        {
+            return measurements;
+        }
+
+        public Optional<String> getQueryInfo()
+        {
+            return queryInfo;
+        }
     }
 }

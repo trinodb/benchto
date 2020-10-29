@@ -18,6 +18,7 @@ import io.prestosql.benchto.service.model.BenchmarkRun;
 import io.prestosql.benchto.service.model.BenchmarkRunExecution;
 import io.prestosql.benchto.service.model.Environment;
 import io.prestosql.benchto.service.model.Measurement;
+import io.prestosql.benchto.service.model.QueryInfo;
 import io.prestosql.benchto.service.model.Status;
 import io.prestosql.benchto.service.repo.BenchmarkRunRepo;
 import org.hibernate.Hibernate;
@@ -132,7 +133,7 @@ public class BenchmarkService
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void finishExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Status status,
-            Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
+            Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes, String queryInfo)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
 
@@ -146,6 +147,12 @@ public class BenchmarkService
         execution.getAttributes().putAll(attributes);
         execution.setEnded(fromInstantOrCurrentDateTime(endTime));
         execution.setStatus(status);
+
+        if (queryInfo != null) {
+            QueryInfo info = new QueryInfo();
+            info.setInfo(queryInfo);
+            execution.setQueryInfo(info);
+        }
 
         if (benchmarkRun.getStatus() != STARTED) {
             // Already finished and aggregated so needs re-aggregating.
