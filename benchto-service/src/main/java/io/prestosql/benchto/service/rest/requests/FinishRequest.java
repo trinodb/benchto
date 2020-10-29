@@ -31,17 +31,20 @@ public class FinishRequest
     private final Instant endTime;
     private final List<Measurement> measurements;
     private final Map<String, String> attributes;
+    private final String queryInfo;
 
     @JsonCreator
     public FinishRequest(@JsonProperty("status") Status status,
             @JsonProperty("endTime") Instant endTime,
             @JsonProperty("measurements") List<Measurement> measurements,
-            @JsonProperty("attributes") Map<String, String> attributes)
+            @JsonProperty("attributes") Map<String, String> attributes,
+            @JsonProperty("queryInfo") String queryInfo)
     {
         this.status = status;
         this.endTime = endTime;
         this.measurements = measurements;
         this.attributes = attributes;
+        this.queryInfo = queryInfo;
     }
 
     public Status getStatus()
@@ -62,5 +65,10 @@ public class FinishRequest
     public Map<String, String> getAttributes()
     {
         return attributes;
+    }
+
+    public String getQueryInfo()
+    {
+        return queryInfo;
     }
 }

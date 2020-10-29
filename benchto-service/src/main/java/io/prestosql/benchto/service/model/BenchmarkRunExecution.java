@@ -26,6 +26,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,6 +35,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Version;
@@ -107,6 +109,10 @@ public class BenchmarkRunExecution
     @Column(name = "value")
     @CollectionTable(name = "execution_attributes", joinColumns = @JoinColumn(name = "execution_id"))
     private Map<String, String> attributes = newHashMap();
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "query_info_id")
+    private QueryInfo queryInfo;
 
     public long getId()
     {
@@ -198,6 +204,16 @@ public class BenchmarkRunExecution
         this.attributes = attributes;
     }
 
+    public QueryInfo getQueryInfo()
+    {
+        return queryInfo;
+    }
+
+    public void setQueryInfo(QueryInfo queryInfo)
+    {
+        this.queryInfo = queryInfo;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -227,6 +243,7 @@ public class BenchmarkRunExecution
                 .add("version", version)
                 .add("measurements", measurements)
                 .add("attributes", attributes)
+                .add("queryInfo", queryInfo)
                 .add("started", started)
                 .add("ended", ended)
                 .toString();

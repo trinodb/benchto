@@ -58,21 +58,28 @@ public class BenchmarkControllerTest
     public void testBenchmarkStartEndHappyPath()
             throws Exception
     {
-        doTestBenchmarkSuccessfulExecution(true, false);
+        doTestBenchmarkSuccessfulExecution(true, false, false);
+    }
+
+    @Test
+    public void testBenchmarkStartEndHappyPathWithQueryInfo()
+            throws Exception
+    {
+        doTestBenchmarkSuccessfulExecution(true, false, true);
     }
 
     @Test
     public void testExecutionFinishReportedAfterBenchmarkEnd()
             throws Exception
     {
-        doTestBenchmarkSuccessfulExecution(false, true);
+        doTestBenchmarkSuccessfulExecution(false, true, false);
     }
 
-    private void doTestBenchmarkSuccessfulExecution(boolean reportRunFinishBeforeBenchmarkFinish, boolean sendEndTimeWithExecutionFinish)
+    private void doTestBenchmarkSuccessfulExecution(boolean reportRunFinishBeforeBenchmarkFinish, boolean sendEndTimeWithExecutionFinish, boolean sendQueryInfo)
             throws Exception
     {
         String environmentName = "environmentName";
-        String benchmarkName = "benchmarkName" + reportRunFinishBeforeBenchmarkFinish;
+        String benchmarkName = "benchmarkName" + reportRunFinishBeforeBenchmarkFinish + sendQueryInfo;
         String uniqueName = benchmarkName + "_k1=v1";
         String benchmarkSequenceId = "benchmarkSequenceId";
         String executionSequenceId = "executionSequenceId";
@@ -131,6 +138,14 @@ public class BenchmarkControllerTest
                 .andExpect(jsonPath("$.executions[0].status", is("STARTED")))
                 .andExpect(jsonPath("$.executions[0].sequenceId", is(executionSequenceId)));
 
+        String queryInfo;
+        if (sendQueryInfo) {
+            queryInfo = ", \"queryInfo\": \"{foo: \\\"bar\\\"}\"";
+        }
+        else {
+            queryInfo = "";
+        }
+
         Instant executionFinish = currentDateTime().toInstant();
         Callable<?> reportExecutionFinish = () -> {
             // finish execution - post execution measurements
@@ -140,6 +155,7 @@ public class BenchmarkControllerTest
                     .content("{\"measurements\":[{\"name\": \"duration\", \"value\": 12.34, \"unit\": \"MILLISECONDS\"},{\"name\": \"bytes\", \"value\": 56789.0, \"unit\": \"BYTES\"}]," +
                             "\"attributes\":{\"attribute1\": \"value1\"}, \"status\": \"FAILED\"" +
                             (sendEndTimeWithExecutionFinish ? (", \"endTime\": " + toJsonRepresentation(executionFinish)) : "") +
+                            queryInfo +
                             "}"))
                     .andExpect(status().isOk());
 
@@ -232,6 +248,10 @@ public class BenchmarkControllerTest
             assertThat(execution.getEnded())
                     .isAfter(testStart)
                     .isBefore(testEnd);
+
+            if (sendQueryInfo) {
+                assertThat(execution.getQueryInfo().getInfo()).isEqualTo("{foo: \"bar\"}");
+            }
         });
     }
 

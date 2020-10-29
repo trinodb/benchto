@@ -75,6 +75,20 @@ public class PrestoClient
         return loadMetrics(queryId, DEFAULT_METRICS);
     }
 
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
+    public String getQueryInfo(String queryId)
+    {
+        URI uri = buildQueryInfoURI(queryId);
+
+        HttpHeaders headers = new HttpHeaders();
+        properties.getPrestoUsername().ifPresent(username -> headers.set("X-Presto-User", username));
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+
+        return response.getBody();
+    }
+
     private List<Measurement> loadMetrics(String queryId, Map<String, Unit> requiredStatistics)
     {
         URI uri = buildQueryInfoURI(queryId);

@@ -114,7 +114,8 @@ public class BenchmarkController
                 finishRequest.getStatus(),
                 Optional.ofNullable(finishRequest.getEndTime()),
                 failSafeEmpty(finishRequest.getMeasurements()),
-                failSafeEmpty(finishRequest.getAttributes()));
+                failSafeEmpty(finishRequest.getAttributes()),
+                finishRequest.getQueryInfo());
     }
 
     @RequestMapping(value = "/v1/benchmark/{uniqueName}/{benchmarkSequenceId}", method = GET)
