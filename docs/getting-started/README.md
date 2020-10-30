@@ -176,7 +176,7 @@ for storing and displaying benchmark results.
 ```
 docker run --name benchto-service --link benchto-postgres:benchto-postgres \
         -e "SPRING_DATASOURCE_URL=jdbc:postgresql://benchto-postgres:5432/postgres" \
-        -p 8080:8080 -d teradatalabs/benchto-service
+        -p 8080:8080 -d prestodev/benchto-service
 ```
 
 Verify that the benchmark service works: [http://dockerhost:8080/#/](http://dockerhost:8080/#/)
