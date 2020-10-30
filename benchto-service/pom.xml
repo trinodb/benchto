@@ -13,7 +13,7 @@
 
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
-        <docker.image.prefix>teradatalabs</docker.image.prefix>
+        <docker.image.prefix>prestodev</docker.image.prefix>
     </properties>
 
     <dependencies>
