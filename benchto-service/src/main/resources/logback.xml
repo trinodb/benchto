@@ -7,7 +7,7 @@
         </encoder>
     </appender>
 
-    <logger name="io.prestosql.benchto.service" level="TRACE" />
+    <logger name="io.prestosql.benchto.service" level="INFO" />
     <logger name="org.springframework" level="WARN" />
     <!--<logger name="org.hibernate.SQL" level="DEBUG"/>-->
     <!--<logger name="org.hibernate.type" level="TRACE"/>-->
