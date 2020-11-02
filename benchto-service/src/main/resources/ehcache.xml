@@ -32,6 +32,9 @@
            eternal="true"
            memoryStoreEvictionPolicy="FIFO" />
 
+    <cache name="io.prestosql.benchto.service.model.QueryInfo"
+           maxEntriesLocalHeap="1" />
+
     <cache name="io.prestosql.benchto.service.model.BenchmarkRun.variables"
            maxEntriesLocalHeap="5000"
            eternal="true"
