@@ -11,7 +11,7 @@ jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver
 ```
     <dependencies>
         <dependency>
-            <groupId>io.prestosql.benchto</groupId>
+            <groupId>io.trino.benchto</groupId>
             <artifactId>benchto-driver</artifactId>
         </dependency>
         <dependency>

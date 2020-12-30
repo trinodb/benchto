@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.prestosql.benchto</groupId>
+        <groupId>io.trino.benchto</groupId>
         <artifactId>benchto-base</artifactId>
         <version>0.13-SNAPSHOT</version>
     </parent>
