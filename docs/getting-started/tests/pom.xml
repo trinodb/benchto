@@ -85,7 +85,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>io.prestosql.benchto.driver.DriverApp</mainClass>
+                    <mainClass>io.trino.benchto.driver.DriverApp</mainClass>
                     <arguments>
                         <argument>--profile=classpath:/application.yaml</argument>
                         <argument>--activeBenchmarks=${activeBenchmarks}</argument>

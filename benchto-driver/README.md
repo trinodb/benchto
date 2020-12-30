@@ -5,8 +5,8 @@ Benchto driver is standalone java application which sql statements using JDBC.
 ## Driver runtime configuration
 
 It is most convenient to run benchmark driver using maven. Declare dependency to `benchto-driver` and any
-jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver main class 
-`io.prestosql.benchto.driver.DriverApp`:
+jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver main class
+`io.trino.benchto.driver.DriverApp`:
 
 ```
     <dependencies>
@@ -27,7 +27,7 @@ jdbc drivers you want to use. Then use maven exec plugin to run benchmark driver
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>1.2.5.RELEASE</version>
                  <configuration>
-                    <mainClass>io.prestosql.benchto.driver.DriverApp</mainClass>
+                    <mainClass>io.trino.benchto.driver.DriverApp</mainClass>
                     <layout>ZIP</layout>
                 </configuration>
                 <executions>
