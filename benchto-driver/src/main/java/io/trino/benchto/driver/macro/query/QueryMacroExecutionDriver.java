@@ -13,7 +13,6 @@
  */
 package io.trino.benchto.driver.macro.query;
 
-import io.prestosql.jdbc.PrestoConnection;
 import io.trino.benchto.driver.Benchmark;
 import io.trino.benchto.driver.BenchmarkExecutionException;
 import io.trino.benchto.driver.Query;
@@ -22,6 +21,7 @@ import io.trino.benchto.driver.loader.QueryLoader;
 import io.trino.benchto.driver.loader.SqlStatementGenerator;
 import io.trino.benchto.driver.macro.MacroExecutionDriver;
 import io.trino.benchto.driver.utils.QueryUtils;
+import io.trino.jdbc.TrinoConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,8 +96,8 @@ public class QueryMacroExecutionDriver
         for (String sqlStatement : sqlStatements) {
             sqlStatement = sqlStatement.trim();
             LOGGER.info("Executing macro query: {}", sqlStatement);
-            if (sqlStatement.toLowerCase().startsWith(SET_SESSION) && connection.isWrapperFor(PrestoConnection.class)) {
-                setSessionForPresto(connection, sqlStatement);
+            if (sqlStatement.toLowerCase().startsWith(SET_SESSION) && connection.isWrapperFor(TrinoConnection.class)) {
+                setSessionForTrino(connection, sqlStatement);
             }
             else {
                 try (Statement statement = connection.createStatement()) {
@@ -111,18 +111,18 @@ public class QueryMacroExecutionDriver
         }
     }
 
-    private void setSessionForPresto(Connection connection, String sqlStatement)
+    private void setSessionForTrino(Connection connection, String sqlStatement)
     {
-        PrestoConnection prestoConnection;
+        TrinoConnection trinoConnection;
         try {
-            prestoConnection = connection.unwrap(PrestoConnection.class);
+            trinoConnection = connection.unwrap(TrinoConnection.class);
         }
         catch (SQLException e) {
             LOGGER.error(e.getMessage());
             throw new UnsupportedOperationException(format("SET SESSION for non PrestoConnection [%s] is not supported", connection.getClass()));
         }
         String[] keyValue = extractKeyValue(sqlStatement);
-        prestoConnection.setSessionProperty(keyValue[0].trim(), keyValue[1].trim());
+        trinoConnection.setSessionProperty(keyValue[0].trim(), keyValue[1].trim());
     }
 
     public static String[] extractKeyValue(String sqlStatement)

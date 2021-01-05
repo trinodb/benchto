@@ -14,9 +14,9 @@
 package io.trino.benchto.driver.execution;
 
 import com.google.common.collect.ImmutableMap;
-import io.prestosql.jdbc.PrestoResultSet;
 import io.trino.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import io.trino.benchto.driver.loader.SqlStatementGenerator;
+import io.trino.jdbc.TrinoResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +69,9 @@ public class QueryExecutionDriver
             int rowsCount = fetchRows(sqlStatement, resultSet);
 
             try {
-                if (resultSet.isWrapperFor(PrestoResultSet.class)) {
-                    PrestoResultSet prestoResultSet = resultSet.unwrap(PrestoResultSet.class);
-                    queryExecutionResultBuilder.setPrestoQueryId(prestoResultSet.getQueryId());
+                if (resultSet.isWrapperFor(TrinoResultSet.class)) {
+                    TrinoResultSet trinoResultSet = resultSet.unwrap(TrinoResultSet.class);
+                    queryExecutionResultBuilder.setPrestoQueryId(trinoResultSet.getQueryId());
                 }
             }
             catch (AbstractMethodError | Exception e) {
