@@ -81,7 +81,7 @@ public class PrestoClient
         URI uri = buildQueryInfoURI(queryId);
 
         HttpHeaders headers = new HttpHeaders();
-        properties.getPrestoUsername().ifPresent(username -> headers.set("X-Presto-User", username));
+        properties.getPrestoUsername().ifPresent(username -> headers.set("X-Trino-User", username));
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
@@ -94,7 +94,7 @@ public class PrestoClient
         URI uri = buildQueryInfoURI(queryId);
 
         HttpHeaders headers = new HttpHeaders();
-        properties.getPrestoUsername().ifPresent(username -> headers.set("X-Presto-User", username));
+        properties.getPrestoUsername().ifPresent(username -> headers.set("X-Trino-User", username));
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<QueryInfoResponseItem> response = restTemplate.exchange(uri, HttpMethod.GET, entity, QueryInfoResponseItem.class);
