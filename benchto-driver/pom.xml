@@ -103,10 +103,10 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
 
-        <!-- Presto driver -->
+        <!-- Trino driver -->
         <dependency>
-            <groupId>io.prestosql</groupId>
-            <artifactId>presto-jdbc</artifactId>
+            <groupId>io.trino</groupId>
+            <artifactId>trino-jdbc</artifactId>
         </dependency>
 
         <!-- Test -->
