@@ -156,41 +156,47 @@ public class BenchmarkExecutionDriver
         for (Query query : benchmark.getQueries()) {
             for (int run = 1; run <= runs; run++) {
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
-
                 executionCallables.add(() -> {
-                    QueryExecutionResult result;
-
                     try (Connection connection = getConnectionFor(queryExecution)) {
-                        macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
-
-                        if (reportStatus) {
-                            statusReporter.reportExecutionStarted(queryExecution);
-                        }
-                        QueryExecutionResultBuilder failureResult = new QueryExecutionResultBuilder(queryExecution)
-                                .startTimer();
-                        try {
-                            result = queryExecutionDriver.execute(queryExecution, connection);
-                        }
-                        catch (Exception e) {
-                            LOG.error("Query Execution failed for benchmark {}", benchmark.getName());
-                            result = failureResult
-                                    .endTimer()
-                                    .failed(e)
-                                    .build();
-                        }
-
-                        if (reportStatus) {
-                            statusReporter.reportExecutionFinished(result);
-                        }
-
-                        macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), benchmark, connection);
+                        return executeSingleQuery(queryExecution, benchmark, connection, reportStatus);
                     }
-
-                    return result;
                 });
             }
         }
         return executionCallables;
+    }
+
+    private QueryExecutionResult executeSingleQuery(
+            QueryExecution queryExecution,
+            Benchmark benchmark,
+            Connection connection,
+            boolean reportStatus)
+    {
+        QueryExecutionResult result;
+        macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
+
+        if (reportStatus) {
+            statusReporter.reportExecutionStarted(queryExecution);
+        }
+        QueryExecutionResultBuilder failureResult = new QueryExecutionResultBuilder(queryExecution)
+                .startTimer();
+        try {
+            result = queryExecutionDriver.execute(queryExecution, connection);
+        }
+        catch (Exception e) {
+            LOG.error("Query Execution failed for benchmark {} query {}", benchmark.getName(), queryExecution.getQueryName());
+            result = failureResult
+                    .endTimer()
+                    .failed(e)
+                    .build();
+        }
+
+        if (reportStatus) {
+            statusReporter.reportExecutionFinished(result);
+        }
+
+        macroService.runBenchmarkMacros(benchmark.getAfterExecutionMacros(), benchmark, connection);
+        return result;
     }
 
     private Connection getConnectionFor(QueryExecution queryExecution)
