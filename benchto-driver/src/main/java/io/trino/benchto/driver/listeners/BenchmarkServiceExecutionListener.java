@@ -37,20 +37,25 @@ import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import static io.trino.benchto.driver.loader.BenchmarkDescriptor.RESERVED_KEYWORDS;
 import static io.trino.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.ENDED;
 import static io.trino.benchto.driver.service.BenchmarkServiceClient.FinishRequest.Status.FAILED;
 import static io.trino.benchto.driver.utils.ExceptionUtils.stackTraceToString;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -165,6 +170,43 @@ public class BenchmarkServiceExecutionListener
                             executionSequenceId(executionResult.getQueryExecution()),
                             request);
                 });
+    }
+
+    @Override
+    public Future<?> concurrencyTestExecutionFinished(List<QueryExecutionResult> executions)
+    {
+        if (executions.isEmpty()) {
+            return completedFuture(emptyList());
+        }
+        return taskExecutor.submit(() -> {
+            FinishRequest finishRequest = new FinishRequestBuilder()
+                    .withStatus(ENDED)
+                    .withEndTime(
+                            executions.stream()
+                                    .map(e -> e.getUtcEnd().toInstant())
+                                    .max(Comparator.comparing(Instant::toEpochMilli))
+                                    .orElseThrow(NoSuchElementException::new))
+                    .addMeasurement(Measurement.measurement(
+                            "queries_successful",
+                            "NONE",
+                            executions.stream().filter(QueryExecutionResult::isSuccessful).count()))
+                    .addMeasurement(Measurement.measurement(
+                            "queries_failed",
+                            "NONE",
+                            executions.stream().filter(query -> !query.isSuccessful()).count()))
+                    .addAttribute(
+                            "queries_order",
+                            executions.stream()
+                                    .map(QueryExecutionResult::getQueryName)
+                                    .collect(Collectors.joining(",")))
+                    .build();
+
+            benchmarkServiceClient.finishExecution(
+                    executions.stream().findFirst().orElseThrow(NoSuchElementException::new).getBenchmark().getUniqueName(),
+                    executions.stream().findFirst().orElseThrow(NoSuchElementException::new).getBenchmark().getSequenceId(),
+                    executionSequenceId(executions.stream().findFirst().orElseThrow(NoSuchElementException::new).getQueryExecution()),
+                    finishRequest);
+        });
     }
 
     private FinishRequest buildExecutionFinishedRequest(QueryExecutionResult executionResult, MeasurementsWithQueryInfo measurementsWithQueryInfo)

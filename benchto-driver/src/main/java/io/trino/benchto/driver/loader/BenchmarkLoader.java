@@ -227,6 +227,7 @@ public class BenchmarkLoader
                         .withPrewarmRuns(benchmarkDescriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
                         .withFrequency(benchmarkDescriptor.getFrequency().map(frequency -> Duration.ofDays(frequency)))
+                        .withThroughputTest(benchmarkDescriptor.getThroughputTest())
                         .withBeforeBenchmarkMacros(benchmarkDescriptor.getBeforeBenchmarkMacros())
                         .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
                         .withBeforeExecutionMacros(benchmarkDescriptor.getBeforeExecutionMacros())
@@ -396,14 +397,15 @@ public class BenchmarkLoader
 
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)
     {
-        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarms", "Concurrency"));
+        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarms", "Concurrency", "Throughput Test"));
         benchmarks.stream()
                 .map(benchmark -> format(formatString,
                         benchmark.getName(),
                         benchmark.getDataSource(),
                         benchmark.getRuns() + "",
                         benchmark.getPrewarmRuns() + "",
-                        benchmark.getConcurrency() + ""))
+                        benchmark.getConcurrency() + "",
+                        benchmark.isThroughputTest() + ""))
                 .distinct()
                 .forEach(LOGGER::info);
     }
@@ -413,6 +415,6 @@ public class BenchmarkLoader
         int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().orElseGet(() -> 10);
         int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().orElseGet(() -> 10);
         int indent = 3;
-        return "\t| %-" + (nameMaxLength + indent) + "s | %-" + (dataSourceMaxLength + indent) + "s | %-4s | %-8s | %-11s |";
+        return "\t| %-" + (nameMaxLength + indent) + "s | %-" + (dataSourceMaxLength + indent) + "s | %-4s | %-8s | %-11s | %-15s |";
     }
 }

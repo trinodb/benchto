@@ -48,7 +48,7 @@ public class BenchmarkStatusReporter
 
     private final List<BenchmarkExecutionListener> executionListeners;
 
-    private Queue<Future<?>> pendingFutures = synchronizedQueue(new ArrayDeque<>());
+    private final Queue<Future<?>> pendingFutures = synchronizedQueue(new ArrayDeque<>());
 
     @Autowired
     public BenchmarkStatusReporter(List<BenchmarkExecutionListener> executionListeners)
@@ -131,6 +131,11 @@ public class BenchmarkStatusReporter
     public void reportExecutionFinished(QueryExecutionResult queryExecutionResult)
     {
         fireListeners(BenchmarkExecutionListener::executionFinished, queryExecutionResult);
+    }
+
+    public void reportConcurrencyTestExecutionFinished(List<QueryExecutionResult> executionResults)
+    {
+        fireListeners(BenchmarkExecutionListener::concurrencyTestExecutionFinished, executionResults);
     }
 
     private <T> void fireListeners(BiFunction<BenchmarkExecutionListener, T, Future<?>> invoker, T argument)

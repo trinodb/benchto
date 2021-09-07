@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -115,5 +116,11 @@ public class GraphiteEventExecutionListener
         executionSynchronizer.awaitAfterQueryExecutionAndBeforeResultReport(executionResult);
 
         return future;
+    }
+
+    @Override
+    public Future<?> concurrencyTestExecutionFinished(List<QueryExecutionResult> executions)
+    {
+        return CompletableFuture.completedFuture("");
     }
 }

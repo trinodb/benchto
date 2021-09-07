@@ -19,6 +19,7 @@ import io.trino.benchto.driver.execution.QueryExecution;
 import io.trino.benchto.driver.execution.QueryExecutionResult;
 import org.springframework.core.Ordered;
 
+import java.util.List;
 import java.util.concurrent.Future;
 
 public interface BenchmarkExecutionListener
@@ -31,4 +32,6 @@ public interface BenchmarkExecutionListener
     Future<?> executionStarted(QueryExecution queryExecution);
 
     Future<?> executionFinished(QueryExecutionResult execution);
+
+    Future<?> concurrencyTestExecutionFinished(List<QueryExecutionResult> executions);
 }
