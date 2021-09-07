@@ -40,7 +40,7 @@ public class PrestoMetricsLoader
     {
         if (measurable instanceof QueryExecutionResult) {
             QueryExecutionResult executionResult = (QueryExecutionResult) measurable;
-            if (executionResult.getPrestoQueryId().isPresent()) {
+            if (executionResult.getPrestoQueryId().isPresent() && !executionResult.getBenchmark().isThroughputTest()) {
                 return completedFuture(prestoClient.loadMetrics(executionResult.getPrestoQueryId().get()));
             }
         }

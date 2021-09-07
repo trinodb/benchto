@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -44,6 +45,7 @@ public class Benchmark
     private Map<String, String> variables;
     private String uniqueName;
     private Optional<Duration> frequency;
+    private boolean throughputTest;
 
     private Benchmark()
     {
@@ -147,6 +149,11 @@ public class Benchmark
         return frequency;
     }
 
+    public boolean isThroughputTest()
+    {
+        return throughputTest;
+    }
+
     @Override
     public String toString()
     {
@@ -156,10 +163,13 @@ public class Benchmark
                 .add("sequenceId", sequenceId)
                 .add("dataSource", dataSource)
                 .add("environment", environment)
-                .add("queries", queries)
+                .add("queries", queries.stream()
+                        .map(Query::getName)
+                        .collect(Collectors.joining(", ")))
                 .add("runs", runs)
                 .add("prewarmRuns", prewarmRuns)
                 .add("concurrency", concurrency)
+                .add("throughputTest", throughputTest)
                 .add("frequency", frequency)
                 .add("beforeBenchmarkMacros", beforeBenchmarkMacros)
                 .add("afterBenchmarkMacros", afterBenchmarkMacros)
@@ -192,7 +202,8 @@ public class Benchmark
                 Objects.equal(beforeExecutionMacros, benchmark.beforeExecutionMacros) &&
                 Objects.equal(afterExecutionMacros, benchmark.afterExecutionMacros) &&
                 Objects.equal(variables, benchmark.variables) &&
-                Objects.equal(frequency, benchmark.frequency);
+                Objects.equal(frequency, benchmark.frequency) &&
+                Objects.equal(throughputTest, benchmark.throughputTest);
     }
 
     @Override
@@ -211,7 +222,8 @@ public class Benchmark
                 beforeExecutionMacros,
                 afterExecutionMacros,
                 variables,
-                frequency);
+                frequency,
+                throughputTest);
     }
 
     public static class BenchmarkBuilder
@@ -290,6 +302,12 @@ public class Benchmark
         public BenchmarkBuilder withFrequency(Optional<Duration> frequency)
         {
             this.benchmark.frequency = frequency;
+            return this;
+        }
+
+        public BenchmarkBuilder withThroughputTest(boolean throughputTest)
+        {
+            this.benchmark.throughputTest = throughputTest;
             return this;
         }
 

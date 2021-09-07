@@ -124,7 +124,7 @@ public class ExecutionDriver
             }
 
             executeHealthCheck(benchmark);
-            benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size()));
+            benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size(), getExecutionTimeLimit()));
             benchmarkStatusReporter.processCompletedFutures();
         }
 
@@ -143,6 +143,12 @@ public class ExecutionDriver
     {
         Optional<Duration> timeLimit = properties.getTimeLimit();
         return timeLimit.isPresent() && timeLimit.get().compareTo(Duration.between(startTime, nowUtc())) < 0;
+    }
+
+    private Optional<ZonedDateTime> getExecutionTimeLimit()
+    {
+        Optional<Duration> timeLimit = properties.getTimeLimit();
+        return timeLimit.map(startTime::plus);
     }
 
     private void executeHealthCheck(Benchmark benchmark)

@@ -39,6 +39,7 @@ public class BenchmarkDescriptor
     public static final String VARIABLES_KEY = "variables";
     public static final String QUARANTINE_KEY = "quarantine";
     public static final String FREQUENCY_KEY = "frequency";
+    public static final String THROUGHPUT_TEST_KEY = "throughput-test";
 
     public static final Set<String> RESERVED_KEYWORDS = ImmutableSet.of(
             DATA_SOURCE_KEY,
@@ -52,7 +53,8 @@ public class BenchmarkDescriptor
             AFTER_EXECUTION_MACROS_KEY,
             VARIABLES_KEY,
             QUARANTINE_KEY,
-            FREQUENCY_KEY);
+            FREQUENCY_KEY,
+            THROUGHPUT_TEST_KEY);
 
     private final Map<String, String> variables;
 
@@ -115,6 +117,11 @@ public class BenchmarkDescriptor
     public List<String> getAfterExecutionMacros()
     {
         return asStringList(variables.getOrDefault(AFTER_EXECUTION_MACROS_KEY, ""));
+    }
+
+    public boolean getThroughputTest()
+    {
+        return variables.getOrDefault(THROUGHPUT_TEST_KEY, "false").toLowerCase().equals("true");
     }
 
     private Optional<Integer> getIntegerOptional(String key)

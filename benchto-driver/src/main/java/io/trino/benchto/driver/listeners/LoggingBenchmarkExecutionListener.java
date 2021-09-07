@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -73,6 +74,15 @@ public class LoggingBenchmarkExecutionListener
                     result.getBenchmark().getRuns(), result.getFailureCause().getMessage());
         }
 
+        return CompletableFuture.completedFuture("");
+    }
+
+    @Override
+    public Future<?> concurrencyTestExecutionFinished(List<QueryExecutionResult> executions)
+    {
+        LOG.info("Concurrency test queries finished, queries successful {}, queries failed {}",
+                executions.stream().filter(QueryExecutionResult::isSuccessful).count(),
+                executions.stream().filter(execution -> !execution.isSuccessful()).count());
         return CompletableFuture.completedFuture("");
     }
 }
