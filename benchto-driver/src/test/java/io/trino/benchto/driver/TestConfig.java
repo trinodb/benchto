@@ -26,10 +26,12 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.core.task.support.TaskExecutorAdapter;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
@@ -75,10 +77,10 @@ public class TestConfig
         return new QueryExecutionDriver()
         {
             @Override
-            public QueryExecutionResult execute(QueryExecution queryExecution, Connection connection)
+            public QueryExecutionResult execute(QueryExecution queryExecution, Connection connection, Optional<Path> resultFile)
                     throws SQLException
             {
-                QueryExecutionResult executionResult = super.execute(queryExecution, connection);
+                QueryExecutionResult executionResult = super.execute(queryExecution, connection, resultFile);
 
                 // Queries in tests need to seemingly take non-zero duration (measured with seconds precision), even if Graphite precision is subtracted.
                 ZonedDateTime newStart = ((ZonedDateTime) ReflectionTestUtils.getField(executionResult, "utcStart"))

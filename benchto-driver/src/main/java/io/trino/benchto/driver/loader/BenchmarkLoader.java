@@ -232,6 +232,7 @@ public class BenchmarkLoader
                         .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
                         .withBeforeExecutionMacros(benchmarkDescriptor.getBeforeExecutionMacros())
                         .withAfterExecutionMacros(benchmarkDescriptor.getAfterExecutionMacros())
+                        .withQueryResults(benchmarkDescriptor.getResults())
                         .withVariables(benchmarkDescriptor.getVariables())
                         .build();
                 benchmarks.add(benchmark);

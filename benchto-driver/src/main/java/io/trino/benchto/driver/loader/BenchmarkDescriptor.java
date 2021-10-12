@@ -40,6 +40,7 @@ public class BenchmarkDescriptor
     public static final String QUARANTINE_KEY = "quarantine";
     public static final String FREQUENCY_KEY = "frequency";
     public static final String THROUGHPUT_TEST_KEY = "throughput-test";
+    public static final String QUERY_RESULTS_KEY = "query-results";
 
     public static final Set<String> RESERVED_KEYWORDS = ImmutableSet.of(
             DATA_SOURCE_KEY,
@@ -54,7 +55,8 @@ public class BenchmarkDescriptor
             VARIABLES_KEY,
             QUARANTINE_KEY,
             FREQUENCY_KEY,
-            THROUGHPUT_TEST_KEY);
+            THROUGHPUT_TEST_KEY,
+            QUERY_RESULTS_KEY);
 
     private final Map<String, String> variables;
 
@@ -124,10 +126,23 @@ public class BenchmarkDescriptor
         return variables.getOrDefault(THROUGHPUT_TEST_KEY, "false").equalsIgnoreCase("true");
     }
 
+    public Optional<String> getResults()
+    {
+        return getStringOptional(QUERY_RESULTS_KEY);
+    }
+
     private Optional<Integer> getIntegerOptional(String key)
     {
         if (variables.containsKey(key)) {
             return Optional.of(Integer.valueOf(variables.get(key)));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> getStringOptional(String key)
+    {
+        if (variables.containsKey(key)) {
+            return Optional.of(variables.get(key));
         }
         return Optional.empty();
     }

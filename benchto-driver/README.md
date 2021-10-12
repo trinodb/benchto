@@ -142,6 +142,7 @@ List of keywords:
 | variables        | False | none  | Set of combinations of variables.                                                  |
 | quarantine       | False | false | Flag which can be used to quarantine benchmark using `--activeVariables` property. |
 | frequency        | False | none  | tells how frequent given benchmark can be executed (in days). 1 - once per day, 7 once per week. |
+| quey-results     | False | none  | Triggers results verification against specified result files                       |
 
 ## SQL files
 
@@ -174,6 +175,18 @@ CREATE TABLE blackhole.default.lineitem_${splits_count}m
     WITH (splits_count=${splits_count},pages_per_split=1000,rows_per_page=1000)
     AS SELECT * FROM tpch.tiny.lineitem;
 ```
+
+## Results verification
+
+Benchmark optional descriptor's property `query-results` may point to files containing unquoted CSV files with
+query results. Paths to these files are relative to global runtime property `query-results-dir`.
+
+Results of first warm-up run are compared to content of the result file for specific query. If verification 
+fails, whole benchmark is marked as failure. 
+
+Results verification should be used only for queries with stable results - for example with sorted output.
+
+If benchmark has no pre-warm runs, verification is skipped.
 
 ## Overrides
 
