@@ -13,13 +13,22 @@
  */
 package io.trino.benchto.driver.utils;
 
+import io.trino.benchto.driver.execution.ResultComparisonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.StringJoiner;
+import java.util.stream.IntStream;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
 
 public final class QueryUtils
 {
@@ -43,6 +52,57 @@ public final class QueryUtils
         }
 
         return rowsCount;
+    }
+
+    public static int compareRows(Path resultFile, ResultSet resultSet)
+            throws SQLException
+    {
+        LOGGER.info("Comparing result with {}", resultFile);
+
+        try (BufferedReader reader = Files.newBufferedReader(resultFile)) {
+            int lineCount = 0;
+            while (true) {
+                lineCount++;
+                String resultRow = reader.readLine();
+                boolean hasRows = resultSet.next();
+                if (resultRow == null && !hasRows) {
+                    break;
+                }
+                if (resultRow == null) {
+                    throw new ResultComparisonException(format("Result file has %d lines, actual result has more rows", lineCount - 1));
+                }
+                if (!hasRows) {
+                    throw new ResultComparisonException(format("Actual result has %d rows, result file has more lines", lineCount - 1));
+                }
+                String dbRow = resultRowToString(resultSet);
+                if (!dbRow.equals(resultRow)) {
+                    throw new ResultComparisonException(format("Incorrect result at row %d, expected %s, got %s",
+                            lineCount,
+                            resultRow,
+                            dbRow));
+                }
+            }
+            return lineCount;
+        }
+        catch (IOException e) {
+            throw new ResultComparisonException("Error opening result file", e);
+        }
+    }
+
+    private static String resultRowToString(ResultSet resultSet)
+            throws SQLException
+    {
+        return IntStream.range(1, resultSet.getMetaData().getColumnCount() + 1)
+                .boxed()
+                .map(i -> {
+                    try {
+                        Object value = resultSet.getObject(i);
+                        return value == null ? "" : value.toString();
+                    }
+                    catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(joining(","));
     }
 
     private static void logRow(int rowNumber, ResultSet resultSet)

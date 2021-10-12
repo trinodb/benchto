@@ -14,6 +14,7 @@
 package io.trino.benchto.driver.execution;
 
 import com.google.common.collect.ImmutableMap;
+import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import io.trino.benchto.driver.loader.SqlStatementGenerator;
 import io.trino.jdbc.TrinoResultSet;
@@ -21,14 +22,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
+import static io.trino.benchto.driver.utils.QueryUtils.compareRows;
 import static io.trino.benchto.driver.utils.QueryUtils.fetchRows;
 
 public class QueryExecutionDriver
@@ -38,7 +42,10 @@ public class QueryExecutionDriver
     @Autowired
     private SqlStatementGenerator sqlStatementGenerator;
 
-    public QueryExecutionResult execute(QueryExecution queryExecution, Connection connection)
+    @Autowired
+    private BenchmarkProperties properties;
+
+    public QueryExecutionResult execute(QueryExecution queryExecution, Connection connection, Optional<Path> resultFile)
             throws SQLException
     {
         QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution)
@@ -47,7 +54,7 @@ public class QueryExecutionDriver
         String sqlStatement = generateQuerySqlStatement(queryExecution);
 
         if (isSelectQuery(sqlStatement)) {
-            return executeSelectQuery(connection, queryExecutionResultBuilder, sqlStatement);
+            return executeSelectQuery(connection, queryExecutionResultBuilder, sqlStatement, resultFile);
         }
         else {
             return executeUpdateQuery(connection, queryExecutionResultBuilder, sqlStatement);
@@ -60,12 +67,24 @@ public class QueryExecutionDriver
         return sql.startsWith("select") || sql.startsWith("show") || sql.startsWith("with");
     }
 
-    private QueryExecutionResult executeSelectQuery(Connection connection, QueryExecutionResultBuilder queryExecutionResultBuilder, String sqlStatement)
+    private QueryExecutionResult executeSelectQuery(
+            Connection connection,
+            QueryExecutionResultBuilder queryExecutionResultBuilder,
+            String sqlStatement,
+            Optional<Path> resultFile)
             throws SQLException
     {
         try (Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sqlStatement)) {
-            int rowsCount = fetchRows(sqlStatement, resultSet);
+            int rowsCount;
+            if (resultFile.isPresent()) {
+                // load results from file and compare
+                rowsCount = compareRows(resultFile.get(), resultSet);
+            }
+            else {
+                // ignore results
+                rowsCount = fetchRows(sqlStatement, resultSet);
+            }
 
             try {
                 if (resultSet.isWrapperFor(TrinoResultSet.class)) {

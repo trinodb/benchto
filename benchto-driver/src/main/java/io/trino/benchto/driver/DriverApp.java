@@ -119,6 +119,7 @@ public class DriverApp
         addOption(options, "profiles.directory", "PROFILES_DIRECTORY", "configuration profiles directory", "none");
         addOption(options, "frequencyCheckEnabled", "boolean", "if set no fresh benchmark will be executed", "true");
         addOption(options, "benchmark-service.url", "String", "URL of Benchto Service", "http://localhost:8080");
+        addOption(options, "query-results-dir", "RESULTS_DIR", "directory for query results", "results");
         options.addOption("h", "help", false, "Display help message.");
         return options;
     }

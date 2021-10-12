@@ -46,6 +46,7 @@ public class Benchmark
     private String uniqueName;
     private Optional<Duration> frequency;
     private boolean throughputTest;
+    private Optional<String> queryResults;
 
     private Benchmark()
     {
@@ -153,6 +154,11 @@ public class Benchmark
         return throughputTest;
     }
 
+    public Optional<String> getQueryResults()
+    {
+        return queryResults;
+    }
+
     @Override
     public String toString()
     {
@@ -174,6 +180,7 @@ public class Benchmark
                 .add("afterBenchmarkMacros", afterBenchmarkMacros)
                 .add("beforeExecutionMacros", beforeExecutionMacros)
                 .add("afterExecutionMacros", afterExecutionMacros)
+                .add("query-results", queryResults)
                 .add("variables", variables)
                 .toString();
     }
@@ -202,7 +209,8 @@ public class Benchmark
                 Objects.equal(afterExecutionMacros, benchmark.afterExecutionMacros) &&
                 Objects.equal(variables, benchmark.variables) &&
                 Objects.equal(frequency, benchmark.frequency) &&
-                Objects.equal(throughputTest, benchmark.throughputTest);
+                Objects.equal(throughputTest, benchmark.throughputTest) &&
+                Objects.equal(queryResults, benchmark.queryResults);
     }
 
     @Override
@@ -222,7 +230,8 @@ public class Benchmark
                 afterExecutionMacros,
                 variables,
                 frequency,
-                throughputTest);
+                throughputTest,
+                queryResults);
     }
 
     public static class BenchmarkBuilder
@@ -289,6 +298,12 @@ public class Benchmark
         public BenchmarkBuilder withAfterExecutionMacros(List<String> afterExecutionMacros)
         {
             this.benchmark.afterExecutionMacros = ImmutableList.copyOf(afterExecutionMacros);
+            return this;
+        }
+
+        public BenchmarkBuilder withQueryResults(Optional<String> results)
+        {
+            this.benchmark.queryResults = results;
             return this;
         }
 

@@ -1,5 +1,6 @@
 benchmarks: src/test/resources/benchmarks
 sql: src/test/resources/sql,src/test/resources/sql-second-dir
+query-results-dir: results
 
 data-sources:
   test_datasource:

@@ -91,6 +91,9 @@ public class BenchmarkProperties
     @Value("${frequencyCheckEnabled:true}")
     private String frequencyCheckEnabled;
 
+    @Value("${query-results-dir}")
+    private String queryResultsDir;
+
     @Autowired
     private GraphiteProperties graphiteProperties;
 
@@ -160,6 +163,11 @@ public class BenchmarkProperties
         return Optional.ofNullable(timeLimit).map(Duration::parse);
     }
 
+    public Path getQueryResultsDir()
+    {
+        return Paths.get(queryResultsDir);
+    }
+
     @Override
     public String toString()
     {
@@ -169,7 +177,8 @@ public class BenchmarkProperties
                 .add("executionSequenceId", executionSequenceId)
                 .add("environmentName", environmentName)
                 .add("graphiteProperties", graphiteProperties)
-                .add("frequencyCheck", frequencyCheckEnabled);
+                .add("frequencyCheck", frequencyCheckEnabled)
+                .add("queryResultsDir", queryResultsDir);
         addForToStringOptionalField(toStringHelper, "activeBenchmarks", getActiveBenchmarks());
         addForToStringOptionalField(toStringHelper, "activeVariables", getActiveVariables());
         addForToStringOptionalField(toStringHelper, "beforeAllMacros", getBeforeAllMacros());

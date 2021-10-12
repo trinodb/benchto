@@ -18,6 +18,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import io.trino.benchto.driver.Benchmark;
 import io.trino.benchto.driver.BenchmarkExecutionException;
+import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.Query;
 import io.trino.benchto.driver.concurrent.ExecutorServiceFactory;
 import io.trino.benchto.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
@@ -40,6 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -69,6 +72,9 @@ public class BenchmarkExecutionDriver
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @Autowired
+    private BenchmarkProperties properties;
 
     public BenchmarkExecutionResult execute(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount, Optional<ZonedDateTime> executionTimeLimit)
     {
@@ -102,7 +108,13 @@ public class BenchmarkExecutionDriver
         BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark);
         List<QueryExecutionResult> executions;
         try {
-            executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
+            executions = executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
+            String comparisonFailures = executions.stream()
+                    .filter(execution -> execution.getFailureCause() != null)
+                    .filter(execution -> execution.getFailureCause().getClass().equals(ResultComparisonException.class))
+                    .map(execution -> format("%s [%s]", execution.getQueryName(), execution.getFailureCause()))
+                    .distinct()
+                    .collect(Collectors.joining("\n"));
 
             executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
 
@@ -111,21 +123,21 @@ public class BenchmarkExecutionDriver
             resultBuilder = resultBuilder.startTimer();
 
             try {
+                if (!comparisonFailures.isEmpty()) {
+                    throw new RuntimeException(format("Query result comparison failed for queries: %s", comparisonFailures));
+                }
                 executions = executeQueries(benchmark, benchmark.getRuns(), false, executionTimeLimit);
+                resultBuilder = resultBuilder.withExecutions(executions);
             }
             finally {
                 resultBuilder = resultBuilder.endTimer();
             }
         }
         catch (RuntimeException e) {
-            return resultBuilder
-                    .withUnexpectedException(e)
-                    .build();
+            resultBuilder = resultBuilder.withUnexpectedException(e);
         }
 
-        BenchmarkExecutionResult executionResult = resultBuilder
-                .withExecutions(executions)
-                .build();
+        BenchmarkExecutionResult executionResult = resultBuilder.build();
 
         statusReporter.reportBenchmarkFinished(executionResult);
 
@@ -170,10 +182,15 @@ public class BenchmarkExecutionDriver
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
             for (int run = 1; run <= runs; run++) {
+                final int finalRun = run;
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
+                Optional<Path> resultFile = benchmark.getQueryResults()
+                        // only check result of the first warmup run
+                        .filter(dir -> warmup && finalRun == 1)
+                        .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
                 executionCallables.add(() -> {
                     try (Connection connection = getConnectionFor(queryExecution)) {
-                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty());
+                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
                     }
                 });
             }
@@ -251,6 +268,18 @@ public class BenchmarkExecutionDriver
             Optional<ZonedDateTime> executionTimeLimit)
             throws TimeLimitException
     {
+        return executeSingleQuery(queryExecution, benchmark, connection, warmup, executionTimeLimit, Optional.empty());
+    }
+
+    private QueryExecutionResult executeSingleQuery(
+            QueryExecution queryExecution,
+            Benchmark benchmark,
+            Connection connection,
+            boolean warmup,
+            Optional<ZonedDateTime> executionTimeLimit,
+            Optional<Path> outputFile)
+            throws TimeLimitException
+    {
         QueryExecutionResult result;
         macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
 
@@ -260,7 +289,7 @@ public class BenchmarkExecutionDriver
         QueryExecutionResultBuilder failureResult = new QueryExecutionResultBuilder(queryExecution)
                 .startTimer();
         try {
-            result = queryExecutionDriver.execute(queryExecution, connection);
+            result = queryExecutionDriver.execute(queryExecution, connection, outputFile);
         }
         catch (Exception e) {
             LOG.error(format("Query Execution failed for benchmark %s query %s", benchmark.getName(), queryExecution.getQueryName()), e);

@@ -89,6 +89,34 @@ public class BenchtoTrinoIntegrationTest
         verifyBenchmark("test_query_failure", "FAILED");
     }
 
+    @Test
+    public void testVerifyResults()
+    {
+        setBenchmark("test_results");
+        executionDriver.execute();
+        verifyBenchmark("test_results_query=test_results", "test_results", "ENDED");
+    }
+
+    @Test
+    public void testVerifyResultsFailure()
+    {
+        setBenchmark("test_results_failure");
+        assertThatThrownBy(() -> executionDriver.execute())
+                .isInstanceOf(FailedBenchmarkExecutionException.class)
+                .hasMessageContaining("ResultComparisonException: Incorrect result at row 4");
+        verifyBenchmark("test_results_failure", "FAILED", 0);
+    }
+
+    @Test
+    public void testVerifyResultsMissing()
+    {
+        setBenchmark("test_results_missing");
+        assertThatThrownBy(() -> executionDriver.execute())
+                .isInstanceOf(FailedBenchmarkExecutionException.class)
+                .hasMessageContaining("Error opening result file");
+        verifyBenchmark("test_results_missing", "FAILED", 0);
+    }
+
     private static void startBenchtoService(Network network)
     {
         postgres = new PostgreSQLContainer<>("postgres:11")
@@ -164,15 +192,30 @@ public class BenchtoTrinoIntegrationTest
 
     private void verifyBenchmark(String benchmark, String status)
     {
+        verifyBenchmark(benchmark, status, 2);
+    }
+
+    private void verifyBenchmark(String benchmark, String status, int expectedRuns)
+    {
+        verifyBenchmark(benchmark, benchmark, status, expectedRuns);
+    }
+
+    private void verifyBenchmark(String benchmark, String sequenceId, String status)
+    {
+        verifyBenchmark(benchmark, sequenceId, status, 2);
+    }
+
+    private void verifyBenchmark(String benchmark, String sequenceId, String status, int expectedRuns)
+    {
         UriComponents url = UriComponentsBuilder.fromHttpUrl(getServiceUrl())
                 .path("v1/benchmark")
                 .pathSegment(benchmark)
-                .pathSegment(benchmark)
+                .pathSegment(sequenceId)
                 .build();
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity(url.toUri(), String.class);
         DocumentContext json = JsonPath.parse(response.getBody());
         assertThat(json.read("$.status", String.class)).isEqualTo(status);
-        assertThat(json.read(format("$.executions[?(@.status == '%s')]", status), List.class)).hasSize(2);
+        assertThat(json.read(format("$.executions[?(@.status == '%s')]", status), List.class)).hasSize(expectedRuns);
     }
 }
