@@ -263,7 +263,7 @@ public class BenchmarkExecutionDriver
             result = queryExecutionDriver.execute(queryExecution, connection);
         }
         catch (Exception e) {
-            LOG.error("Query Execution failed for benchmark {} query {}", benchmark.getName(), queryExecution.getQueryName());
+            LOG.error(format("Query Execution failed for benchmark %s query %s", benchmark.getName(), queryExecution.getQueryName()), e);
             result = failureResult
                     .endTimer()
                     .failed(e)
