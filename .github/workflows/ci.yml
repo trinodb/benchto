@@ -13,6 +13,9 @@ jobs:
       with:
         java-version: 8
     - name: Maven Install Dependencies
-      run: mvn install -B -V -DskipTests -Dair.check.skip-all
+      run: ./mvnw install -B -V -DskipTests -Dair.check.skip-all -P docker-images
     - name: Maven Test
-      run: mvn install -B
+      run: ./mvnw install -B
+    - name: Integration test
+      run: ./mvnw install -B -pl benchto-it -P it
+
