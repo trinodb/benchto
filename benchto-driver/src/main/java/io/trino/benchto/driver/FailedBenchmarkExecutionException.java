@@ -13,10 +13,10 @@
  */
 package io.trino.benchto.driver;
 
-import com.google.common.collect.Iterables;
 import io.trino.benchto.driver.execution.BenchmarkExecutionResult;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
@@ -44,7 +44,12 @@ public class FailedBenchmarkExecutionException
 
         return format("%s benchmarks failed, first failure was: %s",
                 failedBenchmarkResults.size(),
-                Iterables.getFirst(failedBenchmarkResults.get(0).getFailureCauses(), null));
+                failedBenchmarkResults.get(0)
+                        .getFailureCauses()
+                        .stream()
+                        .findFirst()
+                        .map(e -> e.getMessage() + (e.getCause() != null ? " (" + e.getCause().getMessage() + ")" : ""))
+                        .orElseThrow(NoSuchElementException::new));
     }
 
     public List<BenchmarkExecutionResult> getFailedBenchmarkResults()
