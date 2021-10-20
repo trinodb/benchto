@@ -86,7 +86,8 @@ public class QueryMacroExecutionDriver
             }
         }
         catch (SQLException e) {
-            throw new BenchmarkExecutionException("Could not execute macro SQL queries for benchmark: " + benchmark, e);
+            throw new BenchmarkExecutionException(
+                    "Could not execute macro SQL queries for benchmark: " + benchmark, e);
         }
     }
 
