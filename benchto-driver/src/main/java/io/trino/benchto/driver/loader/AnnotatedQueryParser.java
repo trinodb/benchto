@@ -67,7 +67,7 @@ public class AnnotatedQueryParser
     public Query parseLines(String queryName, List<String> lines)
     {
         lines = lines.stream()
-                .map(line -> line.trim())
+                .map(String::trim)
                 .collect(toList());
 
         Map<String, String> properties = new HashMap<>();
