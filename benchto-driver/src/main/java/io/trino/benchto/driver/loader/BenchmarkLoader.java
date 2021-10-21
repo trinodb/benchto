@@ -338,10 +338,7 @@ public class BenchmarkLoader
     private Predicate<Path> activeBenchmarks()
     {
         Optional<List<String>> activeBenchmarks = properties.getActiveBenchmarks();
-        if (activeBenchmarks.isPresent()) {
-            return benchmarkNameIn(activeBenchmarks.get());
-        }
-        return path -> true;
+        return activeBenchmarks.map(this::benchmarkNameIn).orElseGet(() -> path -> true);
     }
 
     private Predicate<Path> benchmarkNameIn(List<String> activeBenchmarks)

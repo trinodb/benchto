@@ -157,12 +157,7 @@ public class BenchmarkProperties
 
     public Optional<Duration> getTimeLimit()
     {
-        if (timeLimit != null) {
-            return Optional.of(Duration.parse(timeLimit));
-        }
-        else {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(timeLimit).map(Duration::parse);
     }
 
     @Override

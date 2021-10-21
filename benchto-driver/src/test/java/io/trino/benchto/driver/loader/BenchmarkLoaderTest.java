@@ -280,9 +280,7 @@ public class BenchmarkLoaderTest
 
         assertLoadedBenchmarksCount(6).forEach(benchmark -> {
             Optional<Duration> frequency = benchmark.getFrequency();
-            if (frequency.isPresent()) {
-                assertThat(frequency.get()).isLessThanOrEqualTo(executionAge);
-            }
+            frequency.ifPresent(duration -> assertThat(duration).isLessThanOrEqualTo(executionAge));
         });
     }
 
