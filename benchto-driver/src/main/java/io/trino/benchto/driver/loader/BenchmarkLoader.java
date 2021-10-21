@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -226,7 +227,7 @@ public class BenchmarkLoader
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
                         .withPrewarmRuns(benchmarkDescriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
-                        .withFrequency(benchmarkDescriptor.getFrequency().map(frequency -> Duration.ofDays(frequency)))
+                        .withFrequency(benchmarkDescriptor.getFrequency().map(Duration::ofDays))
                         .withThroughputTest(benchmarkDescriptor.getThroughputTest())
                         .withBeforeBenchmarkMacros(benchmarkDescriptor.getBeforeBenchmarkMacros())
                         .withAfterBenchmarkMacros(benchmarkDescriptor.getAfterBenchmarkMacros())
@@ -375,7 +376,7 @@ public class BenchmarkLoader
         }
 
         List<String> benchmarkUniqueNames = benchmarksWithFrequencySet.stream()
-                .map(benchmark -> benchmark.getUniqueName())
+                .map(Benchmark::getUniqueName)
                 .collect(toList());
         List<Duration> successfulExecutionAges = benchmarkServiceClient.getBenchmarkSuccessfulExecutionAges(benchmarkUniqueNames);
 
@@ -388,7 +389,7 @@ public class BenchmarkLoader
                     else {
                         return null;
                     }
-                }).filter(benchmark -> benchmark != null)
+                }).filter(Objects::nonNull)
                 .collect(toList());
     }
 
