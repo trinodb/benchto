@@ -104,14 +104,14 @@ public class BenchmarkRun
 
     @BatchSize(size = 10)
     @OneToMany(mappedBy = "benchmarkRun", cascade = CascadeType.ALL)
-    private Set<BenchmarkRunExecution> executions = newHashSet();
+    private final Set<BenchmarkRunExecution> executions = newHashSet();
 
     @BatchSize(size = 10)
     @OneToMany(cascade = CascadeType.ALL, fetch = EAGER)
     @JoinTable(name = "benchmark_run_measurements",
             joinColumns = @JoinColumn(name = "benchmark_run_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "measurement_id", referencedColumnName = "id"))
-    private Set<Measurement> measurements = newHashSet();
+    private final Set<Measurement> measurements = newHashSet();
 
     @Column(name = "started")
     @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")

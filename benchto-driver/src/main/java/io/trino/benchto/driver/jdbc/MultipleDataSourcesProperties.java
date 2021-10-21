@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class MultipleDataSourcesProperties
 {
-    private Map<String, DataSourceProperties> dataSources = new HashMap<>();
+    private final Map<String, DataSourceProperties> dataSources = new HashMap<>();
 
     public Map<String, DataSourceProperties> getDataSources()
     {
