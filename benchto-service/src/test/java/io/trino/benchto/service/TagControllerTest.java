@@ -23,9 +23,9 @@ import java.time.ZonedDateTime;
 
 import static io.trino.benchto.service.utils.TimeUtils.currentDateTime;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -79,7 +79,7 @@ public class TagControllerTest
                 .andExpect(jsonPath("$[0].name", is("tag1")))
                 .andExpect(jsonPath("$[0].description", is("description for tag1")))
                 .andExpect(jsonPath("$[1].name", is("tag2 - no description")))
-                .andExpect(jsonPath("$[1].description", isEmptyOrNullString()))
+                .andExpect(jsonPath("$[1].description", is(emptyOrNullString())))
                 .andExpect(jsonPath("$[2].name", is("tag3")))
                 .andExpect(jsonPath("$[2].description", is("description for tag3")));
 
@@ -90,7 +90,7 @@ public class TagControllerTest
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].name", is("tag2 - no description")))
-                .andExpect(jsonPath("$[0].description", isEmptyOrNullString()))
+                .andExpect(jsonPath("$[0].description", is(emptyOrNullString())))
                 .andExpect(jsonPath("$[1].name", is("tag3")))
                 .andExpect(jsonPath("$[1].description", is("description for tag3")));
 
