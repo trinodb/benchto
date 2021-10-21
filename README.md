@@ -23,7 +23,3 @@ for later analysis.
 - _monitoring_ - cluster monitoring is optional, but highly recommended to fully understand performance characteristics
 of tested system. It is assumed that _Graphite/Carbon_ is used as metrics store and _Grafana_ for clusters dashboards.
 There is no limitation on metric agents deployed on cluster hosts.
-
-- _benchto-generator_ - map reduce job for generating benchmark data. You can configure number of rows, type of the
-row (ex. _BIGINT_, _INT_, _DOUBLE_, _DECIMAL(38,8)_), output format (_ORC_, _TEXT_) and number of output files. More
-details can be found in _benchto-generator_ module README file.
