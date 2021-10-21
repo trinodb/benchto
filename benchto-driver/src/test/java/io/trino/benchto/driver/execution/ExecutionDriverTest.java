@@ -145,9 +145,8 @@ public class ExecutionDriverTest
         ReflectionTestUtils.setField(driver, "benchmarkExecutionDriver", benchmarkExecutionDriver);
         ReflectionTestUtils.setField(driver, "benchmarkStatusReporter", statusReporter);
 
-        assertThatThrownBy(() -> {
-            driver.execute();
-        }).hasMessageContaining("programmatic listener failure in testFailingListener");
+        assertThatThrownBy(() -> driver.execute())
+                .hasMessageContaining("programmatic listener failure in testFailingListener");
     }
 
     private void sleepOnSecondDuringMacroExecution()

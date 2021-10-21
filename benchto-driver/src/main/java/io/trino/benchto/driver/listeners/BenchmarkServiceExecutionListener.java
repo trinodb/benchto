@@ -131,19 +131,15 @@ public class BenchmarkServiceExecutionListener
     {
         return CompletableFuture.supplyAsync(() -> getMeasurements(benchmarkExecutionResult), taskExecutor::execute)
                 .thenCompose(future -> future)
-                .thenApply(measurements -> {
-                    return new FinishRequestBuilder()
-                            .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
-                            .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
-                            .addMeasurements(measurements)
-                            .build();
-                })
-                .thenAccept(request -> {
-                    benchmarkServiceClient.finishBenchmark(
-                            benchmarkExecutionResult.getBenchmark().getUniqueName(),
-                            benchmarkExecutionResult.getBenchmark().getSequenceId(),
-                            request);
-                });
+                .thenApply(measurements -> new FinishRequestBuilder()
+                        .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                        .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
+                        .addMeasurements(measurements)
+                        .build())
+                .thenAccept(request -> benchmarkServiceClient.finishBenchmark(
+                        benchmarkExecutionResult.getBenchmark().getUniqueName(),
+                        benchmarkExecutionResult.getBenchmark().getSequenceId(),
+                        request));
     }
 
     @Override
@@ -163,13 +159,11 @@ public class BenchmarkServiceExecutionListener
         return CompletableFuture.supplyAsync(() -> getMeasurementsWithQueryInfo(executionResult), taskExecutor::execute)
                 .thenCompose(future -> future)
                 .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
-                .thenAccept(request -> {
-                    benchmarkServiceClient.finishExecution(
-                            executionResult.getBenchmark().getUniqueName(),
-                            executionResult.getBenchmark().getSequenceId(),
-                            executionSequenceId(executionResult.getQueryExecution()),
-                            request);
-                });
+                .thenAccept(request -> benchmarkServiceClient.finishExecution(
+                        executionResult.getBenchmark().getUniqueName(),
+                        executionResult.getBenchmark().getSequenceId(),
+                        executionSequenceId(executionResult.getQueryExecution()),
+                        request));
     }
 
     @Override
