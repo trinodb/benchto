@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = DriverApp.class)
-@org.springframework.boot.test.IntegrationTest()
+@org.springframework.boot.test.IntegrationTest
 public class BenchtoTrinoIntegrationTest
 {
     static PostgreSQLContainer<?> postgres;

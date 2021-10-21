@@ -19,7 +19,6 @@ import io.trino.benchto.driver.Measurable;
 import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static java.util.Optional.empty;
 
 public class QueryExecutionResult
         extends Measurable
@@ -29,7 +28,7 @@ public class QueryExecutionResult
     private Exception failureCause;
 
     // presto specific
-    private Optional<String> prestoQueryId = empty();
+    private Optional<String> prestoQueryId = Optional.empty();
 
     public QueryExecutionResult(QueryExecution queryExecution)
     {

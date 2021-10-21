@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.trino.benchto.service.utils.CollectionUtils.failSafeEmpty;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -69,7 +68,7 @@ public class BenchmarkController
         return benchmarkService.startBenchmarkRun(uniqueName,
                 startRequest.getName(),
                 benchmarkSequenceId,
-                ofNullable(startRequest.getEnvironmentName()),
+                Optional.ofNullable(startRequest.getEnvironmentName()),
                 failSafeEmpty(startRequest.getVariables()),
                 failSafeEmpty(startRequest.getAttributes()));
     }
