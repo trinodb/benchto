@@ -34,7 +34,6 @@ import static io.trino.benchto.driver.utils.QueryUtils.fetchRows;
 public class QueryExecutionDriver
 {
     private static final Logger LOG = LoggerFactory.getLogger(QueryExecutionDriver.class);
-    private static final int LOGGED_ROWS = 10;
 
     @Autowired
     private SqlStatementGenerator sqlStatementGenerator;
