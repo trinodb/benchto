@@ -26,7 +26,6 @@
     <modules>
         <module>benchto-service</module>
         <module>benchto-driver</module>
-        <module>benchto-generator</module>
     </modules>
 
     <properties>
