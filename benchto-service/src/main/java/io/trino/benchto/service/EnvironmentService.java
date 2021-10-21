@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.trino.benchto.service.utils.TimeUtils.currentDateTime;
-import static java.util.Optional.ofNullable;
 
 @Service
 public class EnvironmentService
@@ -70,7 +69,7 @@ public class EnvironmentService
     @Transactional(readOnly = true)
     public Optional<Environment> tryFindEnvironment(String name)
     {
-        return ofNullable(environmentRepo.findByName(name));
+        return Optional.ofNullable(environmentRepo.findByName(name));
     }
 
     public List<Environment> findEnvironments()

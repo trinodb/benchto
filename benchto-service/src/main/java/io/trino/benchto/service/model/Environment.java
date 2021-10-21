@@ -46,7 +46,7 @@ import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
 @Cacheable
-@Table(name = "environments", uniqueConstraints = @UniqueConstraint(columnNames = {"name"}))
+@Table(name = "environments", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
 public class Environment
         implements Serializable
 {

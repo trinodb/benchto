@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {DriverApp.class, TestConfig.class})
-@org.springframework.boot.test.IntegrationTest({"executionSequenceId=BEN_SEQ_ID"})
+@org.springframework.boot.test.IntegrationTest("executionSequenceId=BEN_SEQ_ID")
 public abstract class IntegrationTest
 {
     @Autowired
