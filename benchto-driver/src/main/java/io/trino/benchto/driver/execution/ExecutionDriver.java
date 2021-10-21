@@ -75,7 +75,7 @@ public class ExecutionDriver
                 executeAfterAllMacros();
             }
             catch (RuntimeException e) {
-                LOG.error("Exception during execution of after-all macros: {}", e);
+                LOG.error("Exception during execution of after-all macros", e);
             }
         }
     }
