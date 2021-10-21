@@ -43,7 +43,7 @@ public class ShellMacroExecutionDriverTest
     public void shouldExecuteMacro()
             throws IOException
     {
-        String filename = "/tmp/" + UUID.randomUUID().toString();
+        String filename = "/tmp/" + UUID.randomUUID();
         String suffix = System.getenv("USER");
 
         macroService.runBenchmarkMacro("create-file", ImmutableMap.of("FILENAME", filename));
