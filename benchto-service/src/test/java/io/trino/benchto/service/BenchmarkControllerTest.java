@@ -275,7 +275,7 @@ public class BenchmarkControllerTest
 
     public String generateStringOfLength(char ch, int length)
     {
-        StringBuffer str = new StringBuffer(length);
+        StringBuilder str = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             str.append(ch);
         }
