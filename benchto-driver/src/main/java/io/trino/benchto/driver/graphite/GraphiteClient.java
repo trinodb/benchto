@@ -137,7 +137,7 @@ public class GraphiteClient
 
         public static class GraphiteEventRequestBuilder
         {
-            private GraphiteEventRequest request = new GraphiteEventRequest();
+            private final GraphiteEventRequest request = new GraphiteEventRequest();
 
             public GraphiteEventRequestBuilder()
             {

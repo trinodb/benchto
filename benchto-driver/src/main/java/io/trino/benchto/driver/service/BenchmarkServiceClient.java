@@ -135,8 +135,8 @@ public class BenchmarkServiceClient
 
     public static class GenerateUniqueNamesRequestItem
     {
-        private String name;
-        private Map<String, String> variables;
+        private final String name;
+        private final Map<String, String> variables;
 
         private GenerateUniqueNamesRequestItem(String name, Map<String, String> variables)
         {
@@ -203,7 +203,7 @@ public class BenchmarkServiceClient
     {
         private String name;
         private String environmentName;
-        private Map<String, String> variables = newHashMap();
+        private final Map<String, String> variables = newHashMap();
 
         private BenchmarkStartRequest()
         {
@@ -278,7 +278,7 @@ public class BenchmarkServiceClient
 
         private Status status;
         private Instant endTime;
-        private List<Measurement> measurements = newArrayList();
+        private final List<Measurement> measurements = newArrayList();
         private String queryInfo;
 
         private FinishRequest()

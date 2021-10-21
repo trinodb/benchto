@@ -59,7 +59,7 @@ public class ExecutionSynchronizer
     @Autowired
     private GraphiteProperties properties;
 
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     @PreDestroy
     public void shutdown()

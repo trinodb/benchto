@@ -24,7 +24,7 @@ import static com.google.common.collect.Maps.newHashMap;
 @ConfigurationProperties
 public class ShellMacrosProperties
 {
-    private Map<String, ShellMacroProperties> macros = newHashMap();
+    private final Map<String, ShellMacroProperties> macros = newHashMap();
 
     public Map<String, ShellMacroProperties> getMacros()
     {
