@@ -54,7 +54,7 @@ public final class QueryUtils
             joiner.add(resultSetMetaData.getColumnName(i) + ": " + resultSet.getObject(i));
         }
 
-        LOGGER.info("Row: " + rowNumber + ", column values: " + joiner.toString());
+        LOGGER.info("Row: " + rowNumber + ", column values: " + joiner);
     }
 
     private QueryUtils()

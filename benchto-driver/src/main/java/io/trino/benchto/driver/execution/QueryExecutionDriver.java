@@ -76,7 +76,7 @@ public class QueryExecutionDriver
             }
             catch (AbstractMethodError | Exception e) {
                 // this error is caught by the compiler, but some drivers (hsqldb, hive, ...?) sucks
-                LOG.warn("Driver ({}) does not support isWrapperFor/unwrap method", connection.toString());
+                LOG.warn("Driver ({}) does not support isWrapperFor/unwrap method", connection);
             }
 
             return queryExecutionResultBuilder
