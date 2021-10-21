@@ -28,7 +28,6 @@ public class BenchmarkExecutionResultTest
 {
     @Test
     public void testBuilder_successful_run()
-            throws InterruptedException
     {
         Benchmark benchmark = new Benchmark.BenchmarkBuilder("name", "sequenceId", emptyList())
                 .withDataSource("datasource")

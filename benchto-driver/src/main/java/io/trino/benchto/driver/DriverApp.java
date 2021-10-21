@@ -13,7 +13,6 @@
  */
 package io.trino.benchto.driver;
 
-import freemarker.template.TemplateException;
 import io.trino.benchto.driver.execution.BenchmarkExecutionResult;
 import io.trino.benchto.driver.execution.ExecutionDriver;
 import io.trino.benchto.driver.execution.QueryExecutionDriver;
@@ -40,8 +39,6 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -109,7 +106,6 @@ public class DriverApp
     }
 
     private static Options createOptions()
-            throws ParseException
     {
         Options options = new Options();
         addOption(options, "sql", "DIRS", "sql queries directories (separated by commas)", "none");
@@ -175,7 +171,6 @@ public class DriverApp
 
     @Bean
     public FreeMarkerConfigurationFactoryBean freemarkerConfiguration()
-            throws IOException, TemplateException
     {
         FreeMarkerConfigurationFactoryBean factory = new FreeMarkerConfigurationFactoryBean();
         factory.setDefaultEncoding("UTF-8");

@@ -30,7 +30,6 @@ public class NaturalOrderComparatorTest
 {
     @Test
     public void testForStrings()
-            throws Exception
     {
         assertStringsNaturalSort(asList(), asList());
         assertStringsNaturalSort(asList("1"), asList("1"));
@@ -45,7 +44,6 @@ public class NaturalOrderComparatorTest
 
     @Test
     public void testForPaths()
-            throws Exception
     {
         assertPathsNaturalSort(
                 asList(
