@@ -14,10 +14,8 @@
 package io.trino.benchto.service;
 
 import io.trino.benchto.service.category.IntegrationTest;
-import io.trino.benchto.service.repo.EnvironmentRepo;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
 
@@ -37,9 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TagControllerTest
         extends IntegrationTestBase
 {
-    @Autowired
-    private EnvironmentRepo environmentRepo;
-
     @Test
     public void tagsHappyPath()
             throws Exception
