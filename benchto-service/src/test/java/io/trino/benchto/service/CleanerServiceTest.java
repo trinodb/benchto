@@ -47,7 +47,6 @@ public class CleanerServiceTest
 
     @Test
     public void cleanUpStaleBenchmarks()
-            throws Exception
     {
         Environment environment = new Environment();
         environmentRepo.save(environment);

@@ -21,7 +21,6 @@ public class QueryMacroExecutionDriverTest
 {
     @Test
     public void testExtractKeyValue()
-            throws Exception
     {
         assertThat(QueryMacroExecutionDriver.extractKeyValue("set session optimize_hash_generation=false"))
                 .contains("optimize_hash_generation", "false");

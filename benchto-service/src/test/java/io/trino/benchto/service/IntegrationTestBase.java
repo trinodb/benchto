@@ -46,7 +46,6 @@ public class IntegrationTestBase
 
     @Before
     public void setUp()
-            throws Exception
     {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }

@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,6 @@ public class QueryLoaderTest
 
     @Test
     public void shouldLoadPrestoQuery()
-            throws Exception
     {
         verifySimpleSelect("presto/simple_select.sql", "simple_select", "1");
         verifySimpleSelect("presto/second_simple_select.sql", "second_simple_select", "2");
@@ -61,7 +59,6 @@ public class QueryLoaderTest
 
     @Test
     public void shouldFailWhenNoQueryFile()
-            throws Exception
     {
         expectedException.expect(BenchmarkExecutionException.class);
         expectedException.expectMessage("Could not find any SQL query file for query name: presto/non_existing_file.sql");
@@ -80,7 +77,6 @@ public class QueryLoaderTest
 
     @Test
     public void shouldFailsWhenRequiredAttributesAreAbsent()
-            throws URISyntaxException
     {
         Query query = queryLoader.loadFromFile("presto/simple_select.sql");
 
