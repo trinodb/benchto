@@ -410,8 +410,8 @@ public class BenchmarkLoader
 
     private String createFormatString(Collection<Benchmark> benchmarks)
     {
-        int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().orElseGet(() -> 10);
-        int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().orElseGet(() -> 10);
+        int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().orElse(10);
+        int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().orElse(10);
         int indent = 3;
         return "\t| %-" + (nameMaxLength + indent) + "s | %-" + Math.max(dataSourceMaxLength + indent, 11) + "s | %-4s | %-8s | %-11s | %-15s |";
     }
