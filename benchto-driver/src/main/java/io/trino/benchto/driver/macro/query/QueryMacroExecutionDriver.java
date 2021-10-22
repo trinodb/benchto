@@ -49,7 +49,7 @@ public class QueryMacroExecutionDriver
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryMacroExecutionDriver.class);
     private static final String SET_SESSION = "set session";
-    private static final Pattern KEY_VALUE_PATTERN = Pattern.compile("([^=]+)=\'??([^\']+)\'??");
+    private static final Pattern KEY_VALUE_PATTERN = Pattern.compile("([^=]+)='??([^']+)'??");
 
     @Autowired
     private ApplicationContext applicationContext;
