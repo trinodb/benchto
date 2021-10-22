@@ -139,8 +139,7 @@ public class Benchmark
     public Map<String, String> getNonReservedKeywordVariables()
     {
         Map<String, String> nonReservedKeysVariables = newHashMap(getVariables());
-        RESERVED_KEYWORDS.stream()
-                .forEach(nonReservedKeysVariables::remove);
+        RESERVED_KEYWORDS.forEach(nonReservedKeysVariables::remove);
         return nonReservedKeysVariables;
     }
 

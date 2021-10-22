@@ -244,7 +244,7 @@ public class BenchmarkServiceExecutionListener
             providerFutures.add(future);
         }
 
-        return CompletableFuture.allOf(providerFutures.stream().toArray(CompletableFuture[]::new))
+        return CompletableFuture.allOf(providerFutures.toArray(new CompletableFuture[0]))
                 .thenApply(aVoid -> ImmutableList.copyOf(measurementsList));
     }
 
