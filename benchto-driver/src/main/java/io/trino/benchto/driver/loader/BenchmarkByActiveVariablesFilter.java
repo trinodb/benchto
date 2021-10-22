@@ -36,7 +36,7 @@ class BenchmarkByActiveVariablesFilter
     public BenchmarkByActiveVariablesFilter(BenchmarkProperties properties)
     {
         Optional<Map<String, String>> activeVariables = requireNonNull(properties, "properties is null").getActiveVariables();
-        ImmutableMap.Builder<String, Pattern> builder = ImmutableMap.<String, Pattern>builder();
+        ImmutableMap.Builder<String, Pattern> builder = ImmutableMap.builder();
         if (activeVariables.isPresent()) {
             for (String variableKey : activeVariables.get().keySet()) {
                 builder.put(variableKey, Pattern.compile(activeVariables.get().get(variableKey)));

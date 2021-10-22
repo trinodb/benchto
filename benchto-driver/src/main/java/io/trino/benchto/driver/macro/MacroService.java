@@ -23,12 +23,12 @@ public interface MacroService
 {
     default void runBenchmarkMacros(List<String> macroNames)
     {
-        runBenchmarkMacros(macroNames, Optional.empty(), Optional.<Connection>empty());
+        runBenchmarkMacros(macroNames, Optional.empty(), Optional.empty());
     }
 
     default void runBenchmarkMacros(List<String> macroNames, Benchmark benchmark)
     {
-        runBenchmarkMacros(macroNames, Optional.of(benchmark), Optional.<Connection>empty());
+        runBenchmarkMacros(macroNames, Optional.of(benchmark), Optional.empty());
     }
 
     default void runBenchmarkMacros(List<String> macroNames, Benchmark benchmark, Connection connection)
