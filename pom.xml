@@ -59,6 +59,7 @@
         <dep.jackson.version>2.10.3</dep.jackson.version>
         <dep.jsonpath.version>2.6.0</dep.jsonpath.version>
         <dep.junit.version>4.12</dep.junit.version>
+        <dep.hamcrest.version>2.2</dep.hamcrest.version>
         <dep.hsqldb.version>2.3.4</dep.hsqldb.version>
         <dep.logback.version>1.1.3</dep.logback.version>
         <dep.postgresql.jdbc.version>9.1-901-1.jdbc4</dep.postgresql.jdbc.version>
@@ -71,6 +72,8 @@
         <dep.freemarker>2.3.22</dep.freemarker>
         <dep.mockito.version>1.10.19</dep.mockito.version>
         <dep.javax.validation.api.version>1.1.0.Final</dep.javax.validation.api.version>
+        <dep.hibernate.version>4.3.8.Final</dep.hibernate.version>
+        <dep.hibernate.jpa.version>1.0.0.Final</dep.hibernate.jpa.version>
         <dep.hibernate.validator.version>5.1.3.Final</dep.hibernate.validator.version>
         <dep.aspectjweaver.version>1.8.6</dep.aspectjweaver.version>
         <dep.javax.el>2.2.4</dep.javax.el>
@@ -224,8 +227,23 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${dep.hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-ehcache</artifactId>
+                <version>${dep.hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${dep.hibernate.validator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.javax.persistence</groupId>
+                <artifactId>hibernate-jpa-2.1-api</artifactId>
+                <version>${dep.hibernate.jpa.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.el</groupId>
@@ -263,6 +281,11 @@
                         <groupId>org.hamcrest</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>${dep.hamcrest.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.assertj</groupId>
