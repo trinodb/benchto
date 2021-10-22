@@ -128,7 +128,7 @@ public class QueryMacroExecutionDriver
 
     public static String[] extractKeyValue(String sqlStatement)
     {
-        String keyValueSql = sqlStatement.substring(SET_SESSION.length(), sqlStatement.length()).trim();
+        String keyValueSql = sqlStatement.substring(SET_SESSION.length()).trim();
         Matcher matcher = KEY_VALUE_PATTERN.matcher(keyValueSql);
         checkState(matcher.matches(), "Unexpected SET SESSION format [%s]", sqlStatement);
         String[] keyValue = new String[2];
