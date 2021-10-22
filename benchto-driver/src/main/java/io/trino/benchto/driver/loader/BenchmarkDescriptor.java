@@ -121,7 +121,7 @@ public class BenchmarkDescriptor
 
     public boolean getThroughputTest()
     {
-        return variables.getOrDefault(THROUGHPUT_TEST_KEY, "false").toLowerCase().equals("true");
+        return variables.getOrDefault(THROUGHPUT_TEST_KEY, "false").equalsIgnoreCase("true");
     }
 
     private Optional<Integer> getIntegerOptional(String key)
