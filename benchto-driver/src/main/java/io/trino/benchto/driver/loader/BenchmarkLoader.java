@@ -69,7 +69,7 @@ public class BenchmarkLoader
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkLoader.class);
 
-    private static final Pattern VALUE_SUBSTITUTION_PATTERN = Pattern.compile(".*\\$\\{.+\\}.*");
+    private static final Pattern VALUE_SUBSTITUTION_PATTERN = Pattern.compile(".*\\$\\{.+}.*");
 
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
