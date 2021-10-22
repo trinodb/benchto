@@ -111,9 +111,7 @@ public class BenchmarkService
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
 
         boolean executionPresent = benchmarkRun.getExecutions().stream()
-                .filter(e -> executionSequenceId.equals(e.getSequenceId()))
-                .findAny()
-                .isPresent();
+                .anyMatch(e -> executionSequenceId.equals(e.getSequenceId()));
         if (executionPresent) {
             LOG.debug("Execution ({}) already present for benchmark ({})", executionSequenceId, benchmarkRun);
             return;

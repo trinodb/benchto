@@ -117,8 +117,7 @@ public class BenchmarkLoader
 
             verifyNoDuplicateBenchmarks(benchmarkFiles);
 
-            benchmarkFiles.stream()
-                    .forEach(path -> LOGGER.info("Benchmark file to be read: {}", path));
+            benchmarkFiles.forEach(path -> LOGGER.info("Benchmark file to be read: {}", path));
 
             List<Benchmark> allBenchmarks = loadBenchmarks(sequenceId, benchmarkFiles);
             LOGGER.debug("All benchmarks: {}", allBenchmarks);
@@ -171,7 +170,7 @@ public class BenchmarkLoader
         }
 
         List<Path> benchmarkFiles = benchmarkFilesBuilder.build();
-        benchmarkFiles.stream().forEach(path -> LOGGER.info("Benchmark found: {}", path.toString()));
+        benchmarkFiles.forEach(path -> LOGGER.info("Benchmark found: {}", path.toString()));
         return benchmarkFiles;
     }
 

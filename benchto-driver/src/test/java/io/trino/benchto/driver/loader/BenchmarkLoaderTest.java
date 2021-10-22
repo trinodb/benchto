@@ -33,11 +33,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -331,7 +331,7 @@ public class BenchmarkLoaderTest
 
     private void withBenchmarksDirs(String... benchmarksDirs)
     {
-        List<String> benchmarkDirsList = asList(benchmarksDirs).stream()
+        List<String> benchmarkDirsList = Arrays.stream(benchmarksDirs)
                 .map(dir -> "src/test/resources/" + dir)
                 .collect(toList());
         ReflectionTestUtils.setField(benchmarkProperties, "benchmarksDirs", Joiner.on(',').join(benchmarkDirsList));
