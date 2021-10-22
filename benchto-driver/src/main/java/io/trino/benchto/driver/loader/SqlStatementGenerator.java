@@ -40,7 +40,7 @@ public class SqlStatementGenerator
 
     public List<String> generateQuerySqlStatement(Query query, Map<String, ?> attributes)
     {
-        ImmutableList.Builder<String> sqlQueries = ImmutableList.<String>builder();
+        ImmutableList.Builder<String> sqlQueries = ImmutableList.builder();
         String sqlTemplate = generateQuerySqlStatement(query.getSqlTemplate(), attributes);
         for (String sqlQuery : toSqlQueries(sqlTemplate)) {
             sqlQueries.add(sqlQuery);
