@@ -121,7 +121,7 @@ public class BenchmarkServiceExecutionListener
 
         Duration driftLowerBound = Duration.of(driftApproximation - approximationPrecision, ChronoUnit.MILLIS);
 
-        if (driftLowerBound.compareTo(MAX_CLOCK_DRIFT) > 1) {
+        if (driftLowerBound.compareTo(MAX_CLOCK_DRIFT) > 0) {
             throw new RuntimeException(format("Detected driver and service clocks drift of at least %s, assumed sane maximum is %s", driftLowerBound, MAX_CLOCK_DRIFT));
         }
     }
