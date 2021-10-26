@@ -102,7 +102,7 @@ public class BenchmarkExecutionDriver
         BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark);
         List<QueryExecutionResult> executions;
         try {
-            executeQueries(benchmark, benchmark.getPrewarmRuns(), false, executionTimeLimit);
+            executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
 
             executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
 
@@ -111,7 +111,7 @@ public class BenchmarkExecutionDriver
             resultBuilder = resultBuilder.startTimer();
 
             try {
-                executions = executeQueries(benchmark, benchmark.getRuns(), true, executionTimeLimit);
+                executions = executeQueries(benchmark, benchmark.getRuns(), false, executionTimeLimit);
             }
             finally {
                 resultBuilder = resultBuilder.endTimer();
@@ -140,19 +140,19 @@ public class BenchmarkExecutionDriver
     }
 
     @SuppressWarnings("unchecked")
-    private List<QueryExecutionResult> executeQueries(Benchmark benchmark, int runs, boolean reportStatus, Optional<ZonedDateTime> executionTimeLimit)
+    private List<QueryExecutionResult> executeQueries(Benchmark benchmark, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
     {
         ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
         try {
             if (benchmark.isThroughputTest()) {
-                List<Callable<List<QueryExecutionResult>>> queryExecutionCallables = buildConcurrencyQueryExecutionCallables(benchmark, runs, reportStatus, executionTimeLimit);
+                List<Callable<List<QueryExecutionResult>>> queryExecutionCallables = buildConcurrencyQueryExecutionCallables(benchmark, runs, warmup, executionTimeLimit);
                 List<ListenableFuture<List<QueryExecutionResult>>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get().stream()
                         .flatMap(List::stream)
                         .collect(toImmutableList());
             }
             else {
-                List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmark, runs, reportStatus);
+                List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmark, runs, warmup);
                 List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get();
             }
@@ -165,7 +165,7 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int runs, boolean reportStatus)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int runs, boolean warmup)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
@@ -173,7 +173,7 @@ public class BenchmarkExecutionDriver
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
                 executionCallables.add(() -> {
                     try (Connection connection = getConnectionFor(queryExecution)) {
-                        return executeSingleQuery(queryExecution, benchmark, connection, reportStatus, Optional.empty());
+                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty());
                     }
                 });
             }
@@ -181,7 +181,7 @@ public class BenchmarkExecutionDriver
         return executionCallables;
     }
 
-    private List<Callable<List<QueryExecutionResult>>> buildConcurrencyQueryExecutionCallables(Benchmark benchmark, int runs, boolean reportStatus, Optional<ZonedDateTime> executionTimeLimit)
+    private List<Callable<List<QueryExecutionResult>>> buildConcurrencyQueryExecutionCallables(Benchmark benchmark, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
     {
         List<Callable<List<QueryExecutionResult>>> executionCallables = newArrayList();
         for (int thread = 0; thread < benchmark.getConcurrency(); thread++) {
@@ -189,8 +189,8 @@ public class BenchmarkExecutionDriver
             executionCallables.add(() -> {
                 LOG.info("Running throughput test: {} queries, {} runs", benchmark.getQueries().size(), runs);
                 int[] queryOrder = PermutationUtils.preparePermutation(benchmark.getQueries().size(), finalThread);
-                List<QueryExecutionResult> queryExecutionResults = executeConcurrentQueries(benchmark, runs, reportStatus, executionTimeLimit, finalThread, queryOrder);
-                if (reportStatus) {
+                List<QueryExecutionResult> queryExecutionResults = executeConcurrentQueries(benchmark, runs, warmup, executionTimeLimit, finalThread, queryOrder);
+                if (!warmup) {
                     statusReporter.reportConcurrencyTestExecutionFinished(queryExecutionResults);
                 }
                 return queryExecutionResults;
@@ -199,7 +199,7 @@ public class BenchmarkExecutionDriver
         return executionCallables;
     }
 
-    private List<QueryExecutionResult> executeConcurrentQueries(Benchmark benchmark, int runs, boolean reportStatus, Optional<ZonedDateTime> executionTimeLimit, int threadNumber, int[] queryOrder)
+    private List<QueryExecutionResult> executeConcurrentQueries(Benchmark benchmark, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit, int threadNumber, int[] queryOrder)
             throws SQLException
     {
         boolean firstQuery = true;
@@ -208,7 +208,7 @@ public class BenchmarkExecutionDriver
             for (int run = 1; run <= runs; run++) {
                 for (int queryIndex = 0; queryIndex < benchmark.getQueries().size(); queryIndex++) {
                     int permutedQueryIndex = queryIndex;
-                    if (!reportStatus) {
+                    if (warmup) {
                         if (queryIndex % benchmark.getConcurrency() != threadNumber) {
                             // for pre-warming we split queries among all threads instead
                             // of each thread running all queries
@@ -226,7 +226,7 @@ public class BenchmarkExecutionDriver
                             queryIndex
                                     + threadNumber * benchmark.getQueries().size()
                                     + (run - 1) * benchmark.getConcurrency() * benchmark.getQueries().size());
-                    if (firstQuery && reportStatus) {
+                    if (firstQuery && !warmup) {
                         statusReporter.reportExecutionStarted(queryExecution);
                         firstQuery = false;
                     }
@@ -247,14 +247,14 @@ public class BenchmarkExecutionDriver
             QueryExecution queryExecution,
             Benchmark benchmark,
             Connection connection,
-            boolean reportStatus,
+            boolean warmup,
             Optional<ZonedDateTime> executionTimeLimit)
             throws TimeLimitException
     {
         QueryExecutionResult result;
         macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
 
-        if (reportStatus) {
+        if (!warmup) {
             statusReporter.reportExecutionStarted(queryExecution);
         }
         QueryExecutionResultBuilder failureResult = new QueryExecutionResultBuilder(queryExecution)
@@ -273,7 +273,7 @@ public class BenchmarkExecutionDriver
             throw new TimeLimitException(benchmark, queryExecution);
         }
 
-        if (reportStatus) {
+        if (!warmup) {
             statusReporter.reportExecutionFinished(result);
         }
 
