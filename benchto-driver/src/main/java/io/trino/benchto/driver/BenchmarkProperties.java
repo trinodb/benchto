@@ -184,7 +184,7 @@ public class BenchmarkProperties
         addForToStringOptionalField(toStringHelper, "beforeAllMacros", getBeforeAllMacros());
         addForToStringOptionalField(toStringHelper, "afterAllMacros", getAfterAllMacros());
         addForToStringOptionalField(toStringHelper, "healthCheckMacros", getHealthCheckMacros());
-        addForToStringOptionalField(toStringHelper, "timiLimit", getTimeLimit());
+        addForToStringOptionalField(toStringHelper, "timeLimit", getTimeLimit());
         return toStringHelper.toString();
     }
 
