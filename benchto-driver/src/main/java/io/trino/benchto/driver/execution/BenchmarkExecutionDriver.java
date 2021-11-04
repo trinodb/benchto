@@ -25,6 +25,7 @@ import io.trino.benchto.driver.execution.BenchmarkExecutionResult.BenchmarkExecu
 import io.trino.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import io.trino.benchto.driver.listeners.benchmark.BenchmarkStatusReporter;
 import io.trino.benchto.driver.macro.MacroService;
+import io.trino.benchto.driver.utils.ExceptionUtils;
 import io.trino.benchto.driver.utils.PermutationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -313,7 +314,13 @@ public class BenchmarkExecutionDriver
     private Connection getConnectionFor(QueryExecution queryExecution)
             throws SQLException
     {
-        return applicationContext.getBean(queryExecution.getBenchmark().getDataSource(), DataSource.class).getConnection();
+        try {
+            return applicationContext.getBean(queryExecution.getBenchmark().getDataSource(), DataSource.class).getConnection();
+        }
+        catch (Exception exception) {
+            LOG.error("Getting connection failed: {}\n{}", exception.getMessage(), ExceptionUtils.stackTraceToString(exception));
+            throw exception;
+        }
     }
 
     private boolean isTimeLimitExceeded(Optional<ZonedDateTime> executionTimeLimit)

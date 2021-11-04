@@ -22,9 +22,14 @@ public final class ExceptionUtils
 {
     public static String stackTraceToString(QueryExecutionResult queryExecutionResult)
     {
+        return stackTraceToString(queryExecutionResult.getFailureCause());
+    }
+
+    public static String stackTraceToString(Throwable throwable)
+    {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        queryExecutionResult.getFailureCause().printStackTrace(pw);
+        throwable.printStackTrace(pw);
         return sw.toString();
     }
 
