@@ -13,16 +13,24 @@
  */
 package io.trino.benchto.driver.utils;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import io.trino.benchto.driver.execution.ResultComparisonException;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import javax.naming.OperationNotSupportedException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static io.trino.benchto.driver.utils.QueryUtils.compareRows;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -173,5 +181,64 @@ public class QueryUtilsTest
         when(resultSet.getObject(4)).thenReturn(4);
         when(resultSet.getMetaData()).thenReturn(metaData);
         compareRows(path, resultSet);
+    }
+
+    @Test
+    public void withWhiteSpaces()
+            throws SQLException
+    {
+        Path path = Paths.get(Resources.getResource("comparing/test3.result").getPath());
+
+        List<Map<Integer, Object>> resultSetAnswer = new ArrayList<>();
+        resultSetAnswer.add(ImmutableMap.of(1, "11", 2, " 12", 3, "13 ", 4, " 14 "));
+        resultSetAnswer.add(ImmutableMap.of(1, " 1 1 1 ", 2, "22     2       ", 3, "     3   33", 4, "   4   4   4   "));
+
+        ResultSet resultSet = Mockito.mock(ResultSet.class, new ResultSetAnswer(resultSetAnswer));
+        compareRows(path, resultSet);
+    }
+
+    private static class ResultSetAnswer
+            implements Answer
+    {
+        private final List<Map<Integer, Object>> values;
+        private int index = -1;
+
+        public ResultSetAnswer(List<Map<Integer, Object>> values)
+        {
+            this.values = values;
+        }
+
+        @Override
+        public Object answer(InvocationOnMock invocation) throws Throwable
+        {
+            if (invocation.getMethod().getName().equals("getMetaData")) {
+                return getMetaData();
+            }
+            if (invocation.getMethod().getName().equals("next")) {
+                return next();
+            }
+            if (invocation.getMethod().getName().equals("getObject")) {
+                return getObject(invocation.getArgumentAt(0, int.class));
+            }
+            throw new OperationNotSupportedException();
+        }
+
+        private ResultSetMetaData getMetaData() throws SQLException
+        {
+            ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
+            when(metaData.getColumnCount()).thenReturn(values.get(0).size());
+            return metaData;
+        }
+
+        private Object getObject(int columnIndex)
+        {
+            return values.get(index).get(columnIndex);
+        }
+
+        private boolean next()
+        {
+            index++;
+            return index < values.size();
+        }
     }
 }

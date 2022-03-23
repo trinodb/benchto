@@ -97,7 +97,7 @@ public final class QueryUtils
                 .map(i -> {
                     try {
                         Object value = resultSet.getObject(i);
-                        return value == null ? "" : value.toString();
+                        return value == null ? "" : value.toString().replaceAll("\\s+", "");
                     }
                     catch (SQLException e) {
                         throw new RuntimeException(e);
