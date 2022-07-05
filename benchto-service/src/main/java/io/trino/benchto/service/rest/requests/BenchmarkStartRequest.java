@@ -27,7 +27,7 @@ public class BenchmarkStartRequest
     @Size(min = 1, max = 64)
     private final String name;
     @NotNull
-    @Size(min = 1, max = 64)
+    @Size(min = 1, max = 96)
     private final String environmentName;
     private final Map<String, String> variables;
     private final Map<String, String> attributes;
