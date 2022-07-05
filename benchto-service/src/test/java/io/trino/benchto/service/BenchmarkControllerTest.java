@@ -266,7 +266,7 @@ public class BenchmarkControllerTest
         String benchmarkName = "benchmarkName";
         String benchmarkSequenceId = "benchmarkSequenceId";
 
-        // environment name larger than max 64 bytes - we should get bad request response - 4XX
+        // environment name larger than max 96 bytes - we should get bad request response - 4XX
         mvc.perform(post("//v1/benchmark/{benchmarkName}/{benchmarkSequenceId}/start", benchmarkName, benchmarkSequenceId)
                 .contentType(APPLICATION_JSON)
                 .content("{\"environmentName\": \"" + environmentName + "\"}"))

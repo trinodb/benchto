@@ -62,7 +62,7 @@ public class Environment
     @JsonIgnore
     private long id;
 
-    @Size(min = 1, max = 64)
+    @Size(min = 1, max = 96)
     @Column(name = "name")
     private String name;
 
