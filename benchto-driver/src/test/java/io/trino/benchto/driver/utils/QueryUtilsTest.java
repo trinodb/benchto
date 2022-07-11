@@ -24,7 +24,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import static io.trino.benchto.driver.utils.QueryUtils.compareCount;
 import static io.trino.benchto.driver.utils.QueryUtils.compareRows;
+import static io.trino.benchto.driver.utils.QueryUtils.isSelectQuery;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
@@ -173,5 +176,48 @@ public class QueryUtilsTest
         when(resultSet.getObject(4)).thenReturn(4);
         when(resultSet.getMetaData()).thenReturn(metaData);
         compareRows(path, resultSet);
+    }
+
+    @Test
+    public void isSelectQueryTest()
+    {
+        assertThat(isSelectQuery("Select a from b;")).isEqualTo(true);
+        assertThat(isSelectQuery("SELECT a from b;")).isEqualTo(true);
+        assertThat(isSelectQuery("Show table a;")).isEqualTo(true);
+        assertThat(isSelectQuery("With Select a;")).isEqualTo(true);
+        assertThat(isSelectQuery("DELETE a from b;")).isEqualTo(false);
+        assertThat(isSelectQuery("Drop table a;")).isEqualTo(false);
+        assertThat(isSelectQuery("Update table a;")).isEqualTo(false);
+        assertThat(isSelectQuery("INSERT into table a;")).isEqualTo(false);
+    }
+
+    @Test
+    public void compareCountTest()
+    {
+        Path path = Paths.get(Resources.getResource("comparing/count1.result").getPath());
+        compareCount(path, 20);
+
+        path = Paths.get(Resources.getResource("comparing/count2.result").getPath());
+        compareCount(path, 22);
+
+        Path path2 = Paths.get(Resources.getResource("comparing/count3.result").getPath());
+        assertThatThrownBy(() -> compareCount(path2, 12))
+                .isInstanceOf(ResultComparisonException.class)
+                .hasMessageContaining("Result file should have exactly one row with expected count.");
+
+        Path path3 = Paths.get(Resources.getResource("comparing/count4.result").getPath());
+        assertThatThrownBy(() -> compareCount(path3, 11))
+                .isInstanceOf(ResultComparisonException.class)
+                .hasMessageContaining("Result file should not have more then one row.");
+
+        Path path4 = Paths.get(Resources.getResource("comparing/count2.result").getPath());
+        assertThatThrownBy(() -> compareCount(path4, 12))
+                .isInstanceOf(ResultComparisonException.class)
+                .hasMessageContaining("Incorrect row count, expected 22, got 12");
+
+        Path path5 = Paths.get(Resources.getResource("comparing").getPath());
+        assertThatThrownBy(() -> compareCount(path5, 12))
+                .isInstanceOf(ResultComparisonException.class)
+                .hasMessageContaining("Error opening result file");
     }
 }

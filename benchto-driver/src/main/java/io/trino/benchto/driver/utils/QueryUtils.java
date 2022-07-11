@@ -89,6 +89,39 @@ public final class QueryUtils
         }
     }
 
+    public static void compareCount(Path resultFile, int rowCount)
+    {
+        LOGGER.info("Comparing result count with {}", resultFile);
+
+        try (BufferedReader reader = Files.newBufferedReader(resultFile)) {
+            String expectedCount = reader.readLine();
+
+            if (expectedCount == null) {
+                throw new ResultComparisonException("Result file should have exactly one row with expected count.");
+            }
+
+            if (reader.readLine() != null) {
+                throw new ResultComparisonException("Result file should not have more then one row.");
+            }
+
+            if (!String.valueOf(rowCount).equals(expectedCount)) {
+                throw new ResultComparisonException(format(
+                        "Incorrect row count, expected %s, got %d",
+                        expectedCount,
+                        rowCount));
+            }
+        }
+        catch (IOException e) {
+            throw new ResultComparisonException("Error opening result file", e);
+        }
+    }
+
+    public static boolean isSelectQuery(String sql)
+    {
+        sql = sql.trim().toLowerCase();
+        return sql.startsWith("select") || sql.startsWith("show") || sql.startsWith("with");
+    }
+
     private static String resultRowToString(ResultSet resultSet)
             throws SQLException
     {

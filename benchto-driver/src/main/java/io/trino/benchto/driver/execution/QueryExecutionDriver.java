@@ -18,6 +18,7 @@ import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import io.trino.benchto.driver.loader.SqlStatementGenerator;
 import io.trino.jdbc.TrinoResultSet;
+import io.trino.jdbc.TrinoStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
+import static io.trino.benchto.driver.utils.QueryUtils.compareCount;
 import static io.trino.benchto.driver.utils.QueryUtils.compareRows;
 import static io.trino.benchto.driver.utils.QueryUtils.fetchRows;
+import static io.trino.benchto.driver.utils.QueryUtils.isSelectQuery;
 
 public class QueryExecutionDriver
 {
@@ -57,14 +60,8 @@ public class QueryExecutionDriver
             return executeSelectQuery(connection, queryExecutionResultBuilder, sqlStatement, resultFile);
         }
         else {
-            return executeUpdateQuery(connection, queryExecutionResultBuilder, sqlStatement);
+            return executeUpdateQuery(connection, queryExecutionResultBuilder, sqlStatement, resultFile);
         }
-    }
-
-    private boolean isSelectQuery(String sql)
-    {
-        sql = sql.trim().toLowerCase();
-        return sql.startsWith("select") || sql.startsWith("show") || sql.startsWith("with");
     }
 
     private QueryExecutionResult executeSelectQuery(
@@ -104,11 +101,22 @@ public class QueryExecutionDriver
         }
     }
 
-    private QueryExecutionResult executeUpdateQuery(Connection connection, QueryExecutionResultBuilder queryExecutionResultBuilder, String sqlStatement)
+    private QueryExecutionResult executeUpdateQuery(
+            Connection connection,
+            QueryExecutionResultBuilder queryExecutionResultBuilder,
+            String sqlStatement,
+            Optional<Path> resultFile)
             throws SQLException
     {
         try (Statement statement = connection.createStatement()) {
+            if (statement.isWrapperFor(TrinoStatement.class)) {
+                TrinoStatement trinoStatement = statement.unwrap(TrinoStatement.class);
+                trinoStatement.setProgressMonitor(stats -> queryExecutionResultBuilder.setPrestoQueryId(stats.getQueryId()));
+            }
+
             int rowCount = statement.executeUpdate(sqlStatement);
+            resultFile.ifPresent(path -> compareCount(path, rowCount));
+
             return queryExecutionResultBuilder
                     .setRowsCount(rowCount)
                     .endTimer()
