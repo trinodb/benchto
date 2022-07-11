@@ -117,6 +117,34 @@ public class BenchtoTrinoIntegrationTest
         verifyBenchmark("test_results_missing", "FAILED", 0);
     }
 
+    @Test
+    public void testVerifyInsertResults()
+    {
+        setBenchmark("insert_test_results");
+        executionDriver.execute();
+        verifyBenchmark("insert_test_results_query=insert_test_query", "insert_test_results", "ENDED", 1);
+    }
+
+    @Test
+    public void testVerifyInsertResultsFailure()
+    {
+        setBenchmark("insert_test_results_failure");
+        assertThatThrownBy(() -> executionDriver.execute())
+                .isInstanceOf(FailedBenchmarkExecutionException.class)
+                .hasMessageContaining("Incorrect row count, expected 22, got 25");
+        verifyBenchmark("insert_test_results_failure_query=insert_test_query", "insert_test_results_failure", "FAILED", 1);
+    }
+
+    @Test
+    public void testVerifyInsertResultsFailureWithPreWarm()
+    {
+        setBenchmark("insert_test_results_failure_with_prewarm");
+        assertThatThrownBy(() -> executionDriver.execute())
+                .isInstanceOf(FailedBenchmarkExecutionException.class)
+                .hasMessageContaining("Incorrect row count, expected 22, got 25");
+        verifyBenchmark("insert_test_results_failure_with_prewarm_query=insert_test_query", "insert_test_results_failure_with_prewarm", "FAILED", 0);
+    }
+
     private static void startBenchtoService(Network network)
     {
         postgres = new PostgreSQLContainer<>("postgres:11")
@@ -146,7 +174,7 @@ public class BenchtoTrinoIntegrationTest
 
     private static void startTrino(Network network)
     {
-        trino = new GenericContainer<>("trinodb/trino:363")
+        trino = new GenericContainer<>("trinodb/trino:388")
                 .withNetwork(network)
                 .withNetworkAliases("trino")
                 .withExposedPorts(8080)

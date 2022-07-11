@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.Lists.newArrayList;
+import static io.trino.benchto.driver.utils.QueryUtils.isSelectQuery;
 import static io.trino.benchto.driver.utils.TimeUtils.nowUtc;
 import static java.lang.String.format;
 
@@ -185,8 +186,8 @@ public class BenchmarkExecutionDriver
                 final int finalRun = run;
                 QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
                 Optional<Path> resultFile = benchmark.getQueryResults()
-                        // only check result of the first warmup run
-                        .filter(dir -> warmup && finalRun == 1)
+                        // only check result of the first warmup run or all runs of non select statements
+                        .filter(dir -> (warmup && finalRun == 1) || (!isSelectQuery(query.getSqlTemplate())))
                         .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
                 executionCallables.add(() -> {
                     try (Connection connection = getConnectionFor(queryExecution)) {
