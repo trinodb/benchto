@@ -40,6 +40,7 @@
     "totalCpuTime" : "1.06m",
     "totalUserTime" : "1.04h",
     "totalBlockedTime" : "4.79m",
+    "finishingTime": "1.15m",
     "rawInputDataSize" : "1.34GB",
     "rawInputPositions" : 16822480,
     "processedInputDataSize" : "739.61MB",
@@ -48,6 +49,7 @@
     "physicalInputDataSize": "1.35GB",
     "outputDataSize" : "6.90kB",
     "peakTotalMemoryReservation" : "6.80kB",
+    "physicalWrittenDataSize": "462265065B",
     "outputPositions" : 175,
     "blockedReasons": [ ],
     "fullyBlocked": false

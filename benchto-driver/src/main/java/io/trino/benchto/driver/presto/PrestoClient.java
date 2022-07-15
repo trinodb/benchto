@@ -55,12 +55,14 @@ public class PrestoClient
             .put("totalScheduledTime", MILLI(SECOND))
             .put("totalCpuTime", MILLI(SECOND))
             .put("totalBlockedTime", MILLI(SECOND))
+            .put("finishingTime", MILLI(SECOND))
             .put("rawInputDataSize", BYTE)
             .put("physicalInputDataSize", BYTE)
             .put("processedInputDataSize", BYTE)
             .put("internalNetworkInputDataSize", BYTE)
             .put("outputDataSize", BYTE)
             .put("peakTotalMemoryReservation", BYTE)
+            .put("physicalWrittenDataSize", BYTE)
             .build();
 
     @Autowired
