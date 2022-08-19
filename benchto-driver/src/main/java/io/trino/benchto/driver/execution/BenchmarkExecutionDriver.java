@@ -249,7 +249,9 @@ public class BenchmarkExecutionDriver
                         firstQuery = false;
                     }
                     try {
-                        queryExecutionResults.add(executeSingleQuery(queryExecution, benchmark, connection, false, executionTimeLimit));
+                        // We want to skip a reporting for concurrency benchmarks because it is unnecessary overhead.
+                        // In concurrency benchmarks we are not interested in result for specific query
+                        queryExecutionResults.add(executeSingleQuery(queryExecution, benchmark, connection, true, executionTimeLimit));
                     }
                     catch (TimeLimitException e) {
                         LOG.warn("Interrupting benchmark {} due to time limit exceeded", benchmark.getName());
@@ -265,18 +267,18 @@ public class BenchmarkExecutionDriver
             QueryExecution queryExecution,
             Benchmark benchmark,
             Connection connection,
-            boolean warmup,
+            boolean skipReport,
             Optional<ZonedDateTime> executionTimeLimit)
             throws TimeLimitException
     {
-        return executeSingleQuery(queryExecution, benchmark, connection, warmup, executionTimeLimit, Optional.empty());
+        return executeSingleQuery(queryExecution, benchmark, connection, skipReport, executionTimeLimit, Optional.empty());
     }
 
     private QueryExecutionResult executeSingleQuery(
             QueryExecution queryExecution,
             Benchmark benchmark,
             Connection connection,
-            boolean warmup,
+            boolean skipReport,
             Optional<ZonedDateTime> executionTimeLimit,
             Optional<Path> outputFile)
             throws TimeLimitException
@@ -284,7 +286,7 @@ public class BenchmarkExecutionDriver
         QueryExecutionResult result;
         macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
 
-        if (!warmup) {
+        if (!skipReport) {
             statusReporter.reportExecutionStarted(queryExecution);
         }
         QueryExecutionResultBuilder failureResult = new QueryExecutionResultBuilder(queryExecution)
@@ -303,7 +305,7 @@ public class BenchmarkExecutionDriver
             throw new TimeLimitException(benchmark, queryExecution);
         }
 
-        if (!warmup) {
+        if (!skipReport) {
             statusReporter.reportExecutionFinished(result);
         }
 
