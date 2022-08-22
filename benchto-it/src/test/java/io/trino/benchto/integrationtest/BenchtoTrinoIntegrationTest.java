@@ -38,7 +38,9 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
@@ -145,6 +147,23 @@ public class BenchtoTrinoIntegrationTest
         verifyBenchmark("insert_test_results_failure_with_prewarm_query=insert_test_query", "insert_test_results_failure_with_prewarm", "FAILED", 0);
     }
 
+    @Test
+    public void testThroughputTest()
+    {
+        setBenchmark("test_throughput_test");
+        executionDriver.execute();
+        verifyBenchmark(
+                "test_throughput_test_query=test_results",
+                "test_throughput_test",
+                "ENDED",
+                4,
+                document -> {
+                    // It checks whether results for throughput test was saved and queries succeeded
+                    List<Map<String, Object>> successfulQueries = document.read("$['executions'][*]['measurements'][*][?(@.name==\"queries_successful\")]");
+                    return successfulQueries.stream().allMatch(it -> it.get("value").equals(1.0));
+                });
+    }
+
     private static void startBenchtoService(Network network)
     {
         postgres = new PostgreSQLContainer<>("postgres:11")
@@ -235,6 +254,11 @@ public class BenchtoTrinoIntegrationTest
 
     private void verifyBenchmark(String benchmark, String sequenceId, String status, int expectedRuns)
     {
+        verifyBenchmark(benchmark, sequenceId, status, expectedRuns, documentContext -> true);
+    }
+
+    private void verifyBenchmark(String benchmark, String sequenceId, String status, int expectedRuns, Predicate<DocumentContext> predicate)
+    {
         UriComponents url = UriComponentsBuilder.fromHttpUrl(getServiceUrl())
                 .path("v1/benchmark")
                 .pathSegment(benchmark)
@@ -245,5 +269,6 @@ public class BenchtoTrinoIntegrationTest
         DocumentContext json = JsonPath.parse(response.getBody());
         assertThat(json.read("$.status", String.class)).isEqualTo(status);
         assertThat(json.read(format("$.executions[?(@.status == '%s')]", status), List.class)).hasSize(expectedRuns);
+        assertThat(predicate.test(json));
     }
 }
