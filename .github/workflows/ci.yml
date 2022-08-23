@@ -6,12 +6,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0 # checkout tags so version in Manifest is set properly
-    - uses: actions/setup-java@v1
+    - uses: actions/setup-java@v3
       with:
-        java-version: 8
+        distribution: 'zulu'
+        java-version: 11
     - name: Maven Install Dependencies
       run: ./mvnw install -B -V -DskipTests -Dair.check.skip-all -P docker-images
     - name: Maven Test
