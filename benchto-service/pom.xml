@@ -236,19 +236,27 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.spotify</groupId>
+                        <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.4.13</version>
+                        <version>0.40.2</version>
                         <configuration>
-                            <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                            <dockerDirectory>${project.build.directory}/classes/docker</dockerDirectory>
-                            <resources>
-                                <resource>
-                                    <targetPath>/</targetPath>
-                                    <directory>${project.build.directory}</directory>
-                                    <include>${project.build.finalName}.jar</include>
-                                </resource>
-                            </resources>
+                            <images>
+                                <image>
+                                    <name>${docker.image.prefix}/${project.artifactId}</name>
+                                    <build>
+                                        <contextDir>${project.basedir}/src/main/docker</contextDir>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <assembly>
+                                            <descriptorRef>artifact</descriptorRef>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
                         </configuration>
                         <executions>
                             <execution>
@@ -332,11 +340,6 @@
             <resource>
                 <directory>src/main/webapp</directory>
                 <targetPath>static</targetPath>
-            </resource>
-            <resource>
-                <directory>${basedir}/src/main/docker</directory>
-                <filtering>true</filtering>
-                <targetPath>docker</targetPath>
             </resource>
         </resources>
     </build>
