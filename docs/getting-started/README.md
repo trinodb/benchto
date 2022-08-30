@@ -1,6 +1,6 @@
 # Getting Started
 
-This document describes how to setup and start Benchto on local machine.
+This document describes how to set up and start Benchto on local machine.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ $ docker-machine ip name_of_your_docker_machine
 
 If you are running docker container on the same machine, on which docker client is used, use `127.0.0.1` as `dockerhost`.
 
-The easiest way is to setup correct mapping in `/etc/hosts`.
+The easiest way is to set up correct mapping in `/etc/hosts`.
 
 ## Build project
 
@@ -31,82 +31,14 @@ The easiest way is to setup correct mapping in `/etc/hosts`.
 mvn clean install package -P docker-images
 ```
 
-## Starting up local Hadoop in docker environment.
+## Starting up Trino
 
-We will be using Hadoop CDH5 docker image which is available [here](https://hub.docker.com/r/teradatalabs/cdh5-hive/).
-In order to start the Hadoop on your local machine run the following command:
-
+```sh
+docker run --name trino \
+    -p 8080 \
+    -d \
+    trinodb/trino:latest
 ```
-docker run -d --name hadoop-master -h hadoop-master \
-       -p 50070:50070 -p 10000:10000 -p 19888:19888 -p 8088:8088\
-       -l collectd_docker_app=hadoop \
-       -l collectd_docker_task=hadoop \
-       teradatalabs/cdh5-hive
-```
-
-This will start a docker container with HDFS, Yarn and Hive running.
-You can check if the services are up by visiting following pages:
-* HDFS: [http://dockerhost:50070/dfshealth.html#tab-overview](http://dockerhost:50070/dfshealth.html#tab-overview)
-* Yarn resource manager: [http://dockerhost:8088](http://dockerhost:8088)
-* Yarn history server: [http://dockerhost:19888/jobhistory](http://dockerhost:19888/jobhistory)
-
-## Generate data
-
-In order to run benchmarks of hadoop based databse you need some data stored in HDFS. 
-
-For purpose of this setup guide we have created a simple generator that easies process 
-of generating test data of various types and formats. You can learn more about generator
-by reading README file at `benchto-generator/README.md`. 
-
-We will create 4 ORC files with 1 million of random bigint rows in total. To do so build and install the project:
-
-Copy the generator jar to hadoop container:
-
-```
-docker cp benchto-generator/target/benchto-generator-1.0.0-SNAPSHOT.jar \
-     hadoop-master:/tmp
-```
-
-Run the generator:
-
-```
-docker exec -it hadoop-master su hdfs -c "hadoop jar /tmp/benchto-generator-1.0.0-SNAPSHOT.jar \
-                     -format orc -type bigint -rows 1000000 -mappers 4"
-```
-
-Expect output simillar to one below:
-
-```
-15/09/22 14:30:16 INFO generator.HiveTypesGenerator: Generating 1000000 bigints, directory: /benchmarks/benchto/types/orc-bigint/1000000, number of files: 4
-15/09/22 14:30:17 INFO client.RMProxy: Connecting to ResourceManager at /0.0.0.0:8032
-15/09/22 14:30:17 WARN mapreduce.JobSubmitter: Hadoop command-line option parsing not performed. Implement the Tool interface and execute your application with ToolRunner to remedy this.
-15/09/22 14:30:18 INFO mapreduce.JobSubmitter: number of splits:4
-15/09/22 14:30:18 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1442915754438_0003
-15/09/22 14:30:18 INFO impl.YarnClientImpl: Submitted application application_1442915754438_0003
-15/09/22 14:30:18 INFO mapreduce.Job: The url to track the job: http://hadoop-master:8088/proxy/application_1442915754438_0003/
-15/09/22 14:30:18 INFO mapreduce.Job: Running job: job_1442915754438_0003
-15/09/22 14:30:25 INFO mapreduce.Job: Job job_1442915754438_0003 running in uber mode : false
-15/09/22 14:30:25 INFO mapreduce.Job:  map 0% reduce 0%
-...
-```
-
-You also have to create Hive tables for the generated data:
-```
-docker exec -it hadoop-master su hdfs -c hive
-```
-And then in hive shell:
-```
-hive> CREATE DATABASE types_1m_orc;
-
-hive> CREATE EXTERNAL TABLE types_1m_orc.bigint (value BIGINT)
-      STORED AS ORC LOCATION '/benchmarks/benchto/types/orc-bigint/1000000';
-```
-
-To check if table was created correctly run:
-```
-hive> SELECT * FROM types_1m_orc.bigint LIMIT 5;
-```
-And expect 5 output rows.
 
 ## Starting up auxiliary services
 
@@ -119,11 +51,11 @@ To run those as docker container execute following statements:
 docker run --name benchto-postgres \
        -e POSTGRES_PASSWORD=postgres \
        -p 5432:5432 -d postgres
-       
+
 docker run --name benchto-graphite \
        -p 2003:2003 -p 18088:80 \
        -d hopsoft/graphite-statsd
-       
+
 docker run --name benchto-grafana \
        --link benchto-graphite:benchto-graphite \
        -p 3000:3000 -d grafana/grafana
@@ -134,8 +66,8 @@ Grafana web interface is available at: [http://dockerhost:3000/](http://dockerho
 ## Setup collectd monitoring agent on localhost
 
 Collectd is used to measure performance of cluster nodes and push results to Graphite.
-For testing purposes callectd will be setup on as docker container exposing stats of `hadoop-master`. 
-In real world setups collectd would be installed on each node of the cluster. 
+For testing purposes callectd will be setup on as docker container exposing stats of `hadoop-master`.
+In real world setups collectd would be installed on each node of the cluster.
 
 ```
 docker run --name benchto-collectd-docker --link benchto-graphite:benchto-graphite \
@@ -175,7 +107,9 @@ for storing and displaying benchmark results.
 
 ```
 docker run --name benchto-service --link benchto-postgres:benchto-postgres \
-        -e "SPRING_DATASOURCE_URL=jdbc:postgresql://benchto-postgres:5432/postgres" \
+        -e SPRING_DATASOURCE_URL=jdbc:postgresql://benchto-postgres:5432/postgres \
+        -e SPRING_DATASOURCE_USERNAME=postgres \
+        -e SPRING_DATASOURCE_PASSWORD=postgres \
         -p 8080:8080 -d prestodev/benchto-service
 ```
 
@@ -214,12 +148,12 @@ Launch an example benchmark by running following commands:
 
 ```
 cd docs/getting-started/tests
-mvn package exec:java
+mvn package exec:java -Ddep.benchto-driver.version=0.19-SNAPSHOT
 ```
-Or if you do not setup mapping for `dockerhost` in `/etc/hosts` pass ip address as environemnt variable
+Or if you do not setup mapping for `dockerhost` in `/etc/hosts` pass ip address as environment variable
 ```
-cd docs/test/tests/benchto-getting-started
-dockerhost=IP_OF_DOCKER_HOST mvn package exec:java
+cd docs/getting-started/tests
+dockerhost=IP_OF_DOCKER_HOST mvn package exec:java -Ddep.benchto-driver.version=0.19-SNAPSHOT
 
 ```
 
