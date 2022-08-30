@@ -131,11 +131,15 @@ public class BenchmarkServiceExecutionListener
     {
         return CompletableFuture.supplyAsync(() -> getMeasurements(benchmarkExecutionResult), taskExecutor::execute)
                 .thenCompose(future -> future)
-                .thenApply(measurements -> new FinishRequestBuilder()
-                        .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
-                        .withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant())
-                        .addMeasurements(measurements)
-                        .build())
+                .thenApply(measurements -> {
+                    FinishRequestBuilder builder = new FinishRequestBuilder()
+                            .withStatus(benchmarkExecutionResult.isSuccessful() ? ENDED : FAILED)
+                            .addMeasurements(measurements);
+                    if (benchmarkExecutionResult.getUtcEnd() != null) {
+                        builder.withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant());
+                    }
+                    return builder.build();
+                })
                 .thenAccept(request -> benchmarkServiceClient.finishBenchmark(
                         benchmarkExecutionResult.getBenchmark().getUniqueName(),
                         benchmarkExecutionResult.getBenchmark().getSequenceId(),
@@ -177,6 +181,7 @@ public class BenchmarkServiceExecutionListener
                     .withStatus(ENDED)
                     .withEndTime(
                             executions.stream()
+                                    .filter(e -> e.getUtcEnd() != null)
                                     .map(e -> e.getUtcEnd().toInstant())
                                     .max(Comparator.comparing(Instant::toEpochMilli))
                                     .orElseThrow(NoSuchElementException::new))
