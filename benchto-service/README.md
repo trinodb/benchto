@@ -70,9 +70,9 @@ Note that `description` field is optional.
 $ ./mvnw package -pl benchto-service -P docker-images
 $ docker images
 REPOSITORY                             TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-teradata-labs/benchto-service          latest              427f3e1f4777        13 seconds ago      879.3 MB
+trinodev/benchto-service               latest              427f3e1f4777        13 seconds ago      879.3 MB
 ...
-$ docker save teradata-labs/benchto-service | gzip > /tmp/benchto-service.tar.gz
+$ docker save trinodev/benchto-service | gzip > /tmp/benchto-service.tar.gz
 ```
 
 ## Cleaning up stale benchmark runs
