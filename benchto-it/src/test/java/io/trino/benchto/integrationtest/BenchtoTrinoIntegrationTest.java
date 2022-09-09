@@ -176,7 +176,7 @@ public class BenchtoTrinoIntegrationTest
                 postgres.getDatabaseName(),
                 postgres.getUsername(),
                 postgres.getPassword());
-        service = new GenericContainer<>("prestodev/benchto-service:latest")
+        service = new GenericContainer<>("trinodev/benchto-service:latest")
                 .withNetwork(network)
                 .withNetworkAliases("benchto-service")
                 .withEnv(ImmutableMap.of("SPRING_DATASOURCE_URL", jdbcUrl))

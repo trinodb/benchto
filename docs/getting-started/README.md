@@ -110,7 +110,7 @@ docker run --name benchto-service --link benchto-postgres:benchto-postgres \
         -e SPRING_DATASOURCE_URL=jdbc:postgresql://benchto-postgres:5432/postgres \
         -e SPRING_DATASOURCE_USERNAME=postgres \
         -e SPRING_DATASOURCE_PASSWORD=postgres \
-        -p 8080:8080 -d prestodev/benchto-service
+        -p 8080:8080 -d trinodev/benchto-service
 ```
 
 Verify that the benchmark service works: [http://dockerhost:8080/#/](http://dockerhost:8080/#/)

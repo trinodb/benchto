@@ -23,7 +23,7 @@ services:
       - benchto-graphite
 
   benchto-service:
-    image: 'prestodev/benchto-service:${BENCHTO_SERVICE_TAG}'
+    image: 'trinodev/benchto-service:${BENCHTO_SERVICE_TAG}'
     ports:
       - '80:8080'
     links:
