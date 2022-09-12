@@ -13,6 +13,7 @@
  */
 package io.trino.benchto.driver.graphite;
 
+import com.google.common.collect.ImmutableMap;
 import io.trino.benchto.driver.Measurable;
 import io.trino.benchto.driver.execution.BenchmarkExecutionResult;
 import io.trino.benchto.driver.execution.ExecutionSynchronizer;
@@ -32,6 +33,7 @@ import javax.annotation.PostConstruct;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +51,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public class GraphiteMetricsLoader
         implements PostExecutionMeasurementProvider
 {
+    private static final String METRIC_SCOPE = "cluster";
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteMetricsLoader.class);
 
     @Autowired
@@ -126,7 +129,7 @@ public class GraphiteMetricsLoader
             if (metricValues.length > 0) {
                 // last non zero measurement contains total over time
                 double totalBytes = getLastValueGreaterThanZero(metricValues);
-                measurements.add(Measurement.measurement("cluster-network_total", "BYTES", totalBytes));
+                measurements.add(Measurement.measurement("network", "BYTES", totalBytes, ImmutableMap.of("scope", METRIC_SCOPE, "aggregate", "total")));
             }
         }
         return measurements;
@@ -150,8 +153,8 @@ public class GraphiteMetricsLoader
     {
         Optional<StatisticalSummary> statistics = getStats(loadedMetrics, metricName);
         if (statistics.isPresent()) {
-            measurements.add(Measurement.measurement("cluster-" + metricName + "_max", unit, statistics.get().getMax()));
-            measurements.add(Measurement.measurement("cluster-" + metricName + "_mean", unit, statistics.get().getMean()));
+            measurements.add(Measurement.measurement(metricName, unit, statistics.get().getMax(), ImmutableMap.of("scope", "cluster", "aggregate", "max")));
+            measurements.add(Measurement.measurement(metricName, unit, statistics.get().getMean(), ImmutableMap.of("scope", "cluster", "aggregate", "mean")));
         }
     }
 
