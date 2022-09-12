@@ -61,10 +61,10 @@ public class MultipleDataSourcesConfiguration
     private DataSource createDataSource(DataSourceProperties properties)
     {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(properties.getDriverClassName());
-        dataSource.setUrl(properties.getUrl());
-        dataSource.setUsername(properties.getUsername());
-        dataSource.setPassword(properties.getPassword());
+        dataSource.setDriverClassName(properties.determineDriverClassName());
+        dataSource.setUrl(properties.determineUrl());
+        dataSource.setUsername(properties.determineUsername());
+        dataSource.setPassword(properties.determinePassword());
         return dataSource;
     }
 

@@ -13,7 +13,7 @@
  */
 package io.trino.benchto.service;
 
-import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import io.trino.benchto.service.rest.converters.ZonedDateTimeConverter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,7 +22,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import static com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module.Feature.USE_TRANSIENT_ANNOTATION;
+import static com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION;
 
 @EnableScheduling
 @EnableRetry
@@ -37,10 +37,10 @@ public class ServiceApp
     @Bean
     public Jackson2ObjectMapperBuilder configureObjectMapper()
     {
-        Hibernate4Module hibernate4Module = new Hibernate4Module();
-        hibernate4Module.disable(USE_TRANSIENT_ANNOTATION);
+        Hibernate5Module hibernate5Module = new Hibernate5Module();
+        hibernate5Module.disable(USE_TRANSIENT_ANNOTATION);
         return new Jackson2ObjectMapperBuilder()
-                .modulesToInstall(hibernate4Module);
+                .modulesToInstall(hibernate5Module);
     }
 
     @Bean
