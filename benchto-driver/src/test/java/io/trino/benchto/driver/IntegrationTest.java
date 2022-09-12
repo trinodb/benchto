@@ -19,15 +19,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.internal.util.MockUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {DriverApp.class, TestConfig.class})
-@org.springframework.boot.test.IntegrationTest("executionSequenceId=BEN_SEQ_ID")
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {DriverApp.class, TestConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.NONE, value = "executionSequenceId=BEN_SEQ_ID")
 public abstract class IntegrationTest
 {
     @Autowired
