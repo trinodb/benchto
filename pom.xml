@@ -67,7 +67,7 @@
         <dep.jadira.usertype>3.2.0.GA</dep.jadira.usertype>
         <dep.jackson.jsr310>2.4.0</dep.jackson.jsr310>
         <dep.jackson.hibernate>2.5.4</dep.jackson.hibernate>
-        <dep.spring.boot.version>1.2.8.RELEASE</dep.spring.boot.version>
+        <dep.spring.boot.version>1.3.8.RELEASE</dep.spring.boot.version>
         <dep.spring.retry.version>1.1.5.RELEASE</dep.spring.retry.version>
         <dep.freemarker>2.3.22</dep.freemarker>
         <dep.mockito.version>1.10.19</dep.mockito.version>
@@ -75,8 +75,8 @@
         <dep.javax.annotation.api.version>1.3.2</dep.javax.annotation.api.version>
         <dep.hibernate.version>4.3.11.Final</dep.hibernate.version>
         <dep.hibernate.jpa.version>1.0.0.Final</dep.hibernate.jpa.version>
-        <dep.hibernate.validator.version>5.1.3.Final</dep.hibernate.validator.version>
-        <dep.aspectjweaver.version>1.8.7</dep.aspectjweaver.version>
+        <dep.hibernate.validator.version>5.2.4.Final</dep.hibernate.validator.version>
+        <dep.aspectjweaver.version>1.8.9</dep.aspectjweaver.version>
         <dep.javax.el>2.2.4</dep.javax.el>
         <dep.javax.xml.bind.api.version>2.3.2</dep.javax.xml.bind.api.version>
         <dep.testcontainers.version>1.16.0</dep.testcontainers.version>
