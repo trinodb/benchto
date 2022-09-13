@@ -67,7 +67,7 @@
         <dep.jackson.jsr310>2.6.4</dep.jackson.jsr310>
         <dep.jackson.hibernate>2.6.4</dep.jackson.hibernate>
         <dep.spring.boot.version>1.4.7.RELEASE</dep.spring.boot.version>
-        <dep.spring.retry.version>1.1.5.RELEASE</dep.spring.retry.version>
+        <dep.spring.retry.version>1.2.1.RELEASE</dep.spring.retry.version>
         <dep.freemarker>2.3.22</dep.freemarker>
         <dep.mockito.version>1.10.19</dep.mockito.version>
         <dep.javax.validation.api.version>1.1.0.Final</dep.javax.validation.api.version>
