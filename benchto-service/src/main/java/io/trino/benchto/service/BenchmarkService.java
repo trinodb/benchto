@@ -13,14 +13,19 @@
  */
 package io.trino.benchto.service;
 
+import com.google.common.collect.ImmutableList;
 import io.trino.benchto.service.model.AggregatedMeasurement;
 import io.trino.benchto.service.model.BenchmarkRun;
 import io.trino.benchto.service.model.BenchmarkRunExecution;
 import io.trino.benchto.service.model.Environment;
 import io.trino.benchto.service.model.Measurement;
+import io.trino.benchto.service.model.MeasurementUnit;
+import io.trino.benchto.service.model.Metric;
 import io.trino.benchto.service.model.QueryInfo;
 import io.trino.benchto.service.model.Status;
 import io.trino.benchto.service.repo.BenchmarkRunRepo;
+import io.trino.benchto.service.repo.MetricRepo;
+import io.trino.benchto.service.rest.requests.FlatMeasurement;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,15 +41,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static io.trino.benchto.service.model.Status.STARTED;
 import static io.trino.benchto.service.utils.BenchmarkUniqueNameUtils.generateBenchmarkUniqueName;
 import static io.trino.benchto.service.utils.TimeUtils.currentDateTime;
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 public class BenchmarkService
@@ -53,6 +61,9 @@ public class BenchmarkService
 
     @Autowired
     private BenchmarkRunRepo benchmarkRunRepo;
+
+    @Autowired
+    private MetricRepo metricRepo;
 
     @Autowired
     private EnvironmentService environmentService;
@@ -83,10 +94,10 @@ public class BenchmarkService
 
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
-    public void finishBenchmarkRun(String uniqueName, String sequenceId, Status status, Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes)
+    public void finishBenchmarkRun(String uniqueName, String sequenceId, Status status, Optional<Instant> endTime, List<FlatMeasurement> measurements, Map<String, String> attributes)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, sequenceId);
-        benchmarkRun.getMeasurements().addAll(measurements);
+        benchmarkRun.getMeasurements().addAll(normalizeMeasurements(measurements));
         benchmarkRun.getAttributes().putAll(attributes);
         benchmarkRun.setEnded(fromInstantOrCurrentDateTime(endTime));
         benchmarkRun.setStatus(status);
@@ -130,7 +141,7 @@ public class BenchmarkService
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void finishExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Status status,
-            Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes, String queryInfo)
+            Optional<Instant> endTime, List<FlatMeasurement> measurements, Map<String, String> attributes, String queryInfo)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
 
@@ -140,7 +151,7 @@ public class BenchmarkService
 
         checkState(execution.getStatus() == STARTED, "Wrong execution status: %s", execution.getStatus());
 
-        execution.getMeasurements().addAll(measurements);
+        execution.getMeasurements().addAll(normalizeMeasurements(measurements));
         execution.getAttributes().putAll(attributes);
         execution.setEnded(fromInstantOrCurrentDateTime(endTime));
         execution.setStatus(status);
@@ -157,6 +168,31 @@ public class BenchmarkService
         }
 
         LOG.debug("Finishing execution - {}", execution);
+    }
+
+    private List<Measurement> normalizeMeasurements(List<FlatMeasurement> input)
+    {
+        // use a lookup map to avoid building a complex SQL query that compares attributes list
+        Map<Metric, Metric> metrics = new HashMap<>();
+        metricRepo.findAll().forEach(metric -> metrics.put(metric, metric));
+        Map<Metric, List<FlatMeasurement>> groups = input.stream()
+                .collect(groupingBy(flatMeasurement -> new Metric(
+                        flatMeasurement.getName(),
+                        MeasurementUnit.valueOf(flatMeasurement.getUnit()),
+                        flatMeasurement.getAttributes())));
+        ImmutableList.Builder<Measurement> result = ImmutableList.builder();
+        for (Map.Entry<Metric, List<FlatMeasurement>> entry : groups.entrySet()) {
+            Metric metric = metrics.get(entry.getKey());
+            if (metric == null) {
+                metric = metricRepo.save(entry.getKey());
+                metrics.put(metric, metric);
+            }
+            Metric finalMetric = metric;
+            result.addAll(entry.getValue().stream()
+                    .map(flatMeasurement -> new Measurement(finalMetric, flatMeasurement.getValue()))
+                    .collect(Collectors.toList()));
+        }
+        return result.build();
     }
 
     @Transactional

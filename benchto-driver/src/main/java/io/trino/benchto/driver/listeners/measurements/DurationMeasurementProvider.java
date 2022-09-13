@@ -20,6 +20,7 @@ import io.trino.benchto.driver.execution.QueryExecutionResult;
 import io.trino.benchto.driver.service.Measurement;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,7 +36,11 @@ public class DurationMeasurementProvider
     {
         List<Measurement> measurements;
         if (shouldMeasureDuration(measurable)) {
-            measurements = ImmutableList.of(measurement("duration", "MILLISECONDS", measurable.getQueryDuration().toMillis()));
+            measurements = ImmutableList.of(measurement(
+                    "duration",
+                    "MILLISECONDS",
+                    measurable.getQueryDuration().toMillis(),
+                    Collections.singletonMap("scope", "driver")));
         }
         else {
             measurements = ImmutableList.of();

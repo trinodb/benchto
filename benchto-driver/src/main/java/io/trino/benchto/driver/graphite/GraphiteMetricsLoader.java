@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -153,8 +152,8 @@ public class GraphiteMetricsLoader
     {
         Optional<StatisticalSummary> statistics = getStats(loadedMetrics, metricName);
         if (statistics.isPresent()) {
-            measurements.add(Measurement.measurement(metricName, unit, statistics.get().getMax(), ImmutableMap.of("scope", "cluster", "aggregate", "max")));
-            measurements.add(Measurement.measurement(metricName, unit, statistics.get().getMean(), ImmutableMap.of("scope", "cluster", "aggregate", "mean")));
+            measurements.add(Measurement.measurement(metricName, unit, statistics.get().getMax(), ImmutableMap.of("scope", METRIC_SCOPE, "aggregate", "max")));
+            measurements.add(Measurement.measurement(metricName, unit, statistics.get().getMean(), ImmutableMap.of("scope", METRIC_SCOPE, "aggregate", "mean")));
         }
     }
 

@@ -46,7 +46,7 @@ public class PrestoClientIntegrationTest
 
         List<Measurement> measurements = prestoClient.loadMetrics("test_query_id");
 
-        Map<String, String> attributes = Collections.singletonMap("scope", "prestoQuery");
+        Map<String, String> attributes = Collections.singletonMap("scope", "query");
         assertThat(measurements).containsExactly(
                 Measurement.measurement("analysisTime", "MILLISECONDS", 21.07, attributes),
                 Measurement.measurement("planningTime", "MILLISECONDS", 24.72, attributes),

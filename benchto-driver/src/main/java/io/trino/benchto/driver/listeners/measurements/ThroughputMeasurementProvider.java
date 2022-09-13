@@ -19,6 +19,7 @@ import io.trino.benchto.driver.execution.BenchmarkExecutionResult;
 import io.trino.benchto.driver.service.Measurement;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,7 +35,11 @@ public class ThroughputMeasurementProvider
     {
         List<Measurement> measurements;
         if (measurable instanceof BenchmarkExecutionResult && measurable.getBenchmark().isConcurrent() && measurable.isSuccessful()) {
-            measurements = ImmutableList.of(Measurement.measurement("throughput", "QUERY_PER_SECOND", calculateThroughput((BenchmarkExecutionResult) measurable)));
+            measurements = ImmutableList.of(Measurement.measurement(
+                    "throughput",
+                    "QUERY_PER_SECOND",
+                    calculateThroughput((BenchmarkExecutionResult) measurable),
+                    Collections.singletonMap("scope", "driver")));
         }
         else {
             measurements = emptyList();

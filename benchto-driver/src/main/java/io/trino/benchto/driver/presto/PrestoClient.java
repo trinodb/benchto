@@ -65,6 +65,7 @@ public class PrestoClient
             .put("peakTotalMemoryReservation", BYTE)
             .put("physicalWrittenDataSize", BYTE)
             .build();
+    public static final String METRIC_SCOPE = "query";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -124,7 +125,7 @@ public class PrestoClient
     private Measurement parseQueryStatistic(String name, Object statistic, Unit requiredUnit)
     {
         double value = UnitConverter.parseValueAsUnit(statistic.toString(), requiredUnit);
-        return measurement(name, UnitConverter.format(requiredUnit), value, Collections.singletonMap("scope", "prestoQuery"));
+        return measurement(name, UnitConverter.format(requiredUnit), value, Collections.singletonMap("scope", METRIC_SCOPE));
     }
 
     @SuppressWarnings("unused")

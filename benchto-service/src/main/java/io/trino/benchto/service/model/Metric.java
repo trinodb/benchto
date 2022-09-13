@@ -14,8 +14,12 @@
 package io.trino.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Cache;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -23,29 +27,32 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import java.io.Serializable;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.collect.Maps.newHashMap;
 import static javax.persistence.FetchType.EAGER;
+import static org.hibernate.annotations.CacheConcurrencyStrategy.TRANSACTIONAL;
 
 @Entity
-@Table(name = "measurements")
-public class Measurement
+@Table(name = "metrics")
+public class Metric
         implements Serializable
 {
     @Id
-    @SequenceGenerator(name = "measurements_id_seq",
-            sequenceName = "measurements_id_seq",
+    @SequenceGenerator(name = "metrics_id_seq",
+            sequenceName = "metrics_id_seq",
             allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator = "measurements_id_seq")
+            generator = "metrics_id_seq")
     @Column(name = "id")
     @JsonIgnore
     private long id;
@@ -54,35 +61,28 @@ public class Measurement
     @Column(name = "name")
     private String name;
 
-    @Column(name = "value")
-    private double value;
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "unit")
     private MeasurementUnit unit;
 
-    @NotNull
-    @ManyToOne(fetch = EAGER)
-    @JoinColumn(name = "metric_id")
-    private Metric metric;
+    @Cache(usage = TRANSACTIONAL)
+    @BatchSize(size = 10)
+    @ElementCollection(fetch = EAGER)
+    @MapKeyColumn(name = "name")
+    @Column(name = "value")
+    @CollectionTable(name = "metric_attributes", joinColumns = @JoinColumn(name = "metric_id"))
+    private Map<String, String> attributes = newHashMap();
 
-    protected Measurement()
+    protected Metric()
     {
     }
 
-    public Measurement(Metric metric, double value)
+    public Metric(String name, MeasurementUnit unit, Map<String, String> attributes)
     {
-        this.metric = metric;
-        this.name = metric.getName();
-        if (metric.getAttributes() != null && metric.getAttributes().size() != 0) {
-            this.name += " {" + metric.getAttributes().entrySet().stream()
-                    .map(entry -> entry.getKey() + "=" + entry.getValue())
-                    .sorted()
-                    .collect(Collectors.joining(",")) + "}";
-        }
-        this.unit = metric.getUnit();
-        this.value = value;
+        this.name = name;
+        this.unit = unit;
+        this.attributes = attributes;
     }
 
     public long getId()
@@ -115,24 +115,14 @@ public class Measurement
         this.unit = unit;
     }
 
-    public double getValue()
+    public Map<String, String> getAttributes()
     {
-        return value;
+        return attributes;
     }
 
-    public void setValue(double value)
+    public void setAttributes(Map<String, String> attributes)
     {
-        this.value = value;
-    }
-
-    public Metric getMetric()
-    {
-        return metric;
-    }
-
-    public void setMetric(Metric metric)
-    {
-        this.metric = metric;
+        this.attributes = attributes;
     }
 
     @Override
@@ -144,14 +134,22 @@ public class Measurement
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Measurement that = (Measurement) o;
-        return metric.equals(that.metric);
+        Metric that = (Metric) o;
+        return Objects.equals(name, that.name)
+                && unit.equals(that.unit)
+                && ((attributes == null && that.attributes == null)
+                || (attributes != null && attributes.equals(that.attributes)));
     }
 
     @Override
     public int hashCode()
     {
-        return metric.hashCode();
+        int result = Objects.hash(name);
+        result += 31 * result + unit.hashCode();
+        if (attributes != null) {
+            result += 31 * result + attributes.hashCode();
+        }
+        return result;
     }
 
     @Override
@@ -159,8 +157,9 @@ public class Measurement
     {
         return toStringHelper(this)
                 .add("id", id)
-                .add("metric", metric)
-                .add("value", value)
+                .add("name", name)
+                .add("unit", unit)
+                .add("attributes", attributes)
                 .toString();
     }
 }
