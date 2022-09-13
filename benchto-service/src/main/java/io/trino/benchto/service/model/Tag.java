@@ -14,7 +14,6 @@
 package io.trino.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -64,7 +63,6 @@ public class Tag
     private String description;
 
     @Column(name = "created")
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime created;
 
     public String getDescription()
