@@ -64,7 +64,6 @@
         <dep.logback.version>1.2.11</dep.logback.version>
         <dep.postgresql.jdbc.version>9.1-901-1.jdbc4</dep.postgresql.jdbc.version>
         <dep.slf4j.version>1.7.32</dep.slf4j.version>
-        <dep.jadira.usertype>5.0.0.GA</dep.jadira.usertype>
         <dep.jackson.jsr310>2.6.4</dep.jackson.jsr310>
         <dep.jackson.hibernate>2.6.4</dep.jackson.hibernate>
         <dep.spring.boot.version>1.4.0.RELEASE</dep.spring.boot.version>
@@ -180,11 +179,6 @@
                 <version>${dep.jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.jadira.usertype</groupId>
-                <artifactId>usertype.extended</artifactId>
-                <version>${dep.jadira.usertype}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${dep.jackson.jsr310}</version>
@@ -241,6 +235,11 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-ehcache</artifactId>
+                <version>${dep.hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-java8</artifactId>
                 <version>${dep.hibernate.version}</version>
             </dependency>
             <dependency>

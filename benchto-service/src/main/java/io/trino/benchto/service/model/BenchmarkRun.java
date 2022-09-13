@@ -19,7 +19,6 @@ import com.google.common.collect.ListMultimap;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
@@ -114,11 +113,9 @@ public class BenchmarkRun
     private final Set<Measurement> measurements = newHashSet();
 
     @Column(name = "started")
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime started;
 
     @Column(name = "ended")
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime ended;
 
     @NotNull

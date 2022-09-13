@@ -16,7 +16,6 @@ package io.trino.benchto.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.Cacheable;
 import javax.persistence.CollectionTable;
@@ -80,7 +79,6 @@ public class Environment
     private Map<String, String> attributes = newHashMap();
 
     @Column(name = "started")
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime started;
 
     public long getId()

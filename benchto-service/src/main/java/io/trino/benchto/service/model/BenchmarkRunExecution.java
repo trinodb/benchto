@@ -16,7 +16,6 @@ package io.trino.benchto.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
@@ -95,11 +94,9 @@ public class BenchmarkRunExecution
     private Set<Measurement> measurements;
 
     @Column(name = "started")
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime started;
 
     @Column(name = "ended")
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
     private ZonedDateTime ended;
 
     @Cache(usage = TRANSACTIONAL)
