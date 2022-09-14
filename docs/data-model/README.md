@@ -83,11 +83,13 @@ erDiagram
     }
     MEASUREMENT ||--|| BENCHMARK-RUN-MEASUREMENT : "has one"
     MEASUREMENT ||--|| EXECUTION-MEASUREMENT : "has one"
+    MEASUREMENT ||--|| METRIC : "has one"
     MEASUREMENT {
         varchar name
         varchar unit
         double value
         bigint id PK
+        bigint metric_id FK
     }
     BENCHMARK-RUN-MEASUREMENT {
         bigint benchmark_run_id PK
@@ -96,6 +98,17 @@ erDiagram
     EXECUTION-MEASUREMENT {
         bigint execution_id PK
         bigint measurement_id PK
+    }
+    METRIC ||--|{ METRIC-ATTRIBUTE : "has many"
+    METRIC {
+        varchar name
+        varchar unit
+        bigint id PK
+    }
+    METRIC-ATTRIBUTE {
+        varchar name
+        varchar value
+        bigint metric_id FK
     }
 ```
 
@@ -145,3 +158,9 @@ A measurement represents the value for a specific metric. Measurements recorded 
 can include the query duration or other statistics related to this execution.
 Measurements recorded for the whole benchmark run can include the SUT statistics or the host resource usage (CPU, memory, network, etc.).
 
+## Metric
+
+A metric represents a measurable property. Every metric should have a `scope` attribute, where the values can be:
+* `driver` for metrics measured by the driver, like `duration` and `throughput`
+* `query` for metrics related to the executed query, extracted from the server
+* `cluster` for metrics related to the whole benchmark run, extracted from an agent monitoring the cluster
