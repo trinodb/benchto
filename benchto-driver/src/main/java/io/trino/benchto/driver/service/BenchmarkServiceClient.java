@@ -25,8 +25,9 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -53,24 +54,21 @@ public class BenchmarkServiceClient
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public Instant getServiceCurrentTime()
     {
-        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", properties.getServiceURL());
-        Long serviceCurrentTime = postForObject("{serviceUrl}/v1/time/current-time-millis", null, Long.class, requestParams);
+        Long serviceCurrentTime = postForObject("/v1/time/current-time-millis", null, Long.class);
         return Instant.ofEpochMilli(requireNonNull(serviceCurrentTime, "service returned null time"));
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<String> generateUniqueBenchmarkNames(List<GenerateUniqueNamesRequestItem> generateUniqueNamesRequestItems)
     {
-        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", properties.getServiceURL());
-        String[] uniqueNames = postForObject("{serviceUrl}/v1/benchmark/generate-unique-names", generateUniqueNamesRequestItems, String[].class, requestParams);
+        String[] uniqueNames = postForObject("/v1/benchmark/generate-unique-names", generateUniqueNamesRequestItems, String[].class);
         return ImmutableList.copyOf(uniqueNames);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
     public List<Duration> getBenchmarkSuccessfulExecutionAges(List<String> benchmarkUniqueNames)
     {
-        Map<String, String> requestParams = ImmutableMap.of("serviceUrl", properties.getServiceURL());
-        Duration[] ages = postForObject("{serviceUrl}/v1/benchmark/get-successful-execution-ages", benchmarkUniqueNames, Duration[].class, requestParams);
+        Duration[] ages = postForObject("/v1/benchmark/get-successful-execution-ages", benchmarkUniqueNames, Duration[].class);
         return ImmutableList.copyOf(ages);
     }
 
@@ -79,7 +77,7 @@ public class BenchmarkServiceClient
     {
         Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
 
-        return postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/start", request, requestParams);
+        return postForObject("/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/start", request, requestParams);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
@@ -87,7 +85,7 @@ public class BenchmarkServiceClient
     {
         Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
 
-        postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/finish", request, requestParams);
+        postForObject("/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/finish", request, requestParams);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
@@ -96,7 +94,7 @@ public class BenchmarkServiceClient
         Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
         requestParams.put("executionSequenceId", executionSequenceId);
 
-        postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, requestParams);
+        postForObject("/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/start", request, requestParams);
     }
 
     @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
@@ -105,7 +103,7 @@ public class BenchmarkServiceClient
         Map<String, String> requestParams = requestParams(uniqueBenchmarkName, benchmarkSequenceId);
         requestParams.put("executionSequenceId", executionSequenceId);
 
-        postForObject("{serviceUrl}/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, requestParams);
+        postForObject("/v1/benchmark/{uniqueBenchmarkName}/{benchmarkSequenceId}/execution/{executionSequenceId}/finish", request, requestParams);
     }
 
     private Map<String, String> requestParams(String uniqueBenchmarkName, String benchmarkSequenceId)
@@ -122,15 +120,23 @@ public class BenchmarkServiceClient
         return postForObject(url, request, String.class, requestParams);
     }
 
+    private <T> T postForObject(String url, Object request, Class<T> clazz)
+    {
+        return postForObject(url, request, clazz, ImmutableMap.of());
+    }
+
     private <T> T postForObject(String url, Object request, Class<T> clazz, Map<String, String> requestParams)
     {
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromUriString(properties.getServiceURL())
+                .path(url);
+        URI uri = uriBuilder.buildAndExpand(requestParams).toUri();
+
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Post object to benchmark service on URL: {}, with request: {}",
-                    new UriTemplate(url).expand(requestParams),
-                    request);
+            LOGGER.debug("Post object to benchmark service on URL: {}, with request: {}", uri, request);
         }
 
-        return restTemplate.postForObject(url, request, clazz, requestParams);
+        return restTemplate.postForObject(uri, request, clazz);
     }
 
     public static class GenerateUniqueNamesRequestItem

@@ -42,7 +42,7 @@ public abstract class IntegrationTest
     {
         for (String name : context.getBeanDefinitionNames()) {
             Object bean = context.getBean(name);
-            if (new MockUtil().isMock(bean)) {
+            if (MockUtil.isMock(bean)) {
                 Mockito.reset(bean);
             }
         }

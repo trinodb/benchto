@@ -88,12 +88,9 @@ public class BenchmarkExecutionDriverTest
     @Test
     public void afterMacroFailureCausesDoNotOverrideBenchmarkExecutionFailure()
     {
-        IllegalStateException afterMacroException = new IllegalStateException();
         IllegalArgumentException executorServiceException = new IllegalArgumentException();
         doThrow(executorServiceException)
                 .when(executorServiceFactory).create(anyInt());
-        doNothing().doThrow(afterMacroException)
-                .when(macroService).runBenchmarkMacros(anyList());
 
         BenchmarkExecutionResult benchmarkExecutionResult = driver.execute(mock(Benchmark.class), 0, 0, Optional.empty());
 
