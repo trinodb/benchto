@@ -17,9 +17,9 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.FatalBeanException;
-import org.springframework.boot.bind.PropertiesConfigurationFactory;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.validation.BindException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,18 +39,10 @@ public final class PropertiesUtils
 
     public static <T> T resolveEnvironmentProperties(ConfigurableEnvironment environment, Class<T> clazz, String prefix)
     {
-        try {
-            T properties = BeanUtils.instantiate(clazz);
-            PropertiesConfigurationFactory<T> factory = new PropertiesConfigurationFactory<T>(properties);
-            factory.setTargetName(prefix);
-            factory.setPropertySources(environment.getPropertySources());
-            factory.setConversionService(environment.getConversionService());
-            factory.bindPropertiesToTarget();
-            return properties;
-        }
-        catch (BindException ex) {
-            throw new FatalBeanException("Could not bind " + clazz + " properties", ex);
-        }
+        T properties = BeanUtils.instantiateClass(clazz);
+        Binder binder = Binder.get(environment);
+        binder.bind(prefix, Bindable.ofInstance(properties)).orElseThrow(() -> new FatalBeanException("Could not bind " + clazz + " properties"));
+        return properties;
     }
 
     public static List<Path> extractPaths(String paths)

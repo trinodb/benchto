@@ -15,7 +15,6 @@ package io.trino.benchto.driver.graphite;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 import io.trino.benchto.driver.BenchmarkExecutionException;
 import io.trino.benchto.driver.utils.TimeUtils;
 import org.slf4j.Logger;
@@ -62,7 +61,12 @@ public class GraphiteClient
     {
         LOGGER.debug("Storing graphite event: {}", request);
 
-        restTemplate.postForObject("{graphiteURL}/events/", request, Object.class, ImmutableMap.of("graphiteURL", graphiteURL));
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromUriString(graphiteURL)
+                .path("/events/");
+        URI uri = uriBuilder.build().toUri();
+
+        restTemplate.postForObject(uri, request, Object.class);
     }
 
     @Retryable(value = {RestClientException.class, IncompleteDataException.class}, backoff = @Backoff(delay = 5000, multiplier = 2), maxAttempts = 4)
@@ -99,7 +103,7 @@ public class GraphiteClient
             uriBuilder.queryParam("target", format("alias(%s,'%s')", metricQueryExpr, metricName));
         }
 
-        return URI.create(uriBuilder.toUriString());
+        return uriBuilder.build().toUri();
     }
 
     private double[] parseDataPoints(Double[][] inputDataPoints)

@@ -64,7 +64,8 @@ public class ShellMacroExecutionDriverTest
     public void shouldFailNoCommandMacro()
 
     {
-        expectedException.expectMessage("Macro no-command-macro has no command defined");
+        // Spring Boot 2 changed the behavior for reading properties and will no longer create a macro without an underlying command defined
+        expectedException.expectMessage("Macro no-command-macro is not defined");
         macroService.runBenchmarkMacro("no-command-macro", Optional.empty(), Optional.empty());
     }
 
