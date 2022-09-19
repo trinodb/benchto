@@ -64,23 +64,23 @@
         <dep.logback.version>1.2.11</dep.logback.version>
         <dep.postgresql.jdbc.version>42.2.8</dep.postgresql.jdbc.version>
         <dep.slf4j.version>1.7.32</dep.slf4j.version>
-        <dep.jackson.jsr310>2.9.8</dep.jackson.jsr310>
+        <dep.jackson.jsr310>2.9.10</dep.jackson.jsr310>
         <dep.jackson.hibernate>2.6.4</dep.jackson.hibernate>
-        <dep.spring.boot.version>2.1.0.RELEASE</dep.spring.boot.version>
+        <dep.spring.boot.version>2.1.18.RELEASE</dep.spring.boot.version>
         <dep.spring.retry.version>1.3.3</dep.spring.retry.version>
         <dep.freemarker>2.3.22</dep.freemarker>
-        <dep.mockito.version>2.23.0</dep.mockito.version>
+        <dep.mockito.version>2.23.4</dep.mockito.version>
         <dep.javax.validation.api.version>2.0.1.Final</dep.javax.validation.api.version>
         <dep.javax.annotation.api.version>1.3.2</dep.javax.annotation.api.version>
-        <dep.hibernate.version>5.3.7.Final</dep.hibernate.version>
+        <dep.hibernate.version>5.3.18.Final</dep.hibernate.version>
         <dep.hibernate.jpa.version>1.0.2.Final</dep.hibernate.jpa.version>
         <dep.hibernate.validator.version>5.3.6.Final</dep.hibernate.validator.version>
-        <dep.aspectjweaver.version>1.9.2</dep.aspectjweaver.version>
+        <dep.aspectjweaver.version>1.9.6</dep.aspectjweaver.version>
         <dep.javax.el>2.2.4</dep.javax.el>
         <dep.javax.xml.bind.api.version>2.3.2</dep.javax.xml.bind.api.version>
         <dep.testcontainers.version>1.16.0</dep.testcontainers.version>
         <dep.javassist.version>3.26.0-GA</dep.javassist.version>
-        <dep.byte-buddy.version>1.9.0</dep.byte-buddy.version>
+        <dep.byte-buddy.version>1.9.11</dep.byte-buddy.version>
         <dep.jna.version>5.8.0</dep.jna.version>
     </properties>
 
@@ -277,6 +277,11 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
+                <version>${dep.javax.xml.bind.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>txw2</artifactId>
                 <version>${dep.javax.xml.bind.api.version}</version>
             </dependency>
 
