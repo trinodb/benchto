@@ -2,6 +2,11 @@ benchmarks: src/test/resources/benchmarks
 sql: src/test/resources/sql,src/test/resources/sql-second-dir
 query-results-dir: results
 
+# Required to override some beans using TestConfig
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
 data-sources:
   test_datasource:
     url: jdbc:hsqldb:mem:.

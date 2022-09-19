@@ -24,6 +24,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -60,7 +61,7 @@ public class DriverApp
         CommandLine commandLine = processArguments(args);
 
         SpringApplicationBuilder applicationBuilder = new SpringApplicationBuilder(DriverApp.class)
-                .web(false)
+                .web(WebApplicationType.NONE)
                 .registerShutdownHook(false)
                 .properties();
         if (commandLine.hasOption("profile")) {
