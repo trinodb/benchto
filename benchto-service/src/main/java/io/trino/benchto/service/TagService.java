@@ -65,7 +65,7 @@ public class TagService
 
     public Optional<Tag> latest(String environmentName, ZonedDateTime until)
     {
-        List<Tag> latest = repo.latest(environmentService.findEnvironment(environmentName), until, new PageRequest(0, 1));
+        List<Tag> latest = repo.latest(environmentService.findEnvironment(environmentName), until, PageRequest.of(0, 1));
         if (latest.isEmpty()) {
             return Optional.empty();
         }
