@@ -48,10 +48,13 @@ public class CleanerServiceTest
     @Test
     public void cleanUpStaleBenchmarks()
     {
+        ZonedDateTime currentDate = currentDateTime();
+
         Environment environment = new Environment();
+        environment.setName("test");
+        environment.setStarted(currentDate);
         environmentRepo.save(environment);
 
-        ZonedDateTime currentDate = currentDateTime();
         BenchmarkRun staleBenchmark = new BenchmarkRun("stale benchmark test", SEQUENCE_ID, ImmutableMap.of(), UNIQUE_NAME);
         staleBenchmark.setStatus(Status.STARTED);
         staleBenchmark.setStarted(currentDate.minusHours(CleanerService.BENCHMARK_TIMEOUT_HOURS).minusMinutes(1));

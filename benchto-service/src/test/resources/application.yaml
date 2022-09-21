@@ -1,8 +1,15 @@
 spring:
+  datasource:
+    url: jdbc:tc:postgresql:11:///databasename
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
-    hibernate.ddl-auto: create-drop
+    database: postgresql
+    hibernate.ddl-auto: validate
     properties:
       hibernate.cache.region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+      hibernate.cache.use_second_level_cache: true
+      hibernate.cache.use_query_cache: true
+      javax.persistence.sharedCache.mode: ENABLE_SELECTIVE
 
 flyway:
-  enabled: false
+  enabled: true
