@@ -173,6 +173,8 @@ public class BenchmarkService
     private List<Measurement> normalizeMeasurements(List<FlatMeasurement> input)
     {
         // use a lookup map to avoid building a complex SQL query that compares attributes list
+        // acquire a lock to avoid adding multiple metrics with same name and same attributes
+        metricRepo.lock();
         Map<Metric, Metric> metrics = new HashMap<>();
         metricRepo.findAll().forEach(metric -> metrics.put(metric, metric));
         Map<Metric, List<FlatMeasurement>> groups = input.stream()

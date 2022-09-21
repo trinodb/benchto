@@ -15,10 +15,13 @@ package io.trino.benchto.service.repo;
 
 import io.trino.benchto.service.model.Metric;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MetricRepo
         extends JpaRepository<Metric, Long>
 {
+    @Query(value = "select true from pg_advisory_xact_lock(1)", nativeQuery = true)
+    void lock();
 }
