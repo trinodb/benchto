@@ -50,7 +50,7 @@
 
         <air.check.fail-duplicate-finder>false</air.check.fail-duplicate-finder>
 
-        <dep.assertj.version>3.22.0</dep.assertj.version>
+        <dep.assertj.version>3.23.1</dep.assertj.version>
         <dep.commons.cli>1.5.0</dep.commons.cli>
         <dep.commons.math3>3.6.1</dep.commons.math3>
         <dep.commons.io>2.7</dep.commons.io>
@@ -78,7 +78,7 @@
         <dep.javax.xml.bind.api.version>2.3.3</dep.javax.xml.bind.api.version>
         <dep.testcontainers.version>1.16.0</dep.testcontainers.version>
         <dep.javassist.version>3.27.0-GA</dep.javassist.version>
-        <dep.byte-buddy.version>1.12.9</dep.byte-buddy.version>
+        <dep.byte-buddy.version>1.12.17</dep.byte-buddy.version>
         <dep.jna.version>5.8.0</dep.jna.version>
     </properties>
 
