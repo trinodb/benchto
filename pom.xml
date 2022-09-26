@@ -73,7 +73,7 @@
         <dep.hibernate.version>5.6.10.Final</dep.hibernate.version>
         <dep.hibernate.jpa.version>1.0.2.Final</dep.hibernate.jpa.version>
         <dep.hibernate.validator.version>6.1.4.Final</dep.hibernate.validator.version>
-        <dep.aspectjweaver.version>1.9.7</dep.aspectjweaver.version>
+        <dep.aspectjweaver.version>1.9.9.1</dep.aspectjweaver.version>
         <dep.javax.el>2.2.5</dep.javax.el>
         <dep.javax.xml.bind.api.version>2.3.3</dep.javax.xml.bind.api.version>
         <dep.testcontainers.version>1.17.3</dep.testcontainers.version>
