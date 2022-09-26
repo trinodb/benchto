@@ -77,7 +77,7 @@
         <dep.javax.el>2.2.4</dep.javax.el>
         <dep.javax.xml.bind.api.version>2.3.3</dep.javax.xml.bind.api.version>
         <dep.testcontainers.version>1.16.0</dep.testcontainers.version>
-        <dep.javassist.version>3.27.0-GA</dep.javassist.version>
+        <dep.javassist.version>3.29.2-GA</dep.javassist.version>
         <dep.byte-buddy.version>1.12.17</dep.byte-buddy.version>
         <dep.jna.version>5.12.1</dep.jna.version>
     </properties>
