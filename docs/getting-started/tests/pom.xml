@@ -11,7 +11,7 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
 
         <activeBenchmarks>types</activeBenchmarks>
         <activeVariables>nonExistingKey=nonExistingValue</activeVariables>
