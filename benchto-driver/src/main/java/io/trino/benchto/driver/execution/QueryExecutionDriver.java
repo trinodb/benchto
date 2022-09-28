@@ -13,26 +13,19 @@
  */
 package io.trino.benchto.driver.execution;
 
-import com.google.common.collect.ImmutableMap;
-import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
-import io.trino.benchto.driver.loader.SqlStatementGenerator;
 import io.trino.jdbc.TrinoResultSet;
 import io.trino.jdbc.TrinoStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkState;
 import static io.trino.benchto.driver.utils.QueryUtils.compareCount;
 import static io.trino.benchto.driver.utils.QueryUtils.compareRows;
 import static io.trino.benchto.driver.utils.QueryUtils.fetchRows;
@@ -42,19 +35,13 @@ public class QueryExecutionDriver
 {
     private static final Logger LOG = LoggerFactory.getLogger(QueryExecutionDriver.class);
 
-    @Autowired
-    private SqlStatementGenerator sqlStatementGenerator;
-
-    @Autowired
-    private BenchmarkProperties properties;
-
     public QueryExecutionResult execute(QueryExecution queryExecution, Connection connection, Optional<Path> resultFile)
             throws SQLException
     {
         QueryExecutionResultBuilder queryExecutionResultBuilder = new QueryExecutionResultBuilder(queryExecution)
                 .startTimer();
 
-        String sqlStatement = generateQuerySqlStatement(queryExecution);
+        String sqlStatement = queryExecution.getStatement();
 
         if (isSelectQuery(sqlStatement)) {
             return executeSelectQuery(connection, queryExecutionResultBuilder, sqlStatement, resultFile);
@@ -122,16 +109,5 @@ public class QueryExecutionDriver
                     .endTimer()
                     .build();
         }
-    }
-
-    private String generateQuerySqlStatement(QueryExecution queryExecution)
-    {
-        Map<String, String> variables = ImmutableMap.<String, String>builder()
-                .put("execution_sequence_id", "" + queryExecution.getRun())
-                .putAll(queryExecution.getBenchmark().getNonReservedKeywordVariables())
-                .build();
-        List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(queryExecution.getQuery(), variables);
-        checkState(sqlQueries.size() == 1, "Multiple statements in one query file are not supported");
-        return sqlQueries.get(0);
     }
 }

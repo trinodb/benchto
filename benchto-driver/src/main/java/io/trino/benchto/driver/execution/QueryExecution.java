@@ -13,23 +13,34 @@
  */
 package io.trino.benchto.driver.execution;
 
+import com.google.common.collect.ImmutableMap;
 import io.trino.benchto.driver.Benchmark;
 import io.trino.benchto.driver.Query;
+import io.trino.benchto.driver.loader.SqlStatementGenerator;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 public class QueryExecution
 {
     private final Benchmark benchmark;
+
     private final Query query;
     private final int run;
 
-    public QueryExecution(Benchmark benchmark, Query query, int run)
+    private final String statement;
+
+    public QueryExecution(Benchmark benchmark, Query query, int run, SqlStatementGenerator sqlStatementGenerator)
     {
         this.benchmark = requireNonNull(benchmark);
         this.query = requireNonNull(query);
         this.run = run;
+
+        this.statement = generateQuerySqlStatement(sqlStatementGenerator);
     }
 
     public Benchmark getBenchmark()
@@ -52,6 +63,11 @@ public class QueryExecution
         return run;
     }
 
+    public String getStatement()
+    {
+        return statement;
+    }
+
     @Override
     public String toString()
     {
@@ -59,5 +75,16 @@ public class QueryExecution
                 .add("query", query)
                 .add("run", run)
                 .toString();
+    }
+
+    private String generateQuerySqlStatement(SqlStatementGenerator sqlStatementGenerator)
+    {
+        Map<String, String> variables = ImmutableMap.<String, String>builder()
+                .put("execution_sequence_id", Integer.toString(getRun()))
+                .putAll(getBenchmark().getNonReservedKeywordVariables())
+                .build();
+        List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(getQuery(), variables);
+        checkState(sqlQueries.size() == 1, "Multiple statements in one query file are not supported");
+        return sqlQueries.get(0);
     }
 }
