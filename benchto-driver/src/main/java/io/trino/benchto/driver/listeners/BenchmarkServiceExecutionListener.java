@@ -138,6 +138,13 @@ public class BenchmarkServiceExecutionListener
                     if (benchmarkExecutionResult.getUtcEnd() != null) {
                         builder.withEndTime(benchmarkExecutionResult.getUtcEnd().toInstant());
                     }
+                    // Throughput tests have a different query in every execution, but only one, aggregated execution is saved
+                    // so don't save statements for them.
+                    if (!benchmarkExecutionResult.getBenchmark().isThroughputTest()) {
+                        benchmarkExecutionResult.getExecutions().stream()
+                                .findFirst()
+                                .ifPresent(e -> builder.addAttribute("statement", e.getQueryExecution().getStatement()));
+                    }
                     return builder.build();
                 })
                 .thenAccept(request -> benchmarkServiceClient.finishBenchmark(
