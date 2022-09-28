@@ -24,6 +24,7 @@ import io.trino.benchto.driver.concurrent.ExecutorServiceFactory;
 import io.trino.benchto.driver.execution.BenchmarkExecutionResult.BenchmarkExecutionResultBuilder;
 import io.trino.benchto.driver.execution.QueryExecutionResult.QueryExecutionResultBuilder;
 import io.trino.benchto.driver.listeners.benchmark.BenchmarkStatusReporter;
+import io.trino.benchto.driver.loader.SqlStatementGenerator;
 import io.trino.benchto.driver.macro.MacroService;
 import io.trino.benchto.driver.utils.PermutationUtils;
 import org.slf4j.Logger;
@@ -76,6 +77,9 @@ public class BenchmarkExecutionDriver
 
     @Autowired
     private BenchmarkProperties properties;
+
+    @Autowired
+    private SqlStatementGenerator sqlStatementGenerator;
 
     public BenchmarkExecutionResult execute(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount, Optional<ZonedDateTime> executionTimeLimit)
     {
@@ -184,7 +188,7 @@ public class BenchmarkExecutionDriver
         for (Query query : benchmark.getQueries()) {
             for (int run = 1; run <= runs; run++) {
                 final int finalRun = run;
-                QueryExecution queryExecution = new QueryExecution(benchmark, query, run);
+                QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
                 Optional<Path> resultFile = benchmark.getQueryResults()
                         // only check result of the first warmup run or all runs of non select statements
                         .filter(dir -> (warmup && finalRun == 1) || (!isSelectQuery(query.getSqlTemplate())))
@@ -222,7 +226,7 @@ public class BenchmarkExecutionDriver
     {
         boolean firstQuery = true;
         List<QueryExecutionResult> queryExecutionResults = newArrayList();
-        try (Connection connection = getConnectionFor(new QueryExecution(benchmark, benchmark.getQueries().get(0), 0))) {
+        try (Connection connection = getConnectionFor(new QueryExecution(benchmark, benchmark.getQueries().get(0), 0, sqlStatementGenerator))) {
             for (int run = 1; run <= runs; run++) {
                 for (int queryIndex = 0; queryIndex < benchmark.getQueries().size(); queryIndex++) {
                     int permutedQueryIndex = queryIndex;
@@ -243,7 +247,8 @@ public class BenchmarkExecutionDriver
                             query,
                             queryIndex
                                     + threadNumber * benchmark.getQueries().size()
-                                    + (run - 1) * benchmark.getConcurrency() * benchmark.getQueries().size());
+                                    + (run - 1) * benchmark.getConcurrency() * benchmark.getQueries().size(),
+                            sqlStatementGenerator);
                     if (firstQuery && !warmup) {
                         statusReporter.reportExecutionStarted(queryExecution);
                         firstQuery = false;
