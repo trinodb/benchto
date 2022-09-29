@@ -56,6 +56,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static io.trino.benchto.driver.loader.BenchmarkDescriptor.NAME_KEY;
 import static java.lang.String.format;
 import static java.nio.file.Files.isRegularFile;
 import static java.util.Collections.emptyMap;
@@ -213,11 +214,12 @@ public class BenchmarkLoader
             Preconditions.checkArgument(yaml.containsKey(BenchmarkDescriptor.DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.DATA_SOURCE_KEY, benchmarkFile);
             Preconditions.checkArgument(yaml.containsKey(BenchmarkDescriptor.QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.QUERY_NAMES_KEY, benchmarkFile);
 
-            List<BenchmarkDescriptor> benchmarkDescriptors = createBenchmarkDescriptors(yaml);
+            String defaultName = benchmarkName(benchmarkFile);
+            List<BenchmarkDescriptor> benchmarkDescriptors = createBenchmarkDescriptors(defaultName, yaml);
 
             List<Benchmark> benchmarks = newArrayListWithCapacity(benchmarkDescriptors.size());
             for (BenchmarkDescriptor benchmarkDescriptor : benchmarkDescriptors) {
-                String benchmarkName = benchmarkName(benchmarkFile);
+                String benchmarkName = benchmarkDescriptor.getName();
                 List<Query> queries = queryLoader.loadFromFiles(benchmarkDescriptor.getQueryNames());
 
                 Benchmark benchmark = new Benchmark.BenchmarkBuilder(benchmarkName, sequenceId, queries)
@@ -261,10 +263,11 @@ public class BenchmarkLoader
         return result.build();
     }
 
-    private List<BenchmarkDescriptor> createBenchmarkDescriptors(Map<Object, Object> yaml)
+    private List<BenchmarkDescriptor> createBenchmarkDescriptors(String defaultName, Map<Object, Object> yaml)
     {
         List<Map<String, String>> variablesCombinations = extractVariableMapList(yaml);
         Map<String, String> globalVariables = extractGlobalVariables(yaml);
+        globalVariables.putIfAbsent(NAME_KEY, defaultName);
 
         for (Map<String, String> variablesMap : variablesCombinations) {
             for (Entry<String, String> globalVariableEntry : globalVariables.entrySet()) {

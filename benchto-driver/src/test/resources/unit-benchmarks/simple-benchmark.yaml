@@ -1,3 +1,4 @@
+name: different-than-filename
 to_be_overridden: 42
 datasource: foo
 before-benchmark: no-op, no-op2
