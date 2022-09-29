@@ -115,6 +115,7 @@ public class BenchmarkLoaderTest
         withActiveBenchmarks("simple-benchmark");
 
         Benchmark benchmark = assertLoadedBenchmarksCount(1).get(0);
+        assertThat(benchmark.getName()).isEqualTo("different-than-filename");
         assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
         assertThat(benchmark.getDataSource()).isEqualTo("foo");
         assertThat(benchmark.getRuns()).isEqualTo(3);
@@ -125,6 +126,9 @@ public class BenchmarkLoaderTest
 
         // variable overridden by profile
         assertThat(benchmark.getVariables().get("to_be_overridden")).isEqualTo("bar");
+
+        // name is in attributes, so it will be persisted in results
+        assertThat(benchmark.getVariables().get("name")).isEqualTo("different-than-filename");
     }
 
     @Test

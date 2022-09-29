@@ -27,6 +27,7 @@ import static io.trino.benchto.driver.utils.YamlUtils.asStringList;
  */
 public class BenchmarkDescriptor
 {
+    public static final String NAME_KEY = "name";
     public static final String DATA_SOURCE_KEY = "datasource";
     public static final String QUERY_NAMES_KEY = "query-names";
     public static final String RUNS_KEY = "runs";
@@ -43,6 +44,7 @@ public class BenchmarkDescriptor
     public static final String QUERY_RESULTS_KEY = "query-results";
 
     public static final Set<String> RESERVED_KEYWORDS = ImmutableSet.of(
+            NAME_KEY,
             DATA_SOURCE_KEY,
             QUERY_NAMES_KEY,
             RUNS_KEY,
@@ -69,6 +71,11 @@ public class BenchmarkDescriptor
     public Map<String, String> getVariables()
     {
         return variables;
+    }
+
+    public String getName()
+    {
+        return variables.get(NAME_KEY);
     }
 
     public String getDataSource()
