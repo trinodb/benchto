@@ -71,8 +71,10 @@ public class DriverAppIntegrationTest
         verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA");
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 1);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 2);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 3);
+        verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 4);
         verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
-        verifyComplete();
+        verifyComplete(5);
     }
 
     @Test
@@ -83,7 +85,7 @@ public class DriverAppIntegrationTest
         verifySerialExecution("test_benchmark", "test_query", 1);
         verifySerialExecution("test_benchmark", "test_query", 2);
         verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
-        verifyComplete();
+        verifyComplete(3);
     }
 
     @Test
@@ -229,11 +231,6 @@ public class DriverAppIntegrationTest
                 requestTo(containsString("&target=alias(integral(TARGET_NETWORK),'network_total')")),
                 method(HttpMethod.GET)
         )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(GRAPHITE_METRICS_RESPONSE));
-    }
-
-    private void verifyComplete()
-    {
-        verifyComplete(3);
     }
 
     private void verifyComplete(int runs)

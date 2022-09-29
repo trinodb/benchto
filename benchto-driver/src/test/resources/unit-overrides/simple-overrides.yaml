@@ -1,2 +1,3 @@
+query-runs: 4
 to_be_overridden: bar
 additional: foo

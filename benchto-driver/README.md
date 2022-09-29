@@ -112,7 +112,7 @@ different variables. It is possible to use variable substitution in this file. E
 ```
 datasource: presto
 query-names: presto/linear-scan/selectivity-${selectivity}.sql
-runs: 3
+query-runs: 3
 variables:
   1:
     selectivity: 0, 2, 10, 100
@@ -132,8 +132,9 @@ List of keywords:
 |---|---|---|---|
 | datasource       | True  |       | Name of the datasource defined in `application.yaml` file.                         |
 | query-names      | True  |       | Paths to the queries.                                                              |
-| runs             | False | 3     | Number of runs each query should be executed.                                      |
-| prewarm-runs     | False | 0     | Number of prewarm runs of queries before benchmark.                                |
+| runs             | False | 3     | Number of times to execute every query.                                            |
+| query-runs       | False | 1     | Number of times to repeat all query executions.                                    |
+| prewarm-runs     | False | 0     | Number of times to repeat all query executions without storing results.            |
 | concurrency      | False | 1     | Number of concurrent workers - 1 sequential benchmark, >1 concurrency benchmark.   |
 | before-benchmark | False | none  | Names of macros executed before benchmark.                                         |
 | after-benchmark  | False | none  | Names of macros executed after benchmark.                                          |
@@ -198,6 +199,6 @@ overrides YAML file:
 
 An example overrides file:
 ```
-runs: 5
+query-runs: 5
 prewarm-runs: 10
 ```

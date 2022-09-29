@@ -37,6 +37,7 @@ public class Benchmark
     private List<Query> queries;
     private int runs;
     private int prewarmRuns;
+    private int queryRuns;
     private int concurrency;
     private List<String> beforeBenchmarkMacros;
     private List<String> afterBenchmarkMacros;
@@ -95,6 +96,11 @@ public class Benchmark
     public int getPrewarmRuns()
     {
         return prewarmRuns;
+    }
+
+    public int getQueryRuns()
+    {
+        return queryRuns;
     }
 
     public int getConcurrency()
@@ -173,6 +179,7 @@ public class Benchmark
                         .collect(Collectors.joining(", ")))
                 .add("runs", runs)
                 .add("prewarmRuns", prewarmRuns)
+                .add("queryRuns", queryRuns)
                 .add("concurrency", concurrency)
                 .add("throughputTest", throughputTest)
                 .add("frequency", frequency)
@@ -197,6 +204,7 @@ public class Benchmark
         Benchmark benchmark = (Benchmark) o;
         return Objects.equal(runs, benchmark.runs) &&
                 Objects.equal(prewarmRuns, benchmark.prewarmRuns) &&
+                Objects.equal(queryRuns, benchmark.queryRuns) &&
                 Objects.equal(concurrency, benchmark.concurrency) &&
                 Objects.equal(name, benchmark.name) &&
                 Objects.equal(sequenceId, benchmark.sequenceId) &&
@@ -223,6 +231,7 @@ public class Benchmark
                 queries,
                 runs,
                 prewarmRuns,
+                queryRuns,
                 concurrency,
                 beforeBenchmarkMacros,
                 afterBenchmarkMacros,
@@ -267,6 +276,13 @@ public class Benchmark
         public BenchmarkBuilder withPrewarmRuns(int prewarmRuns)
         {
             this.benchmark.prewarmRuns = prewarmRuns;
+            return this;
+        }
+
+        public BenchmarkBuilder withQueryRuns(int queryRuns)
+        {
+            checkArgument(queryRuns >= 1, "Query runs must be greater of equal 1");
+            this.benchmark.queryRuns = queryRuns;
             return this;
         }
 
@@ -327,6 +343,12 @@ public class Benchmark
 
         public Benchmark build()
         {
+            // in throughput tests, runs greater than 1 are allowed only when queryRuns are 1 for backward compatibility,
+            // because queryRuns parameter was added later
+            checkArgument(!benchmark.isThroughputTest() || (
+                            (benchmark.queryRuns >= 1 && benchmark.runs == 1)
+                                    || (benchmark.queryRuns == 1 && benchmark.runs >= 1)),
+                    "In throughput tests, runs cannot be greater than 1. To set query runs greater than 1, set runs to 1.");
             return benchmark;
         }
     }
