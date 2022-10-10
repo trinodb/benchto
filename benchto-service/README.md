@@ -40,25 +40,25 @@ Go to: [http://localhost:8081/](http://localhost:8081/)
 
 ## Creating environment
 
-To create environment PRESTO-DEVENV you need to run:
+To create environment TRINO-DEVENV you need to run:
 
 ```
 $ curl -H 'Content-Type: application/json' -d '{
     "dashboardType": "grafana",
-    "dashboardURL": "http://localhost:3000/dashboard/db/presto-devenv",
+    "dashboardURL": "http://localhost:3000/dashboard/db/trino-devenv",
     "prestoURL": "http://presto-master:8080/"
-}' http://localhost:8081/v1/environment/PRESTO-DEVENV
+}' http://localhost:8081/v1/environment/TRINO-DEVENV
 ```
 
 ## Creating tag
 
-To create tag for environment PRESTO-DEVENV you need to run:
+To create tag for environment TRINO-DEVENV you need to run:
 
 ```
 $ curl -H 'Content-Type: application/json' -d '{
     "name": "Short tag desciption",
     "description": "Very long but optional tag description"
-}' http://localhost:8081/v1/tag/PRESTO-DEVENV
+}' http://localhost:8081/v1/tag/TRINO-DEVENV
 
 ```
 
@@ -100,7 +100,7 @@ eg.
 $ curl -u user:password -H 'Content-Type: application/json' -d '{
     "name": "Short tag desciption",
     "description": "Very long but optional tag description"
-}' http://localhost:8081/v1/tag/PRESTO-DEVENV
+}' http://localhost:8081/v1/tag/TRINO-DEVENV
 ```
 
 ## Benchto-service over HTTPS
