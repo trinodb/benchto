@@ -99,6 +99,10 @@
             <artifactId>javax.el</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
 
         <!-- Utils -->
         <dependency>
