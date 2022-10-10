@@ -6,7 +6,7 @@ This document describes how to set up and start Benchto on local machine.
 
 * Docker >= 1.8
 * Maven 3
-* JDK 8
+* JDK 17
 
 ## Note on docker-machine
 
