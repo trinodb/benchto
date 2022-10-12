@@ -209,7 +209,7 @@ public class BenchmarkLoader
     {
         try {
             Map<Object, Object> yaml = YamlUtils.loadYamlFromPath(benchmarkFile);
-            yaml = overrideTopLevelVariables(yaml);
+            yaml = mergeTopLevelVariables(yaml);
 
             Preconditions.checkArgument(yaml.containsKey(BenchmarkDescriptor.DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.DATA_SOURCE_KEY, benchmarkFile);
             Preconditions.checkArgument(yaml.containsKey(BenchmarkDescriptor.QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.QUERY_NAMES_KEY, benchmarkFile);
@@ -247,7 +247,7 @@ public class BenchmarkLoader
         }
     }
 
-    private Map<Object, Object> overrideTopLevelVariables(Map<Object, Object> baseYaml)
+    private Map<Object, Object> mergeTopLevelVariables(Map<Object, Object> baseYaml)
     {
         ImmutableMap.Builder<Object, Object> result = ImmutableMap.builder();
         for (Map.Entry<Object, Object> entry : baseYaml.entrySet()) {
@@ -257,6 +257,13 @@ public class BenchmarkLoader
                 result.put(key, overrides.get(key));
             }
             else {
+                result.put(key, value);
+            }
+        }
+        for (Map.Entry<Object, Object> entry : overrides.entrySet()) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            if (!baseYaml.containsKey(key)) {
                 result.put(key, value);
             }
         }

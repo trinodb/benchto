@@ -127,6 +127,9 @@ public class BenchmarkLoaderTest
         // variable overridden by profile
         assertThat(benchmark.getVariables().get("to_be_overridden")).isEqualTo("bar");
 
+        // added by profile
+        assertThat(benchmark.getVariables().get("additional")).isEqualTo("foo");
+
         // name is in attributes, so it will be persisted in results
         assertThat(benchmark.getVariables().get("name")).isEqualTo("different-than-filename");
     }
