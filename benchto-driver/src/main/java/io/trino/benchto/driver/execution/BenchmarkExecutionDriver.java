@@ -242,13 +242,10 @@ public class BenchmarkExecutionDriver
                         permutedQueryIndex = queryOrder[queryIndex];
                     }
                     Query query = benchmark.getQueries().get(permutedQueryIndex);
-                    QueryExecution queryExecution = new QueryExecution(
-                            benchmark,
-                            query,
-                            queryIndex
-                                    + threadNumber * benchmark.getQueries().size()
-                                    + (run - 1) * benchmark.getConcurrency() * benchmark.getQueries().size(),
-                            sqlStatementGenerator);
+                    int sequenceId = queryIndex
+                            + threadNumber * benchmark.getQueries().size()
+                            + (run - 1) * benchmark.getConcurrency() * benchmark.getQueries().size();
+                    QueryExecution queryExecution = new QueryExecution(benchmark, query, sequenceId, sqlStatementGenerator);
                     if (firstQuery && !warmup) {
                         statusReporter.reportExecutionStarted(queryExecution);
                         firstQuery = false;

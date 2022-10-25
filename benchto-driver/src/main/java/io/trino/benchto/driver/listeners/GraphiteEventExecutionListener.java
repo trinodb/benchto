@@ -89,7 +89,7 @@ public class GraphiteEventExecutionListener
         }
 
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s, query %s (%d) started", execution.getBenchmark().getUniqueName(), execution.getQueryName(), execution.getRun()))
+                .what(format("Benchmark %s, query %s (%d) started", execution.getBenchmark().getUniqueName(), execution.getQueryName(), execution.getSequenceId()))
                 .tags("execution", "started", execution.getBenchmark().getEnvironment())
                 .build();
 
@@ -105,7 +105,7 @@ public class GraphiteEventExecutionListener
 
         QueryExecution queryExecution = executionResult.getQueryExecution();
         GraphiteEventRequest request = new GraphiteEventRequestBuilder()
-                .what(format("Benchmark %s, query %s (%d) ended", queryExecution.getBenchmark().getUniqueName(), executionResult.getQueryName(), queryExecution.getRun()))
+                .what(format("Benchmark %s, query %s (%d) ended", queryExecution.getBenchmark().getUniqueName(), executionResult.getQueryName(), queryExecution.getSequenceId()))
                 .tags("execution", "ended", executionResult.getEnvironment())
                 .data(format("duration: %d ms", executionResult.getQueryDuration().toMillis()))
                 .when(executionResult.getUtcEnd())
