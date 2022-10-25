@@ -271,7 +271,7 @@ public class BenchmarkServiceExecutionListener
 
     private String executionSequenceId(QueryExecution execution)
     {
-        return "" + execution.getRun();
+        return Integer.toString(execution.getSequenceId());
     }
 
     private static class MeasurementsWithQueryInfo

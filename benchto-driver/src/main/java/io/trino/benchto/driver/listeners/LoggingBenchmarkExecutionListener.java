@@ -57,7 +57,10 @@ public class LoggingBenchmarkExecutionListener
     @Override
     public Future<?> executionStarted(QueryExecution execution)
     {
-        LOG.info("Query started: {} ({}/{})", execution.getQueryName(), execution.getRun(), execution.getBenchmark().getRuns());
+        LOG.info("Query started: {} ({}/{})",
+                execution.getQueryName(),
+                execution.getSequenceId(),
+                execution.getBenchmark().getRuns());
 
         return CompletableFuture.completedFuture("");
     }
@@ -66,12 +69,19 @@ public class LoggingBenchmarkExecutionListener
     public Future<?> executionFinished(QueryExecutionResult result)
     {
         if (result.isSuccessful()) {
-            LOG.info("Query finished: {} ({}/{}), rows count: {}, duration: {}", result.getQueryName(), result.getQueryExecution().getRun(),
-                    result.getBenchmark().getRuns(), result.getRowsCount(), result.getQueryDuration());
+            LOG.info("Query finished: {} ({}/{}), rows count: {}, duration: {}",
+                    result.getQueryName(),
+                    result.getQueryExecution().getSequenceId(),
+                    result.getBenchmark().getRuns(),
+                    result.getRowsCount(),
+                    result.getQueryDuration());
         }
         else {
-            LOG.error("Query failed: {} ({}/{}), execution error: {}", result.getQueryName(), result.getQueryExecution().getRun(),
-                    result.getBenchmark().getRuns(), result.getFailureCause().getMessage());
+            LOG.error("Query failed: {} ({}/{}), execution error: {}",
+                    result.getQueryName(),
+                    result.getQueryExecution().getSequenceId(),
+                    result.getBenchmark().getRuns(),
+                    result.getFailureCause().getMessage());
         }
 
         return CompletableFuture.completedFuture("");

@@ -226,7 +226,7 @@ public class BenchmarkLoader
                         .withDataSource(benchmarkDescriptor.getDataSource())
                         .withEnvironment(properties.getEnvironmentName())
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
-                        .withPrewarmRuns(benchmarkDescriptor.getPrewarmRepeats().orElse(DEFAULT_PREWARM_RUNS))
+                        .withPrewarmRuns(benchmarkDescriptor.getPrewarmRuns().orElse(DEFAULT_PREWARM_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
                         .withFrequency(benchmarkDescriptor.getFrequency().map(Duration::ofDays))
                         .withThroughputTest(benchmarkDescriptor.getThroughputTest())

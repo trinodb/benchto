@@ -93,7 +93,7 @@ public class BenchmarkDescriptor
         return getIntegerOptional(RUNS_KEY);
     }
 
-    public Optional<Integer> getPrewarmRepeats()
+    public Optional<Integer> getPrewarmRuns()
     {
         return getIntegerOptional(PREWARM_RUNS_KEY);
     }

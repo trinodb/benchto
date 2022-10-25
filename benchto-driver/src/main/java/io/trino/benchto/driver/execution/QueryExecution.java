@@ -30,15 +30,15 @@ public class QueryExecution
     private final Benchmark benchmark;
 
     private final Query query;
-    private final int run;
+    private final int sequenceId;
 
     private final String statement;
 
-    public QueryExecution(Benchmark benchmark, Query query, int run, SqlStatementGenerator sqlStatementGenerator)
+    public QueryExecution(Benchmark benchmark, Query query, int sequenceId, SqlStatementGenerator sqlStatementGenerator)
     {
         this.benchmark = requireNonNull(benchmark);
         this.query = requireNonNull(query);
-        this.run = run;
+        this.sequenceId = sequenceId;
 
         this.statement = generateQuerySqlStatement(sqlStatementGenerator);
     }
@@ -58,9 +58,9 @@ public class QueryExecution
         return query;
     }
 
-    public int getRun()
+    public int getSequenceId()
     {
-        return run;
+        return sequenceId;
     }
 
     public String getStatement()
@@ -73,14 +73,14 @@ public class QueryExecution
     {
         return toStringHelper(this)
                 .add("query", query)
-                .add("run", run)
+                .add("run", sequenceId)
                 .toString();
     }
 
     private String generateQuerySqlStatement(SqlStatementGenerator sqlStatementGenerator)
     {
         Map<String, String> variables = ImmutableMap.<String, String>builder()
-                .put("execution_sequence_id", Integer.toString(getRun()))
+                .put("execution_sequence_id", Integer.toString(getSequenceId()))
                 .putAll(getBenchmark().getNonReservedKeywordVariables())
                 .build();
         List<String> sqlQueries = sqlStatementGenerator.generateQuerySqlStatement(getQuery(), variables);
