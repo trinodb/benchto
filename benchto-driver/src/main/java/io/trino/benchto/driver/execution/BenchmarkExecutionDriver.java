@@ -89,7 +89,12 @@ public class BenchmarkExecutionDriver
         try {
             macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
 
-            benchmarkExecutionResult = executeBenchmark(benchmark, executionTimeLimit);
+            if (properties.isWarmup()) {
+                benchmarkExecutionResult = warmupBenchmark(benchmark, executionTimeLimit);
+            }
+            else {
+                benchmarkExecutionResult = executeBenchmark(benchmark, executionTimeLimit);
+            }
 
             macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
 
@@ -108,18 +113,25 @@ public class BenchmarkExecutionDriver
         }
     }
 
+    private BenchmarkExecutionResult warmupBenchmark(Benchmark benchmark, Optional<ZonedDateTime> executionTimeLimit)
+    {
+        BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark)
+                .withExecutions(List.of());
+        List<QueryExecutionResult> executions = executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
+        String comparisonFailures = getComparisonFailuresString(executions);
+        if (!comparisonFailures.isEmpty()) {
+            resultBuilder.withUnexpectedException(new RuntimeException(format("Query result comparison failed for queries: %s", comparisonFailures)));
+        }
+        return resultBuilder.build();
+    }
+
     private BenchmarkExecutionResult executeBenchmark(Benchmark benchmark, Optional<ZonedDateTime> executionTimeLimit)
     {
         BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark);
         List<QueryExecutionResult> executions;
         try {
             executions = executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
-            String comparisonFailures = executions.stream()
-                    .filter(execution -> execution.getFailureCause() != null)
-                    .filter(execution -> execution.getFailureCause().getClass().equals(ResultComparisonException.class))
-                    .map(execution -> format("%s [%s]", execution.getQueryName(), execution.getFailureCause()))
-                    .distinct()
-                    .collect(Collectors.joining("\n"));
+            String comparisonFailures = getComparisonFailuresString(executions);
 
             executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
 
@@ -147,6 +159,16 @@ public class BenchmarkExecutionDriver
         statusReporter.reportBenchmarkFinished(executionResult);
 
         return executionResult;
+    }
+
+    private static String getComparisonFailuresString(List<QueryExecutionResult> executions)
+    {
+        return executions.stream()
+                .filter(execution -> execution.getFailureCause() != null)
+                .filter(execution -> execution.getFailureCause().getClass().equals(ResultComparisonException.class))
+                .map(execution -> format("%s [%s]", execution.getQueryName(), execution.getFailureCause()))
+                .distinct()
+                .collect(Collectors.joining("\n"));
     }
 
     private BenchmarkExecutionResult failedBenchmarkResult(Benchmark benchmark, Exception e)
