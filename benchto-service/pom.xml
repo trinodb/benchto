@@ -176,14 +176,6 @@
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-        </dependency>
 
         <!-- ehcache -->
         <dependency>
@@ -197,6 +189,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -251,6 +248,12 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+            <version>${dep.testng.version}</version>
         </dependency>
     </dependencies>
 
@@ -314,9 +317,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M6</version>
+                <version>${dep.plugin.surefire.version}</version>
                 <configuration>
                     <excludedGroups>io.trino.benchto.service.category.IntegrationTest</excludedGroups>
+                    <failIfNoTests>false</failIfNoTests>
                     <argLine>
                         --add-opens java.base/java.lang=ALL-UNNAMED
                     </argLine>
@@ -336,6 +340,7 @@
                         <exclude>**/resources/banner.txt</exclude>
                         <exclude>**/resources/db/migration/*.sql</exclude>
                         <exclude>**/*.xml</exclude>
+                        <exclude>**/Dockerfile</exclude>
                     </excludes>
                 </configuration>
             </plugin>
