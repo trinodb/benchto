@@ -94,6 +94,9 @@ public class BenchmarkProperties
     @Value("${query-results-dir}")
     private String queryResultsDir;
 
+    @Value("${warmup:false}")
+    private String warmup;
+
     @Autowired
     private GraphiteProperties graphiteProperties;
 
@@ -213,6 +216,11 @@ public class BenchmarkProperties
         return parseBoolean(frequencyCheckEnabled);
     }
 
+    public boolean isWarmup()
+    {
+        return parseBoolean(warmup);
+    }
+
     private boolean parseBoolean(String booleanString)
     {
         if (booleanString.equalsIgnoreCase(Boolean.TRUE.toString())) {
@@ -222,7 +230,7 @@ public class BenchmarkProperties
             return false;
         }
         else {
-            throw new IllegalStateException(String.format("Incorrect boolean value: %s.", this.frequencyCheckEnabled));
+            throw new IllegalStateException(String.format("Incorrect boolean value: %s.", booleanString));
         }
     }
 }

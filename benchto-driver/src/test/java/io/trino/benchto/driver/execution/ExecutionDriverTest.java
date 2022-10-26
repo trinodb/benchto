@@ -90,6 +90,8 @@ public class ExecutionDriverTest
                 .thenReturn(successfulBenchmarkExecution());
         when(benchmarkProperties.getTimeLimit())
                 .thenReturn(Optional.empty());
+        when(benchmarkProperties.isWarmup())
+                .thenReturn(false);
     }
 
     private BenchmarkExecutionResult successfulBenchmarkExecution()
@@ -143,6 +145,7 @@ public class ExecutionDriverTest
         ReflectionTestUtils.setField(benchmarkExecutionDriver, "executorServiceFactory", new ExecutorServiceFactory());
         ReflectionTestUtils.setField(benchmarkExecutionDriver, "executionSynchronizer", mock(ExecutionSynchronizer.class));
         ReflectionTestUtils.setField(benchmarkExecutionDriver, "statusReporter", statusReporter);
+        ReflectionTestUtils.setField(benchmarkExecutionDriver, "properties", benchmarkProperties);
         ReflectionTestUtils.setField(driver, "benchmarkExecutionDriver", benchmarkExecutionDriver);
         ReflectionTestUtils.setField(driver, "benchmarkStatusReporter", statusReporter);
 

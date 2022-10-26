@@ -15,6 +15,7 @@ package io.trino.benchto.driver.execution;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import io.trino.benchto.driver.Benchmark;
+import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.concurrent.ExecutorServiceFactory;
 import io.trino.benchto.driver.listeners.benchmark.BenchmarkStatusReporter;
 import io.trino.benchto.driver.macro.MacroService;
@@ -54,6 +55,9 @@ public class BenchmarkExecutionDriverTest
     @Mock
     ExecutionSynchronizer executionSynchronizer;
 
+    @Mock
+    BenchmarkProperties benchmarkProperties;
+
     @InjectMocks
     BenchmarkExecutionDriver driver;
 
@@ -61,6 +65,8 @@ public class BenchmarkExecutionDriverTest
     public void setUp()
     {
         when(executorServiceFactory.create(anyInt())).thenReturn(executorService);
+        when(benchmarkProperties.isWarmup())
+                .thenReturn(false);
     }
 
     @Test
