@@ -116,7 +116,7 @@ public class DriverApp
         addOption(options, "overrides", "PATH", "Path to benchmark overrides", "none");
         addOption(options, "activeBenchmarks", "BENCHMARK_NAME,...", "list of active benchmarks", "all benchmarks");
         addOption(options, "activeVariables", "VARIABLE_NAME=VARIABLE_VALUE,...", "list of active variables", "no filtering by variables");
-        addOption(options, "executionSequenceId", "SEQUENCE_ID", "sequence id of benchmark execution", "generated");
+        addOption(options, "executionSequenceId", "SEQUENCE_ID,...", "list of sequence ids of benchmark execution", "generated");
         addOption(options, "timeLimit", "DURATION", "amount of time while benchmarks will be executed", "unlimited");
         addOption(options, "profile", "PROFILE", "configuration profile", "none");
         addOption(options, "profiles.directory", "PROFILES_DIRECTORY", "configuration profiles directory", "none");

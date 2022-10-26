@@ -100,17 +100,20 @@ public class ExecutionDriver
 
     private List<Benchmark> loadBenchmarks()
     {
-        String executionSequenceId = benchmarkExecutionSequenceId();
-        LOG.info("Running benchmarks(executionSequenceId={}) with properties: {}", executionSequenceId, properties);
+        List<String> executionSequenceIds = benchmarkExecutionSequenceIds();
+        LOG.info("Running benchmarks(executionSequenceIds={}) with properties: {}", executionSequenceIds, properties);
 
-        List<Benchmark> benchmarks = benchmarkLoader.loadBenchmarks(executionSequenceId);
-        LOG.info("Loaded {} benchmarks", benchmarks.size());
-        return benchmarks;
+        String firstSequenceId = executionSequenceIds.stream().findFirst().orElseThrow();
+        List<Benchmark> baseBenchmarks = benchmarkLoader.loadBenchmarks(firstSequenceId);
+        LOG.info("Loaded {} benchmarks", baseBenchmarks.size());
+        return executionSequenceIds.stream()
+                .flatMap(sequenceId -> baseBenchmarks.stream().map(benchmark -> new Benchmark.BenchmarkBuilder(benchmark, sequenceId).build()))
+                .collect(toList());
     }
 
-    private String benchmarkExecutionSequenceId()
+    private List<String> benchmarkExecutionSequenceIds()
     {
-        return properties.getExecutionSequenceId().orElse(nowUtc().format(DATE_TIME_FORMATTER));
+        return properties.getExecutionSequenceId().orElse(List.of(nowUtc().format(DATE_TIME_FORMATTER)));
     }
 
     private void executeBenchmarks(List<Benchmark> benchmarks)
