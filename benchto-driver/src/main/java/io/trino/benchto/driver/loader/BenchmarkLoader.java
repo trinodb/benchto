@@ -13,7 +13,6 @@
  */
 package io.trino.benchto.driver.loader;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
@@ -52,6 +51,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Maps.newHashMap;
@@ -211,8 +211,8 @@ public class BenchmarkLoader
             Map<Object, Object> yaml = YamlUtils.loadYamlFromPath(benchmarkFile);
             yaml = mergeTopLevelVariables(yaml);
 
-            Preconditions.checkArgument(yaml.containsKey(BenchmarkDescriptor.DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.DATA_SOURCE_KEY, benchmarkFile);
-            Preconditions.checkArgument(yaml.containsKey(BenchmarkDescriptor.QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.QUERY_NAMES_KEY, benchmarkFile);
+            checkArgument(yaml.containsKey(BenchmarkDescriptor.DATA_SOURCE_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.DATA_SOURCE_KEY, benchmarkFile);
+            checkArgument(yaml.containsKey(BenchmarkDescriptor.QUERY_NAMES_KEY), "Mandatory variable %s not present in file %s", BenchmarkDescriptor.QUERY_NAMES_KEY, benchmarkFile);
 
             String defaultName = benchmarkName(benchmarkFile);
             List<BenchmarkDescriptor> benchmarkDescriptors = createBenchmarkDescriptors(defaultName, yaml);

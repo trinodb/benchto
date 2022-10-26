@@ -67,7 +67,8 @@ public class QueryExecutionResultTest
 
     private QueryExecution queryExecution()
     {
-        return new QueryExecution(mock(Benchmark.class), mock(Query.class), 0, new SqlStatementGenerator(){
+        return new QueryExecution(mock(Benchmark.class), mock(Query.class), 0, new SqlStatementGenerator()
+        {
             @Override
             public List<String> generateQuerySqlStatement(Query query, Map<String, ?> attributes)
             {
