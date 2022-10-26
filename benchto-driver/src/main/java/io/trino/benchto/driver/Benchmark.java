@@ -245,6 +245,27 @@ public class Benchmark
             this.benchmark.queries = ImmutableList.copyOf(queries);
         }
 
+        public BenchmarkBuilder(Benchmark that, String sequenceId)
+        {
+            this.benchmark.name = that.getName();
+            this.benchmark.uniqueName = that.getUniqueName();
+            this.benchmark.sequenceId = sequenceId;
+            this.benchmark.queries = ImmutableList.copyOf(that.getQueries());
+            this.benchmark.dataSource = that.getDataSource();
+            this.benchmark.environment = that.getEnvironment();
+            this.benchmark.runs = that.getRuns();
+            this.benchmark.prewarmRuns = that.getPrewarmRuns();
+            this.benchmark.concurrency = that.getConcurrency();
+            this.benchmark.frequency = that.getFrequency();
+            this.benchmark.throughputTest = that.isThroughputTest();
+            this.benchmark.beforeBenchmarkMacros = ImmutableList.copyOf(that.getBeforeBenchmarkMacros());
+            this.benchmark.afterBenchmarkMacros = ImmutableList.copyOf(that.getAfterBenchmarkMacros());
+            this.benchmark.beforeExecutionMacros = ImmutableList.copyOf(that.getBeforeExecutionMacros());
+            this.benchmark.afterExecutionMacros = ImmutableList.copyOf(that.getAfterExecutionMacros());
+            this.benchmark.queryResults = that.getQueryResults();
+            this.benchmark.variables = ImmutableMap.copyOf(that.getVariables());
+        }
+
         public BenchmarkBuilder withDataSource(String dataSource)
         {
             this.benchmark.dataSource = dataSource;

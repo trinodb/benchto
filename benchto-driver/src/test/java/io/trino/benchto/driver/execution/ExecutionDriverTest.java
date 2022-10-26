@@ -32,6 +32,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +85,7 @@ public class ExecutionDriverTest
         when(benchmarkProperties.getHealthCheckMacros())
                 .thenReturn(Optional.of(ImmutableList.of("health-check-macro")));
         when(benchmarkProperties.getExecutionSequenceId())
-                .thenReturn(Optional.of("sequence-id"));
+                .thenReturn(Optional.of(List.of("sequence-id")));
         when(benchmarkExecutionDriver.execute(any(Benchmark.class), anyInt(), anyInt(), any()))
                 .thenReturn(successfulBenchmarkExecution());
         when(benchmarkProperties.getTimeLimit())

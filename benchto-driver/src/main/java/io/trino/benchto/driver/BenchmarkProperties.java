@@ -68,7 +68,7 @@ public class BenchmarkProperties
     private String activeVariables;
 
     /**
-     * Execution identifier. Should be unique between runs. If not set, it will be automatically set based on timestamp.
+     * Execution identifiers. Every value must be unique for all environments. If not set, it will be automatically set based on timestamp.
      */
     @Value("${executionSequenceId:#{null}}")
     private String executionSequenceId;
@@ -127,9 +127,9 @@ public class BenchmarkProperties
         return Optional.ofNullable(overridesPath).map(Paths::get);
     }
 
-    public Optional<String> getExecutionSequenceId()
+    public Optional<List<String>> getExecutionSequenceId()
     {
-        return Optional.ofNullable(executionSequenceId);
+        return splitProperty(executionSequenceId);
     }
 
     public String getEnvironmentName()
