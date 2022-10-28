@@ -13,6 +13,7 @@
  */
 package io.trino.benchto.integrationtest;
 
+import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.trino.benchto.driver.BenchmarkProperties;
@@ -35,7 +36,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.List;
 import java.util.Map;
