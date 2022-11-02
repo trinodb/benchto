@@ -14,6 +14,9 @@
 package io.trino.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Cacheable;
 import javax.persistence.Column;
@@ -32,6 +35,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 @Entity
 @Cacheable
 @Table(name = "query_info")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class QueryInfo
         implements Serializable
 {
@@ -47,7 +51,8 @@ public class QueryInfo
     private long id;
 
     @NotNull
-    @Column(name = "info")
+    @Column(name = "info", columnDefinition = "jsonb")
+    @Type(type = "jsonb")
     private String info;
 
     public long getId()
