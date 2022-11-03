@@ -138,7 +138,7 @@ public class BenchmarkControllerTest
 
         String queryInfo;
         if (sendQueryInfo) {
-            queryInfo = ", \"queryInfo\": \"{foo: \\\"bar\\\"}\"";
+            queryInfo = ", \"queryInfo\": \"{\\\"foo\\\": \\\"bar\\\"}\"";
         }
         else {
             queryInfo = "";
@@ -248,7 +248,7 @@ public class BenchmarkControllerTest
                     .isBefore(testEnd);
 
             if (sendQueryInfo) {
-                assertThat(execution.getQueryInfo().getInfo()).isEqualTo("{foo: \"bar\"}");
+                assertThat(execution.getQueryInfo().getInfo()).isEqualTo("{\"foo\": \"bar\"}");
             }
         });
     }
