@@ -39,11 +39,16 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -51,6 +56,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static io.trino.benchto.driver.utils.QueryUtils.isSelectQuery;
 import static io.trino.benchto.driver.utils.TimeUtils.nowUtc;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 public class BenchmarkExecutionDriver
@@ -81,94 +89,147 @@ public class BenchmarkExecutionDriver
     @Autowired
     private SqlStatementGenerator sqlStatementGenerator;
 
-    public BenchmarkExecutionResult execute(Benchmark benchmark, int benchmarkOrdinalNumber, int benchmarkTotalCount, Optional<ZonedDateTime> executionTimeLimit)
+    public List<BenchmarkExecutionResult> execute(List<Benchmark> benchmarks, int benchmarkOrdinalNumber, int benchmarkTotalCount, Optional<ZonedDateTime> executionTimeLimit)
     {
-        LOG.info("[{} of {}] processing benchmark: {}", benchmarkOrdinalNumber, benchmarkTotalCount, benchmark);
+        checkState(benchmarks.size() != 0, "List of benchmarks to execute cannot be empty.");
+        for (int i = 0; i < benchmarks.size(); i++) {
+            LOG.info("[{} of {}] processing benchmark: {}", benchmarkOrdinalNumber + i, benchmarkTotalCount, benchmarks.get(i));
+        }
+        Benchmark firstBenchmark = benchmarks.get(0);
+        // this should be enforced by how Benchto creates combinations from variables when loading benchmarks
+        checkState(
+                benchmarks.stream().allMatch(benchmark -> benchmark.getBeforeBenchmarkMacros().equals(firstBenchmark.getBeforeBenchmarkMacros()) &&
+                        benchmark.getAfterBenchmarkMacros().equals(firstBenchmark.getAfterBenchmarkMacros())),
+                "All benchmarks in a group must have the same before and after benchmark macros.");
+        checkState(
+                benchmarks.stream().allMatch(benchmark -> benchmark.getRuns() == firstBenchmark.getRuns() &&
+                        benchmark.getPrewarmRuns() == firstBenchmark.getPrewarmRuns()),
+                "All benchmarks in a group must have the same number of runs and prewarm-runs.");
+        checkState(
+                benchmarks.stream().allMatch(benchmark -> benchmark.getConcurrency() == firstBenchmark.getConcurrency() &&
+                        benchmark.isThroughputTest() == firstBenchmark.isThroughputTest()),
+                "All benchmarks in a group must have the same concurrency and either test throughput or not.");
 
-        BenchmarkExecutionResult benchmarkExecutionResult = null;
         try {
-            macroService.runBenchmarkMacros(benchmark.getBeforeBenchmarkMacros(), benchmark);
-
-            if (properties.isWarmup()) {
-                benchmarkExecutionResult = warmupBenchmark(benchmark, executionTimeLimit);
-            }
-            else {
-                benchmarkExecutionResult = executeBenchmark(benchmark, executionTimeLimit);
-            }
-
-            macroService.runBenchmarkMacros(benchmark.getAfterBenchmarkMacros(), benchmark);
-
-            return benchmarkExecutionResult;
+            macroService.runBenchmarkMacros(firstBenchmark.getBeforeBenchmarkMacros(), firstBenchmark);
         }
         catch (Exception e) {
-            if (benchmarkExecutionResult == null || benchmarkExecutionResult.isSuccessful()) {
-                return failedBenchmarkResult(benchmark, e);
-            }
-            else {
-                checkState(!benchmarkExecutionResult.isSuccessful(), "Benchmark is already failed.");
-                LOG.error("Error while running after benchmark macros for successful benchmark({})",
-                        benchmark.getAfterBenchmarkMacros(), e);
-                return benchmarkExecutionResult;
-            }
+            return List.of(failedBenchmarkResult(firstBenchmark, e));
         }
+        List<BenchmarkExecutionResult> benchmarkExecutionResults;
+        if (properties.isWarmup()) {
+            benchmarkExecutionResults = warmupBenchmarks(benchmarks, executionTimeLimit);
+        }
+        else {
+            benchmarkExecutionResults = executeBenchmarks(benchmarks, executionTimeLimit);
+        }
+
+        try {
+            macroService.runBenchmarkMacros(firstBenchmark.getAfterBenchmarkMacros(), firstBenchmark);
+        }
+        catch (Exception e) {
+            if (benchmarkExecutionResults.stream().allMatch(BenchmarkExecutionResult::isSuccessful)) {
+                return List.of(failedBenchmarkResult(firstBenchmark, e));
+            }
+            LOG.error("Error while running after benchmark macros for successful benchmark({})",
+                    firstBenchmark.getAfterBenchmarkMacros(), e);
+        }
+        return benchmarkExecutionResults;
     }
 
-    private BenchmarkExecutionResult warmupBenchmark(Benchmark benchmark, Optional<ZonedDateTime> executionTimeLimit)
+    private List<BenchmarkExecutionResult> warmupBenchmarks(List<Benchmark> benchmarks, Optional<ZonedDateTime> executionTimeLimit)
     {
-        BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark)
-                .withExecutions(List.of());
-        List<QueryExecutionResult> executions = executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
-        String comparisonFailures = getComparisonFailuresString(executions);
-        if (!comparisonFailures.isEmpty()) {
-            resultBuilder.withUnexpectedException(new RuntimeException(format("Query result comparison failed for queries: %s", comparisonFailures)));
-        }
-        return resultBuilder.build();
-    }
-
-    private BenchmarkExecutionResult executeBenchmark(Benchmark benchmark, Optional<ZonedDateTime> executionTimeLimit)
-    {
-        BenchmarkExecutionResultBuilder resultBuilder = new BenchmarkExecutionResultBuilder(benchmark);
+        Benchmark firstBenchmark = benchmarks.get(0);
+        Map<Benchmark, BenchmarkExecutionResultBuilder> results = benchmarks.stream().collect(toMap(
+                Function.identity(),
+                benchmark -> new BenchmarkExecutionResultBuilder(benchmark).withExecutions(List.of())));
         List<QueryExecutionResult> executions;
         try {
-            executions = executeQueries(benchmark, benchmark.getPrewarmRuns(), true, executionTimeLimit);
-            String comparisonFailures = getComparisonFailuresString(executions);
-
-            executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
-
-            statusReporter.reportBenchmarkStarted(benchmark);
-
-            resultBuilder = resultBuilder.startTimer();
-
-            try {
-                if (!comparisonFailures.isEmpty()) {
-                    throw new RuntimeException(format("Query result comparison failed for queries: %s", comparisonFailures));
-                }
-                executions = executeQueries(benchmark, benchmark.getRuns(), false, executionTimeLimit);
-                resultBuilder = resultBuilder.withExecutions(executions);
-            }
-            finally {
-                resultBuilder = resultBuilder.endTimer();
-            }
+            executions = executeQueries(benchmarks, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
         }
-        catch (RuntimeException e) {
-            resultBuilder = resultBuilder.withUnexpectedException(e);
+        catch (Exception e) {
+            return results.values().stream()
+                    .map(builder -> builder.withUnexpectedException(e).build())
+                    .collect(toList());
         }
-
-        BenchmarkExecutionResult executionResult = resultBuilder.build();
-
-        statusReporter.reportBenchmarkFinished(executionResult);
-
-        return executionResult;
+        Map<Benchmark, String> comparisonFailures = getComparisonFailures(executions);
+        return results.entrySet().stream()
+                .map(entry -> {
+                    Benchmark benchmark = entry.getKey();
+                    BenchmarkExecutionResultBuilder builder = entry.getValue();
+                    String failure = comparisonFailures.getOrDefault(benchmark, "");
+                    if (!failure.isEmpty()) {
+                        builder.withUnexpectedException(new RuntimeException(format("Query result comparison failed for queries: %s", failure)));
+                    }
+                    return builder.build();
+                })
+                .collect(toList());
     }
 
-    private static String getComparisonFailuresString(List<QueryExecutionResult> executions)
+    private List<BenchmarkExecutionResult> executeBenchmarks(List<Benchmark> benchmarks, Optional<ZonedDateTime> executionTimeLimit)
     {
-        return executions.stream()
-                .filter(execution -> execution.getFailureCause() != null)
-                .filter(execution -> execution.getFailureCause().getClass().equals(ResultComparisonException.class))
-                .map(execution -> format("%s [%s]", execution.getQueryName(), execution.getFailureCause()))
-                .distinct()
-                .collect(Collectors.joining("\n"));
+        Benchmark firstBenchmark = benchmarks.get(0);
+        Map<Benchmark, BenchmarkExecutionResultBuilder> results = benchmarks.stream().collect(toMap(
+                Function.identity(),
+                benchmark -> new BenchmarkExecutionResultBuilder(benchmark).withExecutions(List.of())));
+        List<QueryExecutionResult> executions;
+        try {
+            executions = executeQueries(benchmarks, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
+        }
+        catch (Exception e) {
+            return results.values().stream()
+                    .map(builder -> builder.withUnexpectedException(e).build())
+                    .collect(toList());
+        }
+        Map<Benchmark, String> comparisonFailures = getComparisonFailures(executions);
+        List<Benchmark> validBenchmarks = new ArrayList<>(benchmarks);
+        for (Map.Entry<Benchmark, BenchmarkExecutionResultBuilder> entry : results.entrySet()) {
+            Benchmark benchmark = entry.getKey();
+            BenchmarkExecutionResultBuilder result = entry.getValue();
+            executionSynchronizer.awaitAfterBenchmarkExecutionAndBeforeResultReport(benchmark);
+            statusReporter.reportBenchmarkStarted(benchmark);
+            result.startTimer();
+            String failure = comparisonFailures.getOrDefault(benchmark, "");
+            if (!failure.isEmpty()) {
+                result.withUnexpectedException(new RuntimeException(format("Query result comparison failed for queries: %s", failure)));
+                result.endTimer();
+                validBenchmarks.remove(benchmark);
+            }
+        }
+
+        try {
+            executions = executeQueries(validBenchmarks, firstBenchmark.getRuns(), false, executionTimeLimit);
+        }
+        catch (Exception e) {
+            return results.values().stream()
+                    .map(builder -> builder.withUnexpectedException(e).build())
+                    .collect(toList());
+        }
+        Map<Benchmark, List<QueryExecutionResult>> groups = executions.stream().collect(groupingBy(QueryExecutionResult::getBenchmark, LinkedHashMap::new, toList()));
+        groups.forEach((key, value) -> results.get(key).withExecutions(value).endTimer());
+
+        return results.values().stream()
+                .map(builder -> {
+                    BenchmarkExecutionResult result = builder.build();
+                    statusReporter.reportBenchmarkFinished(result);
+                    return result;
+                })
+                .collect(toImmutableList());
+    }
+
+    private static Map<Benchmark, String> getComparisonFailures(List<QueryExecutionResult> executions)
+    {
+        Map<Benchmark, List<QueryExecutionResult>> groups = executions.stream().collect(groupingBy(QueryExecutionResult::getBenchmark, LinkedHashMap::new, toList()));
+        return groups.entrySet().stream()
+                .filter(entry -> entry.getValue().stream()
+                        .anyMatch(execution -> execution.getFailureCause() != null && execution.getFailureCause().getClass().equals(ResultComparisonException.class)))
+                .collect(toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .filter(execution -> execution.getFailureCause() != null && execution.getFailureCause().getClass().equals(ResultComparisonException.class))
+                                .map(execution -> format("%s [%s]", execution.getQueryName(), execution.getFailureCause()))
+                                .distinct()
+                                .collect(Collectors.joining("\n"))));
     }
 
     private BenchmarkExecutionResult failedBenchmarkResult(Benchmark benchmark, Exception e)
@@ -179,19 +240,29 @@ public class BenchmarkExecutionDriver
     }
 
     @SuppressWarnings("unchecked")
-    private List<QueryExecutionResult> executeQueries(Benchmark benchmark, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
+    private List<QueryExecutionResult> executeQueries(List<Benchmark> benchmarks, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
     {
-        ListeningExecutorService executorService = executorServiceFactory.create(benchmark.getConcurrency());
+        if (benchmarks.size() == 0) {
+            return List.of();
+        }
+        Benchmark firstBenchmark = benchmarks.get(0);
+        ListeningExecutorService executorService = executorServiceFactory.create(firstBenchmark.getConcurrency());
         try {
-            if (benchmark.isThroughputTest()) {
-                List<Callable<List<QueryExecutionResult>>> queryExecutionCallables = buildConcurrencyQueryExecutionCallables(benchmark, runs, warmup, executionTimeLimit);
+            if (firstBenchmark.isThroughputTest()) {
+                List<Callable<List<QueryExecutionResult>>> queryExecutionCallables = benchmarks.stream()
+                        .flatMap(benchmark -> buildConcurrencyQueryExecutionCallables(benchmark, runs, warmup, executionTimeLimit).stream())
+                        .collect(toImmutableList());
                 List<ListenableFuture<List<QueryExecutionResult>>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get().stream()
                         .flatMap(List::stream)
                         .collect(toImmutableList());
             }
             else {
-                List<Callable<QueryExecutionResult>> queryExecutionCallables = buildQueryExecutionCallables(benchmark, runs, warmup);
+                List<Callable<QueryExecutionResult>> queryExecutionCallables = IntStream.rangeClosed(1, runs)
+                        .boxed()
+                        .flatMap(run -> benchmarks.stream()
+                                .flatMap(benchmark -> buildQueryExecutionCallables(benchmark, run, warmup).stream()))
+                        .collect(toList());
                 List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get();
             }
@@ -204,23 +275,20 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int runs, boolean warmup)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int run, boolean warmup)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
-            for (int run = 1; run <= runs; run++) {
-                final int finalRun = run;
-                QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
-                Optional<Path> resultFile = benchmark.getQueryResults()
-                        // only check result of the first warmup run or all runs of non select statements
-                        .filter(dir -> (warmup && finalRun == 1) || (!isSelectQuery(query.getSqlTemplate())))
-                        .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
-                executionCallables.add(() -> {
-                    try (Connection connection = getConnectionFor(queryExecution)) {
-                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
-                    }
-                });
-            }
+            QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
+            Optional<Path> resultFile = benchmark.getQueryResults()
+                    // only check result of the first warmup run or all runs of non-select statements
+                    .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
+                    .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
+            executionCallables.add(() -> {
+                try (Connection connection = getConnectionFor(queryExecution)) {
+                    return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
+                }
+            });
         }
         return executionCallables;
     }
