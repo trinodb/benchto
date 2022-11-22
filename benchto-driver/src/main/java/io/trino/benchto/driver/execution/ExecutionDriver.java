@@ -27,12 +27,15 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.trino.benchto.driver.utils.TimeUtils.nowUtc;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -118,18 +121,9 @@ public class ExecutionDriver
 
     private void executeBenchmarks(List<Benchmark> benchmarks)
     {
-        List<BenchmarkExecutionResult> benchmarkExecutionResults = newArrayList();
-        int benchmarkOrdinalNumber = 1;
-        for (Benchmark benchmark : benchmarks) {
-            if (isTimeLimitEnded()) {
-                LOG.warn("Time limit for running benchmarks has run out");
-                break;
-            }
-
-            executeHealthCheck(benchmark);
-            benchmarkExecutionResults.add(benchmarkExecutionDriver.execute(benchmark, benchmarkOrdinalNumber++, benchmarks.size(), getExecutionTimeLimit()));
-            benchmarkStatusReporter.processCompletedFutures();
-        }
+        // use a LinkedHashMap to preserve order
+        Map<String, List<Benchmark>> groups = benchmarks.stream().collect(groupingBy(Benchmark::getName, LinkedHashMap::new, toList()));
+        List<BenchmarkExecutionResult> benchmarkExecutionResults = executeBenchmarkGroups(groups, benchmarks.size());
 
         List<BenchmarkExecutionResult> failedBenchmarkResults = benchmarkExecutionResults.stream()
                 .filter(benchmarkExecutionResult -> !benchmarkExecutionResult.isSuccessful())
@@ -140,6 +134,27 @@ public class ExecutionDriver
         if (!failedBenchmarkResults.isEmpty()) {
             throw new FailedBenchmarkExecutionException(failedBenchmarkResults, benchmarkExecutionResults.size());
         }
+    }
+
+    private List<BenchmarkExecutionResult> executeBenchmarkGroups(Map<String, List<Benchmark>> groups, int numberOfBenchmarks)
+    {
+        List<BenchmarkExecutionResult> benchmarkExecutionResults = newArrayList();
+        int benchmarkOrdinalNumber = 1;
+        // use a LinkedHashMap to preserve order
+        for (Map.Entry<String, List<Benchmark>> group : groups.entrySet()) {
+            for (Benchmark benchmark : group.getValue()) {
+                if (isTimeLimitEnded()) {
+                    LOG.warn("Time limit for running benchmarks has run out");
+                    return benchmarkExecutionResults;
+                }
+                executeHealthCheck(benchmark);
+            }
+
+            benchmarkExecutionResults.addAll(benchmarkExecutionDriver.execute(group.getValue(), benchmarkOrdinalNumber, numberOfBenchmarks, getExecutionTimeLimit()));
+            benchmarkOrdinalNumber += group.getValue().size();
+            benchmarkStatusReporter.processCompletedFutures();
+        }
+        return benchmarkExecutionResults;
     }
 
     private boolean isTimeLimitEnded()

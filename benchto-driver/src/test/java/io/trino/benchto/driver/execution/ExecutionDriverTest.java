@@ -74,6 +74,7 @@ public class ExecutionDriverTest
     public void setUp()
     {
         Benchmark benchmark = mock(Benchmark.class);
+        when(benchmark.getName()).thenReturn("mock");
         when(benchmark.getConcurrency()).thenReturn(1);
 
         when(benchmarkLoader.loadBenchmarks(anyString()))
@@ -86,7 +87,7 @@ public class ExecutionDriverTest
                 .thenReturn(Optional.of(ImmutableList.of("health-check-macro")));
         when(benchmarkProperties.getExecutionSequenceId())
                 .thenReturn(Optional.of(List.of("sequence-id")));
-        when(benchmarkExecutionDriver.execute(any(Benchmark.class), anyInt(), anyInt(), any()))
+        when(benchmarkExecutionDriver.execute(anyList(), anyInt(), anyInt(), any()))
                 .thenReturn(successfulBenchmarkExecution());
         when(benchmarkProperties.getTimeLimit())
                 .thenReturn(Optional.empty());
@@ -94,9 +95,12 @@ public class ExecutionDriverTest
                 .thenReturn(false);
     }
 
-    private BenchmarkExecutionResult successfulBenchmarkExecution()
+    private List<BenchmarkExecutionResult> successfulBenchmarkExecution()
     {
-        return new BenchmarkExecutionResult.BenchmarkExecutionResultBuilder(null).withExecutions(ImmutableList.of()).build();
+        BenchmarkExecutionResult result = new BenchmarkExecutionResult.BenchmarkExecutionResultBuilder(null)
+                .withExecutions(ImmutableList.of())
+                .build();
+        return List.of(result);
     }
 
     @Test
@@ -119,7 +123,7 @@ public class ExecutionDriverTest
 
         driver.execute();
 
-        verify(benchmarkExecutionDriver).execute(any(Benchmark.class), anyInt(), anyInt(), any());
+        verify(benchmarkExecutionDriver).execute(anyList(), anyInt(), anyInt(), any());
         verifyNoMoreInteractions(benchmarkExecutionDriver);
     }
 
