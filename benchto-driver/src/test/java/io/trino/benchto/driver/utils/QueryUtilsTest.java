@@ -18,6 +18,7 @@ import io.trino.benchto.driver.execution.ResultComparisonException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -151,6 +152,27 @@ public class QueryUtilsTest
         when(resultSet.getObject(2)).thenReturn(2);
         when(resultSet.getObject(3)).thenReturn(3);
         when(resultSet.getObject(4)).thenReturn(4);
+        when(resultSet.getMetaData()).thenReturn(metaData);
+        compareRows(path, resultSet);
+    }
+
+    @Test
+    public void successfulByteArray()
+            throws SQLException
+    {
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+        ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
+        byte[] res = "1234".getBytes(StandardCharsets.UTF_8);
+
+        when(metaData.getColumnCount()).thenReturn(2);
+
+        Path path = Paths.get(Resources.getResource("comparing/bytearray.result").getPath());
+
+        when(resultSet.next())
+                .thenReturn(true)
+                .thenReturn(false);
+        when(resultSet.getObject(1)).thenReturn(res);
+        when(resultSet.getObject(2)).thenReturn(1);
         when(resultSet.getMetaData()).thenReturn(metaData);
         compareRows(path, resultSet);
     }
