@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.stream.IntStream;
 
@@ -130,7 +131,13 @@ public final class QueryUtils
                 .map(i -> {
                     try {
                         Object value = resultSet.getObject(i);
-                        return value == null ? "" : value.toString();
+                        if (value == null) {
+                            return "";
+                        }
+                        if (value instanceof byte[]) {
+                            return Arrays.toString((byte[]) value);
+                        }
+                        return value.toString();
                     }
                     catch (SQLException e) {
                         throw new RuntimeException(e);
