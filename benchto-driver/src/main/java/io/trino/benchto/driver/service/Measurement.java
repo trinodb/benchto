@@ -15,6 +15,9 @@ package io.trino.benchto.driver.service;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+import java.util.Collections;
+import java.util.Map;
+
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
@@ -26,12 +29,20 @@ public class Measurement
     private String unit;
     private double value;
 
+    private Map<String, String> attributes;
+
     public static Measurement measurement(String name, String unit, double value)
+    {
+        return measurement(name, unit, value, Collections.emptyMap());
+    }
+
+    public static Measurement measurement(String name, String unit, double value, Map<String, String> attributes)
     {
         Measurement measurement = new Measurement();
         measurement.name = requireNonNull(name);
         measurement.unit = requireNonNull(unit);
         measurement.value = value;
+        measurement.attributes = attributes;
         return measurement;
     }
 
@@ -47,7 +58,7 @@ public class Measurement
 
         Measurement that = (Measurement) o;
 
-        return Double.compare(that.value, value) == 0 && name.equals(that.name) && unit.equals(that.unit);
+        return Double.compare(that.value, value) == 0 && name.equals(that.name) && unit.equals(that.unit) && attributes.equals(that.attributes);
     }
 
     @Override
@@ -59,6 +70,7 @@ public class Measurement
         result = 31 * result + unit.hashCode();
         temp = Double.doubleToLongBits(value);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + attributes.hashCode();
         return result;
     }
 
@@ -69,6 +81,7 @@ public class Measurement
                 .add("name", name)
                 .add("unit", unit)
                 .add("value", value)
+                .add("attributes", attributes)
                 .toString();
     }
 }

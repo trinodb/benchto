@@ -34,6 +34,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.measure.unit.Unit;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +65,7 @@ public class PrestoClient
             .put("peakTotalMemoryReservation", BYTE)
             .put("physicalWrittenDataSize", BYTE)
             .build();
+    public static final String METRIC_SCOPE = "query";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -123,7 +125,7 @@ public class PrestoClient
     private Measurement parseQueryStatistic(String name, Object statistic, Unit requiredUnit)
     {
         double value = UnitConverter.parseValueAsUnit(statistic.toString(), requiredUnit);
-        return measurement("prestoQuery-" + name, UnitConverter.format(requiredUnit), value);
+        return measurement(name, UnitConverter.format(requiredUnit), value, Collections.singletonMap("scope", METRIC_SCOPE));
     }
 
     @SuppressWarnings("unused")

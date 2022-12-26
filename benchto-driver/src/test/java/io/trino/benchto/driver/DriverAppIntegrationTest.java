@@ -13,9 +13,12 @@
  */
 package io.trino.benchto.driver;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.trino.benchto.driver.execution.ExecutionDriver;
 import io.trino.benchto.driver.macro.MacroService;
+import io.trino.benchto.driver.service.Measurement;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,9 +27,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.RequestMatcher;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import static io.trino.benchto.driver.service.Measurement.measurement;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -50,8 +56,14 @@ public class DriverAppIntegrationTest
             ",{\"target\":\"network\",\"datapoints\":[[10, 10],[10, 10]]}" +
             ",{\"target\":\"network_total\",\"datapoints\":[[10, 10],[10, 10]]}" +
             "]";
-    private static final List<String> GRAPHITE_MEASUREMENT_NAMES = ImmutableList.of(
-            "cluster-memory_max", "cluster-memory_mean", "cluster-cpu_max", "cluster-cpu_mean", "cluster-network_max", "cluster-network_mean", "cluster-network_total");
+    private static final List<Measurement> GRAPHITE_MEASUREMENT_NAMES = ImmutableList.of(
+            measurement("memory", "PERCENT", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "max")),
+            measurement("memory", "PERCENT", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "mean")),
+            measurement("cpu", "PERCENT", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "max")),
+            measurement("cpu", "PERCENT", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "mean")),
+            measurement("network", "BYTES", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "max")),
+            measurement("network", "BYTES", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "mean")),
+            measurement("network", "BYTES", 0.0, ImmutableMap.of("scope", "cluster", "aggregate", "total")));
 
     private static final Matcher<String> ENDED_STATUS_MATCHER = is("ENDED");
 
@@ -89,11 +101,11 @@ public class DriverAppIntegrationTest
     @Test
     public void testConcurrentBenchmark()
     {
-        ImmutableList<String> concurrentQueryMeasurementName = ImmutableList.of("duration");
-        ImmutableList<String> concurrentBenchmarkMeasurementNames = ImmutableList.<String>builder()
+        List<Measurement> concurrentQueryMeasurement = ImmutableList.of(measurement("duration", "MILLISECONDS", 0.0, ImmutableMap.of("scope", "driver")));
+        List<Measurement> concurrentBenchmarkMeasurements = ImmutableList.<Measurement>builder()
                 .addAll(GRAPHITE_MEASUREMENT_NAMES)
-                .add("throughput")
-                .add("duration")
+                .add(measurement("throughput", "QUERY_PER_SECOND", 0.0, ImmutableMap.of("scope", "driver")))
+                .add(measurement("duration", "MILLISECONDS", 0.0, ImmutableMap.of("scope", "driver")))
                 .build();
 
         setBenchmark("test_concurrent_benchmark");
@@ -104,10 +116,10 @@ public class DriverAppIntegrationTest
         verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark");
         for (int i = preWarmRuns; i < allRuns; i++) {
             verifyExecutionStarted("test_concurrent_benchmark", i);
-            verifyExecutionFinished("test_concurrent_benchmark", i, concurrentQueryMeasurementName);
+            verifyExecutionFinished("test_concurrent_benchmark", i, concurrentQueryMeasurement);
         }
         verifyGetGraphiteMeasurements();
-        verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
+        verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurements);
 
         verifyComplete(allRuns);
     }
@@ -146,14 +158,21 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifyBenchmarkFinish(String uniqueBenchmarkName, List<String> measurementNames)
+    private void verifyBenchmarkFinish(String uniqueBenchmarkName, List<Measurement> measurements)
     {
-        restServiceServer.expect(matchAll(
+        ObjectMapper mapper = new ObjectMapper();
+        List<RequestMatcher> matchers = Arrays.asList(
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/finish"),
                 method(HttpMethod.POST),
                 jsonPath("$.status", ENDED_STATUS_MATCHER),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
-        )).andRespond(withSuccess());
+                jsonPath("$.measurements[*]['name', 'unit', 'attributes']", containsInAnyOrder(measurements.stream().map(item -> {
+                    Map map = mapper.convertValue(item, Map.class);
+                    map.remove("value");
+                    return map;
+                }).toArray())));
+        restServiceServer
+                .expect(matchAll(matchers.toArray(new RequestMatcher[0])))
+                .andRespond(withSuccess());
 
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
@@ -166,13 +185,13 @@ public class DriverAppIntegrationTest
 
     private void verifySerialExecution(String uniqueBenchmarkName, String queryName, int executionNumber)
     {
-        ImmutableList<String> serialQueryMeasurementNames = ImmutableList.<String>builder()
+        List<Measurement> serialQueryMeasurements = ImmutableList.<Measurement>builder()
                 .addAll(GRAPHITE_MEASUREMENT_NAMES)
-                .add("duration")
+                .add(measurement("duration", "MILLISECONDS", 0.0, ImmutableMap.of("scope", "driver")))
                 .build();
         verifySerialExecutionStarted(uniqueBenchmarkName, queryName, executionNumber);
         verifyGetGraphiteMeasurements();
-        verifySerialExecutionFinished(uniqueBenchmarkName, queryName, executionNumber, serialQueryMeasurementNames);
+        verifySerialExecutionFinished(uniqueBenchmarkName, queryName, executionNumber, serialQueryMeasurements);
     }
 
     private void verifySerialExecutionStarted(String uniqueBenchmarkName, String queryName, int executionNumber)
@@ -196,9 +215,9 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifySerialExecutionFinished(String uniqueBenchmarkName, String queryName, int executionNumber, List<String> measurementNames)
+    private void verifySerialExecutionFinished(String uniqueBenchmarkName, String queryName, int executionNumber, List<Measurement> measurements)
     {
-        verifyExecutionFinished(uniqueBenchmarkName, executionNumber, measurementNames);
+        verifyExecutionFinished(uniqueBenchmarkName, executionNumber, measurements);
 
         restServiceServer.expect(matchAll(
                 requestTo("http://graphite:18088/events/"),
@@ -209,14 +228,21 @@ public class DriverAppIntegrationTest
         )).andRespond(withSuccess());
     }
 
-    private void verifyExecutionFinished(String uniqueBenchmarkName, int executionNumber, List<String> measurementNames)
+    private void verifyExecutionFinished(String uniqueBenchmarkName, int executionNumber, List<Measurement> measurements)
     {
-        restServiceServer.expect(matchAll(
+        ObjectMapper mapper = new ObjectMapper();
+        List<RequestMatcher> matchers = Arrays.asList(
                 requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/execution/" + executionNumber + "/finish"),
                 method(HttpMethod.POST),
                 jsonPath("$.status", ENDED_STATUS_MATCHER),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
-        )).andRespond(withSuccess());
+                jsonPath("$.measurements[*]['name', 'unit', 'attributes']", containsInAnyOrder(measurements.stream().map(item -> {
+                    Map map = mapper.convertValue(item, Map.class);
+                    map.remove("value");
+                    return map;
+                }).toArray())));
+        restServiceServer
+                .expect(matchAll(matchers.toArray(new RequestMatcher[0])))
+                .andRespond(withSuccess());
     }
 
     private void verifyGetGraphiteMeasurements()

@@ -15,7 +15,6 @@ package io.trino.benchto.service.rest.requests;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.trino.benchto.service.model.Measurement;
 import io.trino.benchto.service.model.Status;
 
 import javax.validation.constraints.NotNull;
@@ -29,14 +28,14 @@ public class FinishRequest
     @NotNull
     private final Status status;
     private final Instant endTime;
-    private final List<Measurement> measurements;
+    private final List<FlatMeasurement> measurements;
     private final Map<String, String> attributes;
     private final String queryInfo;
 
     @JsonCreator
     public FinishRequest(@JsonProperty("status") Status status,
             @JsonProperty("endTime") Instant endTime,
-            @JsonProperty("measurements") List<Measurement> measurements,
+            @JsonProperty("measurements") List<FlatMeasurement> measurements,
             @JsonProperty("attributes") Map<String, String> attributes,
             @JsonProperty("queryInfo") String queryInfo)
     {
@@ -57,7 +56,7 @@ public class FinishRequest
         return endTime;
     }
 
-    public List<Measurement> getMeasurements()
+    public List<FlatMeasurement> getMeasurements()
     {
         return measurements;
     }
