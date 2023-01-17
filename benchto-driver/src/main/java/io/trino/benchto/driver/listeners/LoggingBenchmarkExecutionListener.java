@@ -60,7 +60,7 @@ public class LoggingBenchmarkExecutionListener
         LOG.info("Query started: {} ({}/{})",
                 execution.getQueryName(),
                 execution.getSequenceId(),
-                execution.getBenchmark().getRuns());
+                execution.getBenchmark().getRuns() * execution.getBenchmark().getQueryRuns());
 
         return CompletableFuture.completedFuture("");
     }
@@ -72,7 +72,7 @@ public class LoggingBenchmarkExecutionListener
             LOG.info("Query finished: {} ({}/{}), rows count: {}, duration: {}",
                     result.getQueryName(),
                     result.getQueryExecution().getSequenceId(),
-                    result.getBenchmark().getRuns(),
+                    result.getBenchmark().getRuns() * result.getBenchmark().getQueryRuns(),
                     result.getRowsCount(),
                     result.getQueryDuration());
         }
@@ -80,7 +80,7 @@ public class LoggingBenchmarkExecutionListener
             LOG.error("Query failed: {} ({}/{}), execution error: {}",
                     result.getQueryName(),
                     result.getQueryExecution().getSequenceId(),
-                    result.getBenchmark().getRuns(),
+                    result.getBenchmark().getRuns() * result.getBenchmark().getQueryRuns(),
                     result.getFailureCause().getMessage());
         }
 

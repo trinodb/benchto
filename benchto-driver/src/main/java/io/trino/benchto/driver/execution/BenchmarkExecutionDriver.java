@@ -145,7 +145,7 @@ public class BenchmarkExecutionDriver
                 benchmark -> new BenchmarkExecutionResultBuilder(benchmark).withExecutions(List.of())));
         List<QueryExecutionResult> executions;
         try {
-            executions = executeQueries(benchmarks, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
+            executions = executeQueries(benchmarks, 1, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
         }
         catch (Exception e) {
             return results.values().stream()
@@ -174,7 +174,7 @@ public class BenchmarkExecutionDriver
                 benchmark -> new BenchmarkExecutionResultBuilder(benchmark).withExecutions(List.of())));
         List<QueryExecutionResult> executions;
         try {
-            executions = executeQueries(benchmarks, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
+            executions = executeQueries(benchmarks, 1, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
         }
         catch (Exception e) {
             return results.values().stream()
@@ -198,7 +198,7 @@ public class BenchmarkExecutionDriver
         }
 
         try {
-            executions = executeQueries(validBenchmarks, firstBenchmark.getRuns(), false, executionTimeLimit);
+            executions = executeQueries(validBenchmarks, firstBenchmark.getRuns(), firstBenchmark.getQueryRuns(), false, executionTimeLimit);
         }
         catch (Exception e) {
             return results.values().stream()
@@ -240,7 +240,7 @@ public class BenchmarkExecutionDriver
     }
 
     @SuppressWarnings("unchecked")
-    private List<QueryExecutionResult> executeQueries(List<Benchmark> benchmarks, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
+    private List<QueryExecutionResult> executeQueries(List<Benchmark> benchmarks, int runs, int queryRuns, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
     {
         if (benchmarks.size() == 0) {
             return List.of();
@@ -250,7 +250,7 @@ public class BenchmarkExecutionDriver
         try {
             if (firstBenchmark.isThroughputTest()) {
                 List<Callable<List<QueryExecutionResult>>> queryExecutionCallables = benchmarks.stream()
-                        .flatMap(benchmark -> buildConcurrencyQueryExecutionCallables(benchmark, runs, warmup, executionTimeLimit).stream())
+                        .flatMap(benchmark -> buildConcurrencyQueryExecutionCallables(benchmark, queryRuns, warmup, executionTimeLimit).stream())
                         .collect(toImmutableList());
                 List<ListenableFuture<List<QueryExecutionResult>>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get().stream()
@@ -258,10 +258,10 @@ public class BenchmarkExecutionDriver
                         .collect(toImmutableList());
             }
             else {
-                List<Callable<QueryExecutionResult>> queryExecutionCallables = IntStream.rangeClosed(1, runs)
+                List<Callable<QueryExecutionResult>> queryExecutionCallables = IntStream.range(0, runs)
                         .boxed()
                         .flatMap(run -> benchmarks.stream()
-                                .flatMap(benchmark -> buildQueryExecutionCallables(benchmark, run, warmup).stream()))
+                                .flatMap(benchmark -> buildQueryExecutionCallables(benchmark, run, warmup, queryRuns).stream()))
                         .collect(toList());
                 List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get();
@@ -275,20 +275,23 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int run, boolean warmup)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int benchmarkRun, boolean warmup, int queryRuns)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
-            QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
-            Optional<Path> resultFile = benchmark.getQueryResults()
-                    // only check result of the first warmup run or all runs of non-select statements
-                    .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
-                    .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
-            executionCallables.add(() -> {
-                try (Connection connection = getConnectionFor(queryExecution)) {
-                    return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
-                }
-            });
+            for (int queryRun = 1; queryRun <= queryRuns; queryRun++) {
+                int run = benchmarkRun * queryRuns + queryRun;
+                QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
+                Optional<Path> resultFile = benchmark.getQueryResults()
+                        // only check result of the first warmup run or all runs of non-select statements
+                        .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
+                        .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
+                executionCallables.add(() -> {
+                    try (Connection connection = getConnectionFor(queryExecution)) {
+                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
+                    }
+                });
+            }
         }
         return executionCallables;
     }

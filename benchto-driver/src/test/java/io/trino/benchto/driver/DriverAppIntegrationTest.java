@@ -112,6 +112,24 @@ public class DriverAppIntegrationTest
         verifyComplete(allRuns);
     }
 
+    @Test
+    public void simpleSelectBenchmarkWithRepeatQueries()
+    {
+        setBenchmark("benchmark_with_2_queries");
+        verifyBenchmarkStart("benchmark_with_2_queries", "benchmark_with_2_queries_schema=INFORMATION_SCHEMA");
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select_2", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select", 3);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select", 4);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select_2", 3);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", "simple_select_2", 4);
+
+        verifyBenchmarkFinish("benchmark_with_2_queries_schema=INFORMATION_SCHEMA", ImmutableList.of());
+        verifyComplete(10);
+    }
+
     private void setBenchmark(String s)
     {
         ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", s);

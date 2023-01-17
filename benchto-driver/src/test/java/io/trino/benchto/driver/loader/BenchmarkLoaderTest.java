@@ -118,7 +118,7 @@ public class BenchmarkLoaderTest
         assertThat(benchmark.getName()).isEqualTo("different-than-filename");
         assertThat(benchmark.getQueries()).extracting("name").containsExactly("q1", "q2", "1", "2");
         assertThat(benchmark.getDataSource()).isEqualTo("foo");
-        assertThat(benchmark.getRuns()).isEqualTo(3);
+        assertThat(benchmark.getRuns()).isEqualTo(1);
         assertThat(benchmark.getConcurrency()).isEqualTo(1);
         assertThat(benchmark.getBeforeBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op", "no-op2"));
         assertThat(benchmark.getAfterBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op2"));

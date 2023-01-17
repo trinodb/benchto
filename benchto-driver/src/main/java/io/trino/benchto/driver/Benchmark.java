@@ -36,6 +36,7 @@ public class Benchmark
     private String environment;
     private List<Query> queries;
     private int runs;
+    private int queryRuns;
     private int prewarmRuns;
     private int concurrency;
     private List<String> beforeBenchmarkMacros;
@@ -90,6 +91,11 @@ public class Benchmark
     public int getRuns()
     {
         return runs;
+    }
+
+    public int getQueryRuns()
+    {
+        return queryRuns;
     }
 
     public int getPrewarmRuns()
@@ -172,6 +178,7 @@ public class Benchmark
                         .map(Query::getName)
                         .collect(Collectors.joining(", ")))
                 .add("runs", runs)
+                .add("queryRuns", queryRuns)
                 .add("prewarmRuns", prewarmRuns)
                 .add("concurrency", concurrency)
                 .add("throughputTest", throughputTest)
@@ -196,6 +203,7 @@ public class Benchmark
         }
         Benchmark benchmark = (Benchmark) o;
         return Objects.equal(runs, benchmark.runs) &&
+                Objects.equal(queryRuns, benchmark.queryRuns) &&
                 Objects.equal(prewarmRuns, benchmark.prewarmRuns) &&
                 Objects.equal(concurrency, benchmark.concurrency) &&
                 Objects.equal(name, benchmark.name) &&
@@ -222,6 +230,7 @@ public class Benchmark
                 environment,
                 queries,
                 runs,
+                queryRuns,
                 prewarmRuns,
                 concurrency,
                 beforeBenchmarkMacros,
@@ -254,6 +263,7 @@ public class Benchmark
             this.benchmark.dataSource = that.getDataSource();
             this.benchmark.environment = that.getEnvironment();
             this.benchmark.runs = that.getRuns();
+            this.benchmark.queryRuns = that.getQueryRuns();
             this.benchmark.prewarmRuns = that.getPrewarmRuns();
             this.benchmark.concurrency = that.getConcurrency();
             this.benchmark.frequency = that.getFrequency();
@@ -282,6 +292,13 @@ public class Benchmark
         {
             checkArgument(runs >= 1, "Runs must be greater of equal 1");
             this.benchmark.runs = runs;
+            return this;
+        }
+
+        public BenchmarkBuilder withQueryRuns(int queryRuns)
+        {
+            checkArgument(queryRuns >= 1, "queryRuns must be greater of equal 1");
+            this.benchmark.queryRuns = queryRuns;
             return this;
         }
 

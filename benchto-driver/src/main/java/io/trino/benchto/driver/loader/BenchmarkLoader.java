@@ -74,7 +74,8 @@ public class BenchmarkLoader
 
     private static final String BENCHMARK_FILE_SUFFIX = "yaml";
 
-    private static final int DEFAULT_RUNS = 3;
+    private static final int DEFAULT_RUNS = 1;
+    private static final int DEFAULT_QUERY_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
     private static final int DEFAULT_PREWARM_RUNS = 0;
 
@@ -226,6 +227,7 @@ public class BenchmarkLoader
                         .withDataSource(benchmarkDescriptor.getDataSource())
                         .withEnvironment(properties.getEnvironmentName())
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
+                        .withQueryRuns(benchmarkDescriptor.getQueryRuns().orElse(DEFAULT_QUERY_RUNS))
                         .withPrewarmRuns(benchmarkDescriptor.getPrewarmRuns().orElse(DEFAULT_PREWARM_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
                         .withFrequency(benchmarkDescriptor.getFrequency().map(Duration::ofDays))
@@ -405,12 +407,13 @@ public class BenchmarkLoader
 
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)
     {
-        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarms", "Concurrency", "Throughput Test"));
+        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Query Runs", "Prewarms", "Concurrency", "Throughput Test"));
         benchmarks.stream()
                 .map(benchmark -> format(formatString,
                         benchmark.getName(),
                         benchmark.getDataSource(),
                         benchmark.getRuns() + "",
+                        benchmark.getQueryRuns() + "",
                         benchmark.getPrewarmRuns() + "",
                         benchmark.getConcurrency() + "",
                         benchmark.isThroughputTest() + ""))
@@ -423,6 +426,6 @@ public class BenchmarkLoader
         int nameMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getName().length()).max().orElse(10);
         int dataSourceMaxLength = benchmarks.stream().mapToInt((benchmark) -> benchmark.getDataSource().length()).max().orElse(10);
         int indent = 3;
-        return "\t| %-" + (nameMaxLength + indent) + "s | %-" + Math.max(dataSourceMaxLength + indent, 11) + "s | %-4s | %-8s | %-11s | %-15s |";
+        return "\t| %-" + (nameMaxLength + indent) + "s | %-" + Math.max(dataSourceMaxLength + indent, 11) + "s | %-4s | %-10s | %-8s | %-11s | %-15s |";
     }
 }

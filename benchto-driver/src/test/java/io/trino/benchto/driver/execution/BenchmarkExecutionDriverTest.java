@@ -83,6 +83,7 @@ public class BenchmarkExecutionDriverTest
     {
         Benchmark benchmark = mock(Benchmark.class);
         when(benchmark.getRuns()).thenReturn(1);
+        when(benchmark.getQueryRuns()).thenReturn(1);
         when(benchmark.getConcurrency()).thenReturn(1);
         when(benchmark.getQueries()).thenReturn(List.of(new Query("fake-query", "SELECT 1", Map.of())));
         List<BenchmarkExecutionResult> results = driver.execute(List.of(benchmark), 0, 0, Optional.empty());
