@@ -8,7 +8,8 @@ after-execution: no-op-after-execution
 throughput-test: true
 prewarm-runs: 1
 concurrency: 4
-runs: 4
+runs: 1
+query-runs: 4
 variables:
   1:
     query: test_results
