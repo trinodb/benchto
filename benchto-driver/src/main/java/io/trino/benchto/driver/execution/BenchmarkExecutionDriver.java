@@ -258,10 +258,12 @@ public class BenchmarkExecutionDriver
                         .collect(toImmutableList());
             }
             else {
-                List<Callable<QueryExecutionResult>> queryExecutionCallables = IntStream.rangeClosed(1, runs)
+                int numberOfBenchmarkRuns = properties.getQueryRepetitionScope() == BenchmarkProperties.QueryRepetitionScope.SUITE ? runs : 1;
+                int numberOfQueryRuns = properties.getQueryRepetitionScope() == BenchmarkProperties.QueryRepetitionScope.BENCHMARK ? runs : 1;
+                List<Callable<QueryExecutionResult>> queryExecutionCallables = IntStream.rangeClosed(1, numberOfBenchmarkRuns)
                         .boxed()
                         .flatMap(run -> benchmarks.stream()
-                                .flatMap(benchmark -> buildQueryExecutionCallables(benchmark, run, warmup).stream()))
+                                .flatMap(benchmark -> buildQueryExecutionCallables(benchmark, run, warmup, numberOfQueryRuns).stream()))
                         .collect(toList());
                 List<ListenableFuture<QueryExecutionResult>> executionFutures = (List) executorService.invokeAll(queryExecutionCallables);
                 return Futures.allAsList(executionFutures).get();
@@ -275,20 +277,23 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int run, boolean warmup)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int benchmarkRun, boolean warmup, int queryRuns)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
-            QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
-            Optional<Path> resultFile = benchmark.getQueryResults()
-                    // only check result of the first warmup run or all runs of non-select statements
-                    .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
-                    .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
-            executionCallables.add(() -> {
-                try (Connection connection = getConnectionFor(queryExecution)) {
-                    return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
-                }
-            });
+            for (int queryRun = 1; queryRun <= queryRuns; queryRun++) {
+                int run = properties.getQueryRepetitionScope() == BenchmarkProperties.QueryRepetitionScope.BENCHMARK ? queryRun : benchmarkRun;
+                QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
+                Optional<Path> resultFile = benchmark.getQueryResults()
+                        // only check result of the first warmup run or all runs of non-select statements
+                        .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
+                        .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
+                executionCallables.add(() -> {
+                    try (Connection connection = getConnectionFor(queryExecution)) {
+                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
+                    }
+                });
+            }
         }
         return executionCallables;
     }
