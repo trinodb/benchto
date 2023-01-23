@@ -26,10 +26,12 @@ import org.springframework.test.web.client.RequestMatcher;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -68,10 +70,10 @@ public class DriverAppIntegrationTest
     public void simpleSelectBenchmark()
     {
         setBenchmark("simple_select_benchmark");
-        verifyBenchmarkStart("simple_select_benchmark", "simple_select_benchmark_schema=INFORMATION_SCHEMA");
+        verifyBenchmarkStart("simple_select_benchmark", ImmutableList.of("simple_select_benchmark_schema=INFORMATION_SCHEMA"));
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 1);
         verifySerialExecution("simple_select_benchmark_schema=INFORMATION_SCHEMA", "simple_select", 2);
-        verifyBenchmarkFinish("simple_select_benchmark_schema=INFORMATION_SCHEMA", ImmutableList.of());
+        verifyBenchmarkFinish(ImmutableList.of("simple_select_benchmark_schema=INFORMATION_SCHEMA"), ImmutableList.of());
         verifyComplete();
     }
 
@@ -79,10 +81,10 @@ public class DriverAppIntegrationTest
     public void testBenchmark()
     {
         setBenchmark("test_benchmark");
-        verifyBenchmarkStart("test_benchmark", "test_benchmark");
+        verifyBenchmarkStart("test_benchmark", ImmutableList.of("test_benchmark"));
         verifySerialExecution("test_benchmark", "test_query", 1);
         verifySerialExecution("test_benchmark", "test_query", 2);
-        verifyBenchmarkFinish("test_benchmark", ImmutableList.of());
+        verifyBenchmarkFinish(ImmutableList.of("test_benchmark"), ImmutableList.of());
         verifyComplete();
     }
 
@@ -101,15 +103,53 @@ public class DriverAppIntegrationTest
         int runs = 1000;
         int allRuns = preWarmRuns + runs;
 
-        verifyBenchmarkStart("test_concurrent_benchmark", "test_concurrent_benchmark");
+        verifyBenchmarkStart("test_concurrent_benchmark", ImmutableList.of("test_concurrent_benchmark"));
         for (int i = preWarmRuns; i < allRuns; i++) {
             verifyExecutionStarted("test_concurrent_benchmark", i);
             verifyExecutionFinished("test_concurrent_benchmark", i, concurrentQueryMeasurementName);
         }
         verifyGetGraphiteMeasurements();
-        verifyBenchmarkFinish("test_concurrent_benchmark", concurrentBenchmarkMeasurementNames);
+        verifyBenchmarkFinish(ImmutableList.of("test_concurrent_benchmark"), concurrentBenchmarkMeasurementNames);
 
-        verifyComplete(allRuns);
+        verifyComplete(allRuns, 1, 1);
+    }
+
+    @Test
+    public void simpleSelectBenchmarkWithQueryRepetitionScopeSuite()
+    {
+        setBenchmark("benchmark_with_2_queries");
+        setQueryRepetitionScope(BenchmarkProperties.QueryRepetitionScope.SUITE);
+        List<String> benchmarks = ImmutableList.of("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2");
+        verifyBenchmarkStart("benchmark_with_2_queries", benchmarks);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select_2", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
+        verifyBenchmarkFinish(benchmarks, ImmutableList.of());
+        verifyComplete(2, 2, 2 * 2);
+    }
+
+    @Test
+    public void simpleSelectBenchmarkWithQueryRepetitionScopeBenchmark()
+    {
+        setBenchmark("benchmark_with_2_queries");
+        setQueryRepetitionScope(BenchmarkProperties.QueryRepetitionScope.BENCHMARK);
+        List<String> benchmarks = ImmutableList.of("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2");
+        verifyBenchmarkStart("benchmark_with_2_queries", benchmarks);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select_2", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
+        verifyBenchmarkFinish(benchmarks, ImmutableList.of());
+        verifyComplete(2, 2, 2 * 2);
     }
 
     private void setBenchmark(String s)
@@ -117,51 +157,63 @@ public class DriverAppIntegrationTest
         ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", s);
     }
 
-    private void verifyBenchmarkStart(String benchmarkName, String uniqueBenchmarkName)
+    private void setQueryRepetitionScope(BenchmarkProperties.QueryRepetitionScope queryRepetitionScope)
+    {
+        ReflectionTestUtils.setField(benchmarkProperties, "queryRepetitionScope", queryRepetitionScope);
+    }
+
+    private void verifyBenchmarkStart(String benchmarkName, List<String> uniqueBenchmarkNames)
     {
         restServiceServer.expect(matchAll(
                 requestTo("http://benchmark-service:8080/v1/benchmark/generate-unique-names"),
                 method(HttpMethod.POST),
                 jsonPath("$.[0].name", is(benchmarkName))
-        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body("[\"" + uniqueBenchmarkName + "\"]"));
+        )).andRespond(withSuccess().contentType(APPLICATION_JSON).body(
+                "[%s]".formatted(uniqueBenchmarkNames.stream().map("\"%s\""::formatted).collect(Collectors.joining(",")))));
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/time/current-time-millis"),
-                method(HttpMethod.POST))
-        ).andRespond(request -> withSuccess().contentType(APPLICATION_JSON).body("" + System.currentTimeMillis()).createResponse(request));
+        List<String> startingUrls = uniqueBenchmarkNames.stream().map("http://benchmark-service:8080/v1/benchmark/%s/BEN_SEQ_ID/start"::formatted).toList();
+        for (int i = 0; i < uniqueBenchmarkNames.size(); i++) {
+            restServiceServer.expect(matchAll(
+                    requestTo("http://benchmark-service:8080/v1/time/current-time-millis"),
+                    method(HttpMethod.POST))
+            ).andRespond(request -> withSuccess().contentType(APPLICATION_JSON).body("" + System.currentTimeMillis()).createResponse(request));
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/start"),
-                method(HttpMethod.POST),
-                jsonPath("$.name", is(benchmarkName)),
-                jsonPath("$.environmentName", is("TEST_ENV"))
-        )).andRespond(withSuccess());
+            restServiceServer.expect(matchAll(
+                    requestTo(is(in(startingUrls))),
+                    method(HttpMethod.POST),
+                    jsonPath("$.name", is(benchmarkName)),
+                    jsonPath("$.environmentName", is("TEST_ENV"))
+            )).andRespond(withSuccess());
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + " started")),
-                jsonPath("$.tags", is("benchmark started TEST_ENV")),
-                jsonPath("$.data", is(""))
-        )).andRespond(withSuccess());
+            restServiceServer.expect(matchAll(
+                    requestTo("http://graphite:18088/events/"),
+                    method(HttpMethod.POST),
+                    jsonPath("$.what", is(in(uniqueBenchmarkNames.stream().map("Benchmark %s started"::formatted).toList()))),
+                    jsonPath("$.tags", is("benchmark started TEST_ENV")),
+                    jsonPath("$.data", is(""))
+            )).andRespond(withSuccess());
+        }
     }
 
-    private void verifyBenchmarkFinish(String uniqueBenchmarkName, List<String> measurementNames)
+    private void verifyBenchmarkFinish(List<String> uniqueBenchmarkNames, List<String> measurementNames)
     {
-        restServiceServer.expect(matchAll(
-                requestTo("http://benchmark-service:8080/v1/benchmark/" + uniqueBenchmarkName + "/BEN_SEQ_ID/finish"),
-                method(HttpMethod.POST),
-                jsonPath("$.status", ENDED_STATUS_MATCHER),
-                jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
-        )).andRespond(withSuccess());
+        List<String> finishingUrls = uniqueBenchmarkNames.stream().map("http://benchmark-service:8080/v1/benchmark/%s/BEN_SEQ_ID/finish"::formatted).toList();
+        for (int i = 0; i < uniqueBenchmarkNames.size(); i++) {
+            restServiceServer.expect(matchAll(
+                    requestTo(is(in(finishingUrls))),
+                    method(HttpMethod.POST),
+                    jsonPath("$.status", ENDED_STATUS_MATCHER),
+                    jsonPath("$.measurements.[*].name", containsInAnyOrder(measurementNames.toArray()))
+            )).andRespond(withSuccess());
 
-        restServiceServer.expect(matchAll(
-                requestTo("http://graphite:18088/events/"),
-                method(HttpMethod.POST),
-                jsonPath("$.what", is("Benchmark " + uniqueBenchmarkName + " ended")),
-                jsonPath("$.tags", is("benchmark ended TEST_ENV")),
-                jsonPath("$.data", startsWith("successful"))
-        )).andRespond(withSuccess());
+            restServiceServer.expect(matchAll(
+                    requestTo("http://graphite:18088/events/"),
+                    method(HttpMethod.POST),
+                    jsonPath("$.what", is(in(uniqueBenchmarkNames.stream().map("Benchmark %s ended"::formatted).toList()))),
+                    jsonPath("$.tags", is("benchmark ended TEST_ENV")),
+                    jsonPath("$.data", startsWith("successful"))
+            )).andRespond(withSuccess());
+        }
     }
 
     private void verifySerialExecution(String uniqueBenchmarkName, String queryName, int executionNumber)
@@ -233,14 +285,14 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
-        verifyComplete(3);
+        verifyComplete(3, 1, 1);
     }
 
-    private void verifyComplete(int runs)
+    private void verifyComplete(int runs, int benchmarksCount, int numberOfQueriesInTotal)
     {
-        int expectedMacroCallCount = runs * /* macros per query */ 2
+        int expectedMacroCallCount = runs * /* macros per query */ 2 * numberOfQueriesInTotal /* number of queries */
                 + /* before, after benchmark */ 2 + 1
-                + /* health check, before, after all */ 3;
+                + /* before, after all */ 2 + /* number of benchmarks * health check */ benchmarksCount;
 
         executionDriver.execute();
 
@@ -248,12 +300,14 @@ public class DriverAppIntegrationTest
         verify(macroService, times(expectedMacroCallCount)).runBenchmarkMacro(macroArgumentCaptor.capture(), any(Optional.class), any(Optional.class));
 
         ImmutableList.Builder<String> expected = ImmutableList.builder();
+        expected.add("no-op-before-all");
+        for (int i = 0; i < benchmarksCount; i++) {
+            expected.add("no-op-health-check");
+        }
         expected.add(
-                "no-op-before-all",
-                "no-op-health-check",
                 "no-op-before-benchmark",
                 "test_query_before_benchmark.sql");
-        for (int i = 0; i < runs; i++) {
+        for (int i = 0; i < runs * numberOfQueriesInTotal; i++) {
             expected.add(
                     "no-op-before-execution",
                     "no-op-after-execution");
