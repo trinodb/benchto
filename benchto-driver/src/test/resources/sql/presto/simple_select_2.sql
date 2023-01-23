@@ -1,0 +1,1 @@
+SELECT 2 FROM "${schema}".SYSTEM_USERS
