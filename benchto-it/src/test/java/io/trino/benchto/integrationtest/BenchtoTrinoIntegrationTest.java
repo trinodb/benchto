@@ -13,10 +13,6 @@
  */
 package io.trino.benchto.integrationtest;
 
-import com.google.common.collect.ImmutableMap;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.DriverApp;
 import io.trino.benchto.driver.FailedBenchmarkExecutionException;
 import io.trino.benchto.driver.execution.ExecutionDriver;
@@ -26,46 +22,28 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
-import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
-import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DriverApp.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class BenchtoTrinoIntegrationTest
+        extends TrinoIntegrationTest
 {
-    static PostgreSQLContainer<?> postgres;
-    static GenericContainer<?> service;
-    static GenericContainer<?> trino;
-
     @Autowired
     private ExecutionDriver executionDriver;
-
-    @Autowired
-    private BenchmarkProperties benchmarkProperties;
 
     @Autowired
     protected ApplicationContext context;
 
     @BeforeClass
-    public static void setup()
+    public static void setup() throws IOException, InterruptedException
     {
         Network network = Network.newNetwork();
         startBenchtoService(network);
@@ -161,113 +139,5 @@ public class BenchtoTrinoIntegrationTest
                     List<Map<String, Object>> successfulQueries = document.read("$['executions'][*]['measurements'][*][?(@.name==\"queries_successful\")]");
                     return successfulQueries.stream().allMatch(it -> it.get("value").equals(1.0));
                 });
-    }
-
-    private static void startBenchtoService(Network network)
-    {
-        postgres = new PostgreSQLContainer<>("postgres:11")
-                .withNetwork(network)
-                .withNetworkAliases("postgres");
-        postgres.start();
-        String jdbcUrl = format("jdbc:postgresql://%s:%d/%s?user=%s&password=%s",
-                "postgres",
-                postgres.getExposedPorts().get(0),
-                postgres.getDatabaseName(),
-                postgres.getUsername(),
-                postgres.getPassword());
-        service = new GenericContainer<>("trinodev/benchto-service:latest")
-                .withNetwork(network)
-                .withNetworkAliases("benchto-service")
-                .withEnv(ImmutableMap.of("SPRING_DATASOURCE_URL", jdbcUrl))
-                .withExposedPorts(8080)
-                .waitingFor(new HttpWaitStrategy()
-                        .forPort(8080)
-                        .forStatusCode(200));
-        service.start();
-        createEnvironment("TEST_ENV");
-        createTag("TEST_TAG", "TEST_ENV");
-        System.setProperty("test.service.host", service.getHost());
-        System.setProperty("test.service.port", service.getMappedPort(8080).toString());
-    }
-
-    private static void startTrino(Network network)
-    {
-        trino = new GenericContainer<>("trinodb/trino:388")
-                .withNetwork(network)
-                .withNetworkAliases("trino")
-                .withExposedPorts(8080)
-                .waitingFor(new HttpWaitStrategy()
-                        .forPort(8080)
-                        .forPath("/v1/info")
-                        .forStatusCode(200)
-                        .forResponsePredicate(response -> response.contains("\"starting\":false")));
-        trino.start();
-        // We sometimes get "No nodes available to run query"
-        sleepUninterruptibly(1, TimeUnit.SECONDS);
-
-        System.setProperty("test.trino.host", trino.getHost());
-        System.setProperty("test.trino.port", trino.getMappedPort(8080).toString());
-    }
-
-    private static void createEnvironment(String environment)
-    {
-        UriComponents url = UriComponentsBuilder.fromHttpUrl(getServiceUrl()).path("/v1/environment").pathSegment(environment).build();
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForLocation(url.toUri(), ImmutableMap.of());
-    }
-
-    private static void createTag(String tag, String environment)
-    {
-        UriComponents url = UriComponentsBuilder.fromHttpUrl(getServiceUrl()).path("/v1/tag").pathSegment(environment).build();
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForLocation(url.toUri(), ImmutableMap.of("name", tag));
-    }
-
-    private static String getServiceUrl()
-    {
-        return format("http://%s:%s",
-                service.getHost(),
-                service.getMappedPort(8080));
-    }
-
-    private void setBenchmark(String s)
-    {
-        ReflectionTestUtils.setField(benchmarkProperties, "activeBenchmarks", s);
-        ReflectionTestUtils.setField(benchmarkProperties, "executionSequenceId", s);
-    }
-
-    private void verifyBenchmark(String benchmark, String status)
-    {
-        verifyBenchmark(benchmark, status, 2);
-    }
-
-    private void verifyBenchmark(String benchmark, String status, int expectedRuns)
-    {
-        verifyBenchmark(benchmark, benchmark, status, expectedRuns);
-    }
-
-    private void verifyBenchmark(String benchmark, String sequenceId, String status)
-    {
-        verifyBenchmark(benchmark, sequenceId, status, 2);
-    }
-
-    private void verifyBenchmark(String benchmark, String sequenceId, String status, int expectedRuns)
-    {
-        verifyBenchmark(benchmark, sequenceId, status, expectedRuns, documentContext -> true);
-    }
-
-    private void verifyBenchmark(String benchmark, String sequenceId, String status, int expectedRuns, Predicate<DocumentContext> predicate)
-    {
-        UriComponents url = UriComponentsBuilder.fromHttpUrl(getServiceUrl())
-                .path("v1/benchmark")
-                .pathSegment(benchmark)
-                .pathSegment(sequenceId)
-                .build();
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.getForEntity(url.toUri(), String.class);
-        DocumentContext json = JsonPath.parse(response.getBody());
-        assertThat(json.read("$.status", String.class)).isEqualTo(status);
-        assertThat(json.read(format("$.executions[?(@.status == '%s')]", status), List.class)).hasSize(expectedRuns);
-        assertThat(predicate.test(json));
     }
 }
