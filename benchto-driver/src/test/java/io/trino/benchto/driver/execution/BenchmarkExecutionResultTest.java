@@ -34,6 +34,7 @@ public class BenchmarkExecutionResultTest
                 .withEnvironment("environment")
                 .withRuns(1)
                 .withPrewarmRuns(0)
+                .withLocalWarmupRuns(0)
                 .withConcurrency(1)
                 .withBeforeBenchmarkMacros(emptyList())
                 .withAfterBenchmarkMacros(emptyList())

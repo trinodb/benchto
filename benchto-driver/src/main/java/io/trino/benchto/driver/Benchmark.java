@@ -37,6 +37,7 @@ public class Benchmark
     private List<Query> queries;
     private int runs;
     private int prewarmRuns;
+    private int localWarmupRuns;
     private int concurrency;
     private List<String> beforeBenchmarkMacros;
     private List<String> afterBenchmarkMacros;
@@ -95,6 +96,11 @@ public class Benchmark
     public int getPrewarmRuns()
     {
         return prewarmRuns;
+    }
+
+    public int getLocalWarmupRuns()
+    {
+        return localWarmupRuns;
     }
 
     public int getConcurrency()
@@ -173,6 +179,7 @@ public class Benchmark
                         .collect(Collectors.joining(", ")))
                 .add("runs", runs)
                 .add("prewarmRuns", prewarmRuns)
+                .add("localWarmupRuns", localWarmupRuns)
                 .add("concurrency", concurrency)
                 .add("throughputTest", throughputTest)
                 .add("frequency", frequency)
@@ -197,6 +204,7 @@ public class Benchmark
         Benchmark benchmark = (Benchmark) o;
         return Objects.equal(runs, benchmark.runs) &&
                 Objects.equal(prewarmRuns, benchmark.prewarmRuns) &&
+                Objects.equal(localWarmupRuns, benchmark.localWarmupRuns) &&
                 Objects.equal(concurrency, benchmark.concurrency) &&
                 Objects.equal(name, benchmark.name) &&
                 Objects.equal(sequenceId, benchmark.sequenceId) &&
@@ -223,6 +231,7 @@ public class Benchmark
                 queries,
                 runs,
                 prewarmRuns,
+                localWarmupRuns,
                 concurrency,
                 beforeBenchmarkMacros,
                 afterBenchmarkMacros,
@@ -255,6 +264,7 @@ public class Benchmark
             this.benchmark.environment = that.getEnvironment();
             this.benchmark.runs = that.getRuns();
             this.benchmark.prewarmRuns = that.getPrewarmRuns();
+            this.benchmark.localWarmupRuns = that.getLocalWarmupRuns();
             this.benchmark.concurrency = that.getConcurrency();
             this.benchmark.frequency = that.getFrequency();
             this.benchmark.throughputTest = that.isThroughputTest();
@@ -288,6 +298,12 @@ public class Benchmark
         public BenchmarkBuilder withPrewarmRuns(int prewarmRuns)
         {
             this.benchmark.prewarmRuns = prewarmRuns;
+            return this;
+        }
+
+        public BenchmarkBuilder withLocalWarmupRuns(int localWarmupRuns)
+        {
+            this.benchmark.localWarmupRuns = localWarmupRuns;
             return this;
         }
 

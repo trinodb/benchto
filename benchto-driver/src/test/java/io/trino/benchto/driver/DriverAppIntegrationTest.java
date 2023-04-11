@@ -130,7 +130,7 @@ public class DriverAppIntegrationTest
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
         verifyBenchmarkFinish(benchmarks, ImmutableList.of());
-        verifyComplete(2, 2, 2 * 2);
+        verifyComplete(2, 2, 2 * 2, 2);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class DriverAppIntegrationTest
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
         verifyBenchmarkFinish(benchmarks, ImmutableList.of());
-        verifyComplete(2, 2, 2 * 2);
+        verifyComplete(2, 2, 2 * 2, 2);
     }
 
     private void setBenchmark(String s)
@@ -285,12 +285,12 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
-        verifyComplete(3, 1, 1);
+        verifyComplete(3, 1, 1, 2);
     }
 
-    private void verifyComplete(int runs, int benchmarksCount, int numberOfQueriesInTotal)
+    private void verifyComplete(int runs, int benchmarksCount, int numberOfQueriesInTotal, int localWarmup)
     {
-        int expectedMacroCallCount = runs * /* macros per query */ 2 * numberOfQueriesInTotal /* number of queries */
+        int expectedMacroCallCount = runs * /* macros per query */ 2 * (numberOfQueriesInTotal + localWarmup) /* number of queries */
                 + /* before, after benchmark */ 2 + 1
                 + /* before, after all */ 2 + /* number of benchmarks * health check */ benchmarksCount;
 

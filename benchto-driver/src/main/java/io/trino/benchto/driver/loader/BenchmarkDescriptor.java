@@ -32,6 +32,7 @@ public class BenchmarkDescriptor
     public static final String QUERY_NAMES_KEY = "query-names";
     public static final String RUNS_KEY = "runs";
     public static final String PREWARM_RUNS_KEY = "prewarm-runs";
+    public static final String LOCAL_WARMUP_RUNS_KEY = "local-warmup-runs";
     public static final String CONCURRENCY_KEY = "concurrency";
     public static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
     public static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
@@ -49,6 +50,7 @@ public class BenchmarkDescriptor
             QUERY_NAMES_KEY,
             RUNS_KEY,
             PREWARM_RUNS_KEY,
+            LOCAL_WARMUP_RUNS_KEY,
             CONCURRENCY_KEY,
             BEFORE_BENCHMARK_MACROS_KEY,
             AFTER_BENCHMARK_MACROS_KEY,
@@ -96,6 +98,11 @@ public class BenchmarkDescriptor
     public Optional<Integer> getPrewarmRuns()
     {
         return getIntegerOptional(PREWARM_RUNS_KEY);
+    }
+
+    public Optional<Integer> getLocalWarmupRuns()
+    {
+        return getIntegerOptional(LOCAL_WARMUP_RUNS_KEY);
     }
 
     public Optional<Integer> getConcurrency()

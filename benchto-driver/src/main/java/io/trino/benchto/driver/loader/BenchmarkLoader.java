@@ -77,6 +77,7 @@ public class BenchmarkLoader
     private static final int DEFAULT_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
     private static final int DEFAULT_PREWARM_RUNS = 0;
+    private static final int DEFAULT_LOCAL_WARMUP_RUNS = 2;
 
     @Autowired
     private Environment environment;
@@ -227,6 +228,7 @@ public class BenchmarkLoader
                         .withEnvironment(properties.getEnvironmentName())
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
                         .withPrewarmRuns(benchmarkDescriptor.getPrewarmRuns().orElse(DEFAULT_PREWARM_RUNS))
+                        .withLocalWarmupRuns(benchmarkDescriptor.getLocalWarmupRuns().orElse(DEFAULT_LOCAL_WARMUP_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
                         .withFrequency(benchmarkDescriptor.getFrequency().map(Duration::ofDays))
                         .withThroughputTest(benchmarkDescriptor.getThroughputTest())
