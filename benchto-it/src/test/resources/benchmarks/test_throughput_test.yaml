@@ -6,7 +6,7 @@ after-benchmark: no-op-after-benchmark
 before-execution: no-op-before-execution
 after-execution: no-op-after-execution
 throughput-test: true
-prewarm-runs: 1
+suite-prewarm-runs: 1
 concurrency: 4
 runs: 4
 variables:

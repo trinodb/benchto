@@ -111,7 +111,7 @@ public class DriverAppIntegrationTest
         verifyGetGraphiteMeasurements();
         verifyBenchmarkFinish(ImmutableList.of("test_concurrent_benchmark"), concurrentBenchmarkMeasurementNames);
 
-        verifyComplete(allRuns, 1, 1);
+        verifyComplete(allRuns, 1, 1, 2);
     }
 
     @Test
@@ -130,7 +130,7 @@ public class DriverAppIntegrationTest
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
         verifyBenchmarkFinish(benchmarks, ImmutableList.of());
-        verifyComplete(2, 2, 2 * 2);
+        verifyComplete(2, 2, 2 * 2, 2 * 2);
     }
 
     @Test
@@ -149,7 +149,24 @@ public class DriverAppIntegrationTest
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
         verifySerialExecution("benchmark_with_2_queries_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
         verifyBenchmarkFinish(benchmarks, ImmutableList.of());
-        verifyComplete(2, 2, 2 * 2);
+        verifyComplete(2, 2, 2 * 2, 2);
+    }
+
+    @Test
+    public void benchmarkWith2Prewarms()
+    {
+        setBenchmark("benchmark_with_2_prewarms");
+        setQueryRepetitionScope(BenchmarkProperties.QueryRepetitionScope.BENCHMARK);
+        List<String> benchmarks = ImmutableList.of("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select", "benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select_2");
+        verifyBenchmarkStart("benchmark_with_2_prewarms", benchmarks);
+        verifySerialExecution("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 1);
+        verifySerialExecution("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 2);
+        verifySerialExecution("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select", "simple_select", 3);
+        verifySerialExecution("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 1);
+        verifySerialExecution("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 2);
+        verifySerialExecution("benchmark_with_2_prewarms_schema=INFORMATION_SCHEMA_query=simple_select_2", "simple_select_2", 3);
+        verifyBenchmarkFinish(benchmarks, ImmutableList.of());
+        verifyComplete(3, 2, 3, 3);
     }
 
     private void setBenchmark(String s)
@@ -285,12 +302,12 @@ public class DriverAppIntegrationTest
 
     private void verifyComplete()
     {
-        verifyComplete(3, 1, 1);
+        verifyComplete(3, 1, 1, 2);
     }
 
-    private void verifyComplete(int runs, int benchmarksCount, int numberOfQueriesInTotal)
+    private void verifyComplete(int runs, int benchmarksCount, int numberOfQueriesInTotal, int localWarmup)
     {
-        int expectedMacroCallCount = runs * /* macros per query */ 2 * numberOfQueriesInTotal /* number of queries */
+        int expectedMacroCallCount = (runs + localWarmup) * /* macros per query */ 2 * numberOfQueriesInTotal /* number of queries */
                 + /* before, after benchmark */ 2 + 1
                 + /* before, after all */ 2 + /* number of benchmarks * health check */ benchmarksCount;
 
@@ -307,7 +324,7 @@ public class DriverAppIntegrationTest
         expected.add(
                 "no-op-before-benchmark",
                 "test_query_before_benchmark.sql");
-        for (int i = 0; i < runs * numberOfQueriesInTotal; i++) {
+        for (int i = 0; i < (runs + localWarmup) * numberOfQueriesInTotal; i++) {
             expected.add(
                     "no-op-before-execution",
                     "no-op-after-execution");

@@ -31,7 +31,8 @@ public class BenchmarkDescriptor
     public static final String DATA_SOURCE_KEY = "datasource";
     public static final String QUERY_NAMES_KEY = "query-names";
     public static final String RUNS_KEY = "runs";
-    public static final String PREWARM_RUNS_KEY = "prewarm-runs";
+    public static final String SUITE_PREWARM_RUNS_KEY = "suite-prewarm-runs";
+    public static final String BENCHMARK_PREWARM_RUNS_KEY = "benchmark-prewarm-runs";
     public static final String CONCURRENCY_KEY = "concurrency";
     public static final String BEFORE_BENCHMARK_MACROS_KEY = "before-benchmark";
     public static final String AFTER_BENCHMARK_MACROS_KEY = "after-benchmark";
@@ -48,7 +49,8 @@ public class BenchmarkDescriptor
             DATA_SOURCE_KEY,
             QUERY_NAMES_KEY,
             RUNS_KEY,
-            PREWARM_RUNS_KEY,
+            SUITE_PREWARM_RUNS_KEY,
+            BENCHMARK_PREWARM_RUNS_KEY,
             CONCURRENCY_KEY,
             BEFORE_BENCHMARK_MACROS_KEY,
             AFTER_BENCHMARK_MACROS_KEY,
@@ -93,9 +95,14 @@ public class BenchmarkDescriptor
         return getIntegerOptional(RUNS_KEY);
     }
 
-    public Optional<Integer> getPrewarmRuns()
+    public Optional<Integer> getSuitePrewarmRuns()
     {
-        return getIntegerOptional(PREWARM_RUNS_KEY);
+        return getIntegerOptional(SUITE_PREWARM_RUNS_KEY);
+    }
+
+    public Optional<Integer> getBenchmarkPrewarmRuns()
+    {
+        return getIntegerOptional(BENCHMARK_PREWARM_RUNS_KEY);
     }
 
     public Optional<Integer> getConcurrency()

@@ -1,8 +1,13 @@
 datasource: test_datasource
-query-names: test_query_failure.sql
+runs: 3
+query-names: presto/${query}.sql
 before-benchmark: no-op-before-benchmark, test_query_before_benchmark.sql
 after-benchmark: no-op-after-benchmark
 before-execution: no-op-before-execution
 after-execution: no-op-after-execution
-suite-prewarm-runs: 1
-runs: 2
+suite-prewarm-runs: 3
+benchmark-prewarm-runs: 3
+variables:
+  1:
+    schema: INFORMATION_SCHEMA
+    query: simple_select, simple_select_2

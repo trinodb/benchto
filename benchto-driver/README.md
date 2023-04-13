@@ -118,31 +118,32 @@ variables:
     selectivity: 0, 2, 10, 100
     schema: sf100, sf1000
     database: tpch
-    prewarm-runs: 3
+    suite-prewarm-runs: 3
   2:
     selectivity: 0, 2, 10, 100
     schema: tpch_100gb_orc, tpch_100gb_text, tpch_1tb_orc, tpch_1tb_text
     database: hive
-    prewarm-runs: 3
+    suite-prewarm-runs: 3
 ```
 
 List of keywords:
 
 | Keyword | Required | Default value | Comment |
 |---|---|---|---|
-| datasource       | True  |       | Name of the datasource defined in `application.yaml` file.                         |
-| query-names      | True  |       | Paths to the queries.                                                              |
-| runs             | False | 3     | Number of runs each query should be executed.                                      |
-| prewarm-runs     | False | 0     | Number of prewarm runs of queries before benchmark.                                |
-| concurrency      | False | 1     | Number of concurrent workers - 1 sequential benchmark, >1 concurrency benchmark.   |
-| before-benchmark | False | none  | Names of macros executed before benchmark.                                         |
-| after-benchmark  | False | none  | Names of macros executed after benchmark.                                          |
-| before-execution | False | none  | Names of macros executed before benchmark executions.                              |
-| after-execution  | False | none  | Names of macros executed after benchmark executions.                               |
-| variables        | False | none  | Set of combinations of variables.                                                  |
-| quarantine       | False | false | Flag which can be used to quarantine benchmark using `--activeVariables` property. |
-| frequency        | False | none  | tells how frequent given benchmark can be executed (in days). 1 - once per day, 7 once per week. |
-| quey-results     | False | none  | Triggers results verification against specified result files                       |
+| datasource          | True  |       | Name of the datasource defined in `application.yaml` file.                         |
+| query-names         | True  |       | Paths to the queries.                                                              |
+| runs                | False | 3     | Number of runs each query should be executed.                                      |
+| suite-prewarm-runs  | False | 0     | Number of prewarm runs of queries before whole benchmark suite.                    |
+| benchmark-prewarm-runs  | False | 2     | Number of prewarm runs of queries before each benchmark.                    |
+| concurrency         | False | 1     | Number of concurrent workers - 1 sequential benchmark, >1 concurrency benchmark.   |
+| before-benchmark    | False | none  | Names of macros executed before benchmark.                                         |
+| after-benchmark     | False | none  | Names of macros executed after benchmark.                                          |
+| before-execution    | False | none  | Names of macros executed before benchmark executions.                              |
+| after-execution     | False | none  | Names of macros executed after benchmark executions.                               |
+| variables           | False | none  | Set of combinations of variables.                                                  |
+| quarantine          | False | false | Flag which can be used to quarantine benchmark using `--activeVariables` property. |
+| frequency           | False | none  | tells how frequent given benchmark can be executed (in days). 1 - once per day, 7 once per week. |
+| quey-results        | False | none  | Triggers results verification against specified result files                       |
 
 ## SQL files
 
@@ -199,5 +200,5 @@ overrides YAML file:
 An example overrides file:
 ```
 runs: 5
-prewarm-runs: 10
+suite-prewarm-runs: 10
 ```

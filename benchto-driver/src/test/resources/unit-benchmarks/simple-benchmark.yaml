@@ -3,6 +3,6 @@ to_be_overridden: 42
 datasource: foo
 before-benchmark: no-op, no-op2
 after-benchmark: no-op2
-prewarm-runs: 2
+suite-prewarm-runs: 2
 query-names: q1, q2, 1, 2
 frequency: 2

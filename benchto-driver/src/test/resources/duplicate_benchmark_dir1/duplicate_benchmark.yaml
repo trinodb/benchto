@@ -4,5 +4,5 @@ before-benchmark: no-op-before-benchmark, test_query_before_benchmark.sql
 after-benchmark: no-op-after-benchmark
 before-execution: no-op-before-execution
 after-execution: no-op-after-execution
-prewarm-runs: 1
+suite-prewarm-runs: 1
 runs: 2
