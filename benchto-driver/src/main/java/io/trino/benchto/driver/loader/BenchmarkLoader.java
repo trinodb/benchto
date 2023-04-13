@@ -76,7 +76,8 @@ public class BenchmarkLoader
 
     private static final int DEFAULT_RUNS = 3;
     private static final int DEFAULT_CONCURRENCY = 1;
-    private static final int DEFAULT_PREWARM_RUNS = 0;
+    private static final int DEFAULT_SUITE_PREWARM_RUNS = 0;
+    private static final int DEFAULT_BENCHMARK_PREWARM_RUNS = 2;
 
     @Autowired
     private Environment environment;
@@ -226,7 +227,8 @@ public class BenchmarkLoader
                         .withDataSource(benchmarkDescriptor.getDataSource())
                         .withEnvironment(properties.getEnvironmentName())
                         .withRuns(benchmarkDescriptor.getRuns().orElse(DEFAULT_RUNS))
-                        .withPrewarmRuns(benchmarkDescriptor.getPrewarmRuns().orElse(DEFAULT_PREWARM_RUNS))
+                        .withSuitePrewarmRuns(benchmarkDescriptor.getSuitePrewarmRuns().orElse(DEFAULT_SUITE_PREWARM_RUNS))
+                        .withBenchmarkPrewarmRuns(benchmarkDescriptor.getBenchmarkPrewarmRuns().orElse(DEFAULT_BENCHMARK_PREWARM_RUNS))
                         .withConcurrency(benchmarkDescriptor.getConcurrency().orElse(DEFAULT_CONCURRENCY))
                         .withFrequency(benchmarkDescriptor.getFrequency().map(Duration::ofDays))
                         .withThroughputTest(benchmarkDescriptor.getThroughputTest())
@@ -405,13 +407,14 @@ public class BenchmarkLoader
 
     private void printFormattedBenchmarksInfo(String formatString, Collection<Benchmark> benchmarks)
     {
-        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "Prewarms", "Concurrency", "Throughput Test"));
+        LOGGER.info(format(formatString, "Benchmark Name", "Data Source", "Runs", "SuitePrewarms", "BenchmarkPrewarms", "Concurrency", "Throughput Test"));
         benchmarks.stream()
                 .map(benchmark -> format(formatString,
                         benchmark.getName(),
                         benchmark.getDataSource(),
                         benchmark.getRuns() + "",
-                        benchmark.getPrewarmRuns() + "",
+                        benchmark.getSuitePrewarmRuns() + "",
+                        benchmark.getBenchmarkPrewarmRuns() + "",
                         benchmark.getConcurrency() + "",
                         benchmark.isThroughputTest() + ""))
                 .distinct()

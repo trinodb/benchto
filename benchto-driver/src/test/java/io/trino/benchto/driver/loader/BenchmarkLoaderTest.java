@@ -122,7 +122,7 @@ public class BenchmarkLoaderTest
         assertThat(benchmark.getConcurrency()).isEqualTo(1);
         assertThat(benchmark.getBeforeBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op", "no-op2"));
         assertThat(benchmark.getAfterBenchmarkMacros()).isEqualTo(ImmutableList.of("no-op2"));
-        assertThat(benchmark.getPrewarmRuns()).isEqualTo(2);
+        assertThat(benchmark.getSuitePrewarmRuns()).isEqualTo(2);
 
         // variable overridden by profile
         assertThat(benchmark.getVariables().get("to_be_overridden")).isEqualTo("bar");

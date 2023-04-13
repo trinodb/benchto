@@ -5,7 +5,7 @@ before-benchmark: no-op-before-benchmark
 after-benchmark: no-op-after-benchmark
 before-execution: create_insert_table.sql
 after-execution: no-op-after-execution
-prewarm-runs: 2
+suite-prewarm-runs: 2
 runs: 1
 variables:
   1:

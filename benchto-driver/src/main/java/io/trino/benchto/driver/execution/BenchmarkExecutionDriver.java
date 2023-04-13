@@ -103,8 +103,8 @@ public class BenchmarkExecutionDriver
                 "All benchmarks in a group must have the same before and after benchmark macros.");
         checkState(
                 benchmarks.stream().allMatch(benchmark -> benchmark.getRuns() == firstBenchmark.getRuns() &&
-                        benchmark.getPrewarmRuns() == firstBenchmark.getPrewarmRuns()),
-                "All benchmarks in a group must have the same number of runs and prewarm-runs.");
+                        benchmark.getSuitePrewarmRuns() == firstBenchmark.getSuitePrewarmRuns()),
+                "All benchmarks in a group must have the same number of runs and suite-prewarm-runs.");
         checkState(
                 benchmarks.stream().allMatch(benchmark -> benchmark.getConcurrency() == firstBenchmark.getConcurrency() &&
                         benchmark.isThroughputTest() == firstBenchmark.isThroughputTest()),
@@ -145,7 +145,7 @@ public class BenchmarkExecutionDriver
                 benchmark -> new BenchmarkExecutionResultBuilder(benchmark).withExecutions(List.of())));
         List<QueryExecutionResult> executions;
         try {
-            executions = executeQueries(benchmarks, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
+            executions = executeQueries(benchmarks, firstBenchmark.getSuitePrewarmRuns(), true, executionTimeLimit);
         }
         catch (Exception e) {
             return results.values().stream()
@@ -174,7 +174,7 @@ public class BenchmarkExecutionDriver
                 benchmark -> new BenchmarkExecutionResultBuilder(benchmark).withExecutions(List.of())));
         List<QueryExecutionResult> executions;
         try {
-            executions = executeQueries(benchmarks, firstBenchmark.getPrewarmRuns(), true, executionTimeLimit);
+            executions = executeQueries(benchmarks, firstBenchmark.getSuitePrewarmRuns(), true, executionTimeLimit);
         }
         catch (Exception e) {
             return results.values().stream()
@@ -277,25 +277,37 @@ public class BenchmarkExecutionDriver
         }
     }
 
-    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int benchmarkRun, boolean warmup, int queryRuns)
+    private List<Callable<QueryExecutionResult>> buildQueryExecutionCallables(Benchmark benchmark, int benchmarkRun, boolean suiteWarmup, int queryRuns)
     {
         List<Callable<QueryExecutionResult>> executionCallables = newArrayList();
         for (Query query : benchmark.getQueries()) {
+            // warmup locally, but skip local warmup during global warmup
+            if (!suiteWarmup) {
+                for (int queryRun = 1; queryRun <= benchmark.getBenchmarkPrewarmRuns(); queryRun++) {
+                    executionCallables.add(buildQueryExecutionCallable(benchmark, query, true, queryRun));
+                }
+            }
+            // real benchmark
             for (int queryRun = 1; queryRun <= queryRuns; queryRun++) {
                 int run = properties.getQueryRepetitionScope() == BenchmarkProperties.QueryRepetitionScope.BENCHMARK ? queryRun : benchmarkRun;
-                QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
-                Optional<Path> resultFile = benchmark.getQueryResults()
-                        // only check result of the first warmup run or all runs of non-select statements
-                        .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
-                        .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
-                executionCallables.add(() -> {
-                    try (Connection connection = getConnectionFor(queryExecution)) {
-                        return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
-                    }
-                });
+                executionCallables.add(buildQueryExecutionCallable(benchmark, query, suiteWarmup, run));
             }
         }
         return executionCallables;
+    }
+
+    private Callable<QueryExecutionResult> buildQueryExecutionCallable(Benchmark benchmark, Query query, boolean warmup, int run)
+    {
+        QueryExecution queryExecution = new QueryExecution(benchmark, query, run, sqlStatementGenerator);
+        Optional<Path> resultFile = benchmark.getQueryResults()
+                // only check result of the first warmup run or all runs of non-select statements
+                .filter(dir -> (warmup && run == 1) || (!isSelectQuery(query.getSqlTemplate())))
+                .map(queryResult -> properties.getQueryResultsDir().resolve(queryResult));
+        return () -> {
+            try (Connection connection = getConnectionFor(queryExecution)) {
+                return executeSingleQuery(queryExecution, benchmark, connection, warmup, Optional.empty(), resultFile);
+            }
+        };
     }
 
     private List<Callable<List<QueryExecutionResult>>> buildConcurrencyQueryExecutionCallables(Benchmark benchmark, int runs, boolean warmup, Optional<ZonedDateTime> executionTimeLimit)
@@ -380,6 +392,7 @@ public class BenchmarkExecutionDriver
             Optional<Path> outputFile)
             throws TimeLimitException
     {
+        LOG.info("Execute query, query=%s, skipReport=%s".formatted(benchmark.getQueries().get(0).getName(), skipReport));
         QueryExecutionResult result;
         macroService.runBenchmarkMacros(benchmark.getBeforeExecutionMacros(), benchmark, connection);
 

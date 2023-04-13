@@ -7,4 +7,4 @@ variables:
     query: add, multiply
     type: bigint
     schema: types_1m_orc
-    prewarm-runs: 2
+    suite-prewarm-runs: 2
