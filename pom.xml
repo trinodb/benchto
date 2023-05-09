@@ -10,7 +10,7 @@
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
-        <version>130</version>
+        <version>138</version>
     </parent>
 
     <inceptionYear>2015</inceptionYear>
@@ -57,7 +57,7 @@
         <dep.commons.io>2.11.0</dep.commons.io>
         <dep.guava.version>31.0.1-jre</dep.guava.version>
         <dep.trino.jdbc.version>363</dep.trino.jdbc.version>
-        <dep.jackson.version>2.13.4</dep.jackson.version>
+        <dep.jackson.version>2.13.3</dep.jackson.version>
         <dep.jsonpath.version>2.7.0</dep.jsonpath.version>
         <dep.junit.version>5.8.2</dep.junit.version>
         <dep.hamcrest.version>2.2</dep.hamcrest.version>
@@ -79,7 +79,7 @@
         <dep.org.apache.httpcomponents.version>4.5.13</dep.org.apache.httpcomponents.version>
         <dep.jakarta.persistence.api.version>2.2.3</dep.jakarta.persistence.api.version>
         <dep.jakarta.servlet.api.version>5.0.0</dep.jakarta.servlet.api.version>
-        <dep.testcontainers.version>1.17.3</dep.testcontainers.version>
+        <dep.testcontainers.version>1.18.0</dep.testcontainers.version>
         <dep.javassist.version>3.29.2-GA</dep.javassist.version>
         <dep.byte-buddy.version>1.12.17</dep.byte-buddy.version>
         <dep.jna.version>5.12.1</dep.jna.version>
