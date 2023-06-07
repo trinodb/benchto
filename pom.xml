@@ -26,6 +26,7 @@
     <modules>
         <module>benchto-service</module>
         <module>benchto-driver</module>
+        <module>benchto-it</module>
     </modules>
 
     <properties>
@@ -103,15 +104,6 @@
             </url>
         </repository>
     </distributionManagement>
-
-    <profiles>
-        <profile>
-            <id>it</id>
-            <modules>
-                <module>benchto-it</module>
-            </modules>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
