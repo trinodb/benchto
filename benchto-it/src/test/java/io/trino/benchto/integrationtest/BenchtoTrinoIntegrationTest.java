@@ -43,7 +43,8 @@ public class BenchtoTrinoIntegrationTest
     protected ApplicationContext context;
 
     @BeforeClass
-    public static void setup() throws IOException, InterruptedException
+    public static void setup()
+            throws IOException, InterruptedException
     {
         Network network = Network.newNetwork();
         startBenchtoService(network);

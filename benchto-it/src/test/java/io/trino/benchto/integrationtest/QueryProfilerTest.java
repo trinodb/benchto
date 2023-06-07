@@ -48,7 +48,8 @@ public class QueryProfilerTest
     private ProfilerProperties profilerProperties;
 
     @BeforeClass
-    public static void setup() throws IOException, InterruptedException
+    public static void setup()
+            throws IOException, InterruptedException
     {
         Network network = Network.newNetwork();
         startBenchtoService(network);
@@ -56,7 +57,8 @@ public class QueryProfilerTest
     }
 
     @Test
-    public void testJFRQueryProfiler() throws IOException, InterruptedException
+    public void testJFRQueryProfiler()
+            throws IOException, InterruptedException
     {
         setBenchmark("test_benchmark");
         executionDriver.execute();

@@ -78,7 +78,8 @@ public class TrinoIntegrationTest
         System.setProperty("test.service.port", service.getMappedPort(8080).toString());
     }
 
-    protected static void startTrino(Network network) throws IOException, InterruptedException
+    protected static void startTrino(Network network)
+            throws IOException, InterruptedException
     {
         trino = new GenericContainer<>("trinodb/trino:388")
                 .withNetwork(network)
