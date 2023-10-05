@@ -63,12 +63,12 @@ benchmark:
     presto:
       metrics.collection.enabled: true
     profiler:
-      enabled: true
-      tool: jfr
-      output-path: /tmp
-      jmx.port: ${jmx.port}
-      datasource: test_datasource
       profiled-coordinator: ${profiled.coordinator.hostname}
+      enabled: true
+      jfr:
+        enabled: true
+        output-path: /tmp
+        jmx.port: ${jmx.port}
 
 logging:
   level:

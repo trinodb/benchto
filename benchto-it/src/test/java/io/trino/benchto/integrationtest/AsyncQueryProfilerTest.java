@@ -13,9 +13,10 @@
  */
 package io.trino.benchto.integrationtest;
 
+import com.google.common.collect.ImmutableList;
 import io.trino.benchto.driver.DriverApp;
 import io.trino.benchto.driver.execution.ExecutionDriver;
-import io.trino.benchto.driver.listeners.profiler.ProfilerProperties;
+import io.trino.benchto.driver.listeners.profiler.async.AsyncProfilerProperties;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,18 +25,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.Network;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DriverApp.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ActiveProfiles("profiler")
-public class QueryProfilerTest
+@ActiveProfiles("async-profiler")
+public class AsyncQueryProfilerTest
         extends TrinoIntegrationTest
 {
     @Autowired
@@ -45,19 +48,20 @@ public class QueryProfilerTest
     protected ApplicationContext context;
 
     @Autowired
-    private ProfilerProperties profilerProperties;
+    private AsyncProfilerProperties profilerProperties;
 
     @BeforeClass
     public static void setup()
             throws IOException, InterruptedException
     {
+        List<ResourceMapping> resourceMappings = ImmutableList.of(new ResourceMapping("async/amd64/libasyncProfiler.so", "/tmp/libasyncProfiler.so", BindMode.READ_ONLY));
         Network network = Network.newNetwork();
         startBenchtoService(network);
-        startTrino(network);
+        startTrino(network, resourceMappings);
     }
 
     @Test
-    public void testJFRQueryProfiler()
+    public void testAsyncQueryProfiler()
             throws IOException, InterruptedException
     {
         setBenchmark("test_benchmark");

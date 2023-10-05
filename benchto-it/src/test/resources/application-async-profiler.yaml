@@ -1,0 +1,81 @@
+benchmarks: src/test/resources/benchmarks
+sql: src/test/resources/sql
+query-results-dir: src/test/resources/results
+
+data-sources:
+  test_datasource:
+    url: jdbc:trino://${test.trino.host}:${test.trino.port}
+    username: sa
+    password:
+    driver-class-name: io.trino.jdbc.TrinoDriver
+
+benchmark-service:
+  url: http://${test.service.host}:${test.service.port}
+
+environment:
+  name: TEST_ENV
+
+presto:
+  url: http://${test.trino.host}:${test.trino.port}
+  username: sa
+
+graphite:
+  url: http://graphite:18088
+  resolution.seconds: 1
+  metrics-delay.seconds: 0
+  metrics:
+    cpu: TARGET_CPU
+    memory: TARGET_MEMORY
+    network: TARGET_NETWORK
+
+macros:
+  no-op-before-benchmark:
+    command:
+  no-op-after-benchmark:
+    command:
+  no-op-before-execution:
+    command:
+  no-op-after-execution:
+    command:
+  create-file:
+    command: touch ${FILENAME}${USER}
+  error-macro:
+    command: exit 1
+  no-command-macro:
+    test: x
+  no-op-before-all:
+    command:
+  no-op-after-all:
+    command:
+  no-op-health-check:
+    command:
+
+macroExecutions:
+  healthCheck: no-op-health-check
+  beforeAll: no-op-before-all
+  afterAll: no-op-after-all
+
+benchmark:
+  feature:
+    graphite:
+      event.reporting.enabled: false
+      metrics.collection.enabled: false
+    presto:
+      metrics.collection.enabled: true
+    profiler:
+      profiled-coordinator: ${profiled.coordinator.hostname}
+      enabled: true
+      async:
+        enabled: true
+        output-path: /tmp
+        jmx.port: ${jmx.port}
+        async-library-path: /tmp/libasyncProfiler.so
+        events:
+          - cpu
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          client:
+            RestTemplate: INFO
