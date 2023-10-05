@@ -21,8 +21,11 @@ import io.trino.benchto.driver.listeners.benchmark.BenchmarkExecutionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -30,16 +33,22 @@ import java.util.concurrent.Future;
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 
 @Component
-@ConditionalOnProperty(prefix = "benchmark.feature.profiler", value = "enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "benchmark.feature.profiler", name = "enabled", havingValue = "true")
 public class QueryProfilerExecutionListener
         implements BenchmarkExecutionListener
 {
     private static final Logger LOG = LoggerFactory.getLogger(QueryProfilerExecutionListener.class);
 
     @Autowired
-    private QueryProfiler profiler;
-    @Autowired
-    private ProfilerProperties profilerProperties;
+    private List<QueryProfiler> profilers;
+
+    @Value("${benchmark.feature.profiler.profiled-coordinator:#{null}}")
+    @Nullable
+    private String profiledCoordinator;
+
+    @Value("${benchmark.feature.profiler.profiled-worker:#{null}}")
+    @Nullable
+    private String profiledWorker;
 
     public int getOrder()
     {
@@ -61,12 +70,28 @@ public class QueryProfilerExecutionListener
     @Override
     public synchronized Future<?> executionStarted(QueryExecution execution)
     {
-        LOG.info("Starting profiler... [benchmark=%s, query=%s]".formatted(execution.getBenchmark().getName(), execution.getQueryName()));
-        if (profilerProperties.getProfiledCoordinator() != null) {
-            profiler.start(profilerProperties.getProfiledCoordinator(), execution.getBenchmark().getName(), execution.getQueryName(), execution.getSequenceId());
+        LOG.info("Starting profilers... [benchmark=%s, query=%s]".formatted(execution.getBenchmark().getName(), execution.getQueryName()));
+        if (profiledCoordinator != null) {
+            for (QueryProfiler profiler : profilers) {
+                try {
+                    LOG.info("Starting profiler %s for coordinator [benchmark=%s, query=%s]".formatted(profiler.getClass().getSimpleName(), execution.getBenchmark().getName(), execution.getQueryName()));
+                    profiler.start(profiledCoordinator, execution.getBenchmark().getName(), execution.getQueryName(), execution.getSequenceId());
+                }
+                catch (Exception e) {
+                    LOG.error("Starting profiler %s for coordinator failed".formatted(profiler.getClass().getSimpleName()), e);
+                }
+            }
         }
-        if (profilerProperties.getProfiledWorker() != null) {
-            profiler.start(profilerProperties.getProfiledWorker(), execution.getBenchmark().getName(), execution.getQueryName(), execution.getSequenceId());
+        if (profiledWorker != null) {
+            for (QueryProfiler profiler : profilers) {
+                try {
+                    LOG.info("Starting profiler %s for worker [benchmark=%s, query=%s]".formatted(profiler.getClass().getSimpleName(), execution.getBenchmark().getName(), execution.getQueryName()));
+                    profiler.start(profiledWorker, execution.getBenchmark().getName(), execution.getQueryName(), execution.getSequenceId());
+                }
+                catch (Exception e) {
+                    LOG.error("Starting profiler %s for worker failed".formatted(profiler.getClass().getSimpleName()), e);
+                }
+            }
         }
         return immediateVoidFuture();
     }
@@ -74,12 +99,28 @@ public class QueryProfilerExecutionListener
     @Override
     public synchronized Future<?> executionFinished(QueryExecutionResult result)
     {
-        LOG.info("Stopping profiler... [benchmark=%s, query=%s]".formatted(result.getBenchmark().getName(), result.getQueryName()));
-        if (profilerProperties.getProfiledCoordinator() != null) {
-            profiler.stop(profilerProperties.getProfiledCoordinator(), result.getBenchmark().getName(), result.getQueryName(), result.getQueryExecution().getSequenceId());
+        LOG.info("Stopping profilers... [benchmark=%s, query=%s]".formatted(result.getBenchmark().getName(), result.getQueryName()));
+        if (profiledCoordinator != null) {
+            for (QueryProfiler profiler : profilers) {
+                try {
+                    LOG.info("Stopping profiler %s for coordinator [benchmark=%s, query=%s]".formatted(profiler.toString(), result.getQueryExecution().getBenchmark().getName(), result.getQueryExecution().getQueryName()));
+                    profiler.stop(profiledCoordinator, result.getBenchmark().getName(), result.getQueryName(), result.getQueryExecution().getSequenceId());
+                }
+                catch (Exception e) {
+                    LOG.error("Stopping profiler %s for coordinator failed".formatted(profiler.toString()), e);
+                }
+            }
         }
-        if (profilerProperties.getProfiledWorker() != null) {
-            profiler.stop(profilerProperties.getProfiledWorker(), result.getBenchmark().getName(), result.getQueryName(), result.getQueryExecution().getSequenceId());
+        if (profiledWorker != null) {
+            for (QueryProfiler profiler : profilers) {
+                try {
+                    LOG.info("Stopping profiler %s for worker [benchmark=%s, query=%s]".formatted(profiler.toString(), result.getQueryExecution().getBenchmark().getName(), result.getQueryExecution().getQueryName()));
+                    profiler.stop(profiledWorker, result.getBenchmark().getName(), result.getQueryName(), result.getQueryExecution().getSequenceId());
+                }
+                catch (Exception e) {
+                    LOG.error("Stopping profiler %s for worker failed".formatted(profiler.toString()), e);
+                }
+            }
         }
         return immediateVoidFuture();
     }

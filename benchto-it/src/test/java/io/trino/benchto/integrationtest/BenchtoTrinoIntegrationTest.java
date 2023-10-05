@@ -13,6 +13,7 @@
  */
 package io.trino.benchto.integrationtest;
 
+import com.google.common.collect.ImmutableList;
 import io.trino.benchto.driver.DriverApp;
 import io.trino.benchto.driver.FailedBenchmarkExecutionException;
 import io.trino.benchto.driver.execution.ExecutionDriver;
@@ -48,7 +49,7 @@ public class BenchtoTrinoIntegrationTest
     {
         Network network = Network.newNetwork();
         startBenchtoService(network);
-        startTrino(network);
+        startTrino(network, ImmutableList.of());
     }
 
     @Test

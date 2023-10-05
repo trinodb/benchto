@@ -78,7 +78,7 @@ public class TrinoIntegrationTest
         System.setProperty("test.service.port", service.getMappedPort(8080).toString());
     }
 
-    protected static void startTrino(Network network)
+    protected static void startTrino(Network network, List<ResourceMapping> resourceMappings)
             throws IOException, InterruptedException
     {
         trino = new GenericContainer<>("trinodb/trino:388")
@@ -91,6 +91,7 @@ public class TrinoIntegrationTest
                         .forPath("/v1/info")
                         .forStatusCode(200)
                         .forResponsePredicate(response -> response.contains("\"starting\":false")));
+        resourceMappings.forEach(mapping -> trino.withClasspathResourceMapping(mapping.resourcePath(), mapping.containerPath(), mapping.bindMode()));
         trino.start();
         // We sometimes get "No nodes available to run query"
         sleepUninterruptibly(1, TimeUnit.SECONDS);

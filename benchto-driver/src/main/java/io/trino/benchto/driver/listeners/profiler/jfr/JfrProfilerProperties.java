@@ -11,37 +11,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.trino.benchto.driver.listeners.profiler;
+package io.trino.benchto.driver.listeners.profiler.jfr;
 
+import io.trino.benchto.driver.listeners.profiler.Jmx;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.nio.file.Path;
 
-@ConfigurationProperties(prefix = "benchmark.feature.profiler")
+@ConfigurationProperties(prefix = "benchmark.feature.profiler.jfr")
 @Configuration
-public class ProfilerProperties
+public class JfrProfilerProperties
 {
-    private JMX jmx;
-    private Profiler tool = Profiler.jfr;
+    private Jmx jmx;
     private boolean enabled;
     private Path outputPath;
-    private String profiledCoordinator;
-    private String profiledWorker;
 
-    public JMX getJmx()
+    public Jmx getJmx()
     {
         return jmx;
     }
 
-    public void setJmx(JMX jmx)
+    public void setJmx(Jmx jmx)
     {
         this.jmx = jmx;
-    }
-
-    public Profiler getTool()
-    {
-        return tool;
     }
 
     public boolean isEnabled()
@@ -54,11 +47,6 @@ public class ProfilerProperties
         this.enabled = enabled;
     }
 
-    public void setTool(Profiler tool)
-    {
-        this.tool = tool;
-    }
-
     public Path getOutputPath()
     {
         return outputPath;
@@ -67,45 +55,5 @@ public class ProfilerProperties
     public void setOutputPath(Path outputPath)
     {
         this.outputPath = outputPath;
-    }
-
-    public String getProfiledCoordinator()
-    {
-        return profiledCoordinator;
-    }
-
-    public void setProfiledCoordinator(String profiledCoordinator)
-    {
-        this.profiledCoordinator = profiledCoordinator;
-    }
-
-    public String getProfiledWorker()
-    {
-        return profiledWorker;
-    }
-
-    public void setProfiledWorker(String profiledWorker)
-    {
-        this.profiledWorker = profiledWorker;
-    }
-
-    enum Profiler
-    {
-        jfr
-    }
-
-    static class JMX
-    {
-        private int port = 9090;
-
-        public void setPort(int port)
-        {
-            this.port = port;
-        }
-
-        public int getPort()
-        {
-            return port;
-        }
     }
 }
