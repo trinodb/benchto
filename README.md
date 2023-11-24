@@ -71,7 +71,7 @@ benchmark:
         profiler:
           profiled-coordinator: # pod name of coordinator
           enabled: true
-          async:
+          perf:
             enabled: true
             output-path: /tmp     # path where jfr recording files will be saved
             jmx.port: ${jmx.port} # JMX port of profiled JVM
@@ -79,5 +79,3 @@ benchmark:
           events:
           - cpu
 ```
-
-q
