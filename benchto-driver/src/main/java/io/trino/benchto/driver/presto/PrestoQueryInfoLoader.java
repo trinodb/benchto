@@ -36,8 +36,7 @@ public class PrestoQueryInfoLoader
     @Override
     public CompletableFuture<Optional<String>> loadQueryInfo(Measurable measurable)
     {
-        if (measurable instanceof QueryExecutionResult) {
-            QueryExecutionResult executionResult = (QueryExecutionResult) measurable;
+        if (measurable instanceof QueryExecutionResult executionResult) {
             if (executionResult.getPrestoQueryId().isPresent()) {
                 return completedFuture(Optional.of(prestoClient.getQueryInfo(executionResult.getPrestoQueryId().get())));
             }

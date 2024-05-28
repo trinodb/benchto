@@ -61,11 +61,10 @@ public final class YamlUtils
 
     public static List<String> asStringList(Object object)
     {
-        if (!(object instanceof Iterable<?>)) {
+        if (!(object instanceof Iterable<?> iterable)) {
             return ImmutableList.copyOf(Splitter.on(",").trimResults().omitEmptyStrings().split(object.toString()));
         }
         else {
-            Iterable<?> iterable = (Iterable<?>) object;
             return StreamSupport.stream(iterable.spliterator(), false)
                     .map(Object::toString)
                     .collect(toList());
