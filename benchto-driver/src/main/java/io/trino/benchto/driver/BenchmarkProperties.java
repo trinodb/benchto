@@ -20,6 +20,7 @@ import io.trino.benchto.driver.graphite.GraphiteProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +46,9 @@ public class BenchmarkProperties
 
     @Value("${presto.url}")
     private String prestoURL;
+
+    @Value("${presto.httpEventListenerPort:#{null}}")
+    private Integer prestoHttpEventListenerPort;
 
     @Value("${presto.username:#{null}}")
     private String prestoUsername;
@@ -121,6 +125,14 @@ public class BenchmarkProperties
     public String getPrestoURL()
     {
         return prestoURL;
+    }
+
+    public Optional<String> getPrestoHttpEventListenerURL()
+    {
+        if (prestoHttpEventListenerPort == null) {
+            return Optional.empty();
+        }
+        return Optional.of(UriComponentsBuilder.fromUriString(prestoURL).port(prestoHttpEventListenerPort).build().toUriString());
     }
 
     public Optional<String> getPrestoUsername()

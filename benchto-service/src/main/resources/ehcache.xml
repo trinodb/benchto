@@ -35,6 +35,9 @@
     <cache name="io.trino.benchto.service.model.QueryInfo"
            maxEntriesLocalHeap="1" />
 
+    <cache name="io.trino.benchto.service.model.QueryCompletionEvent"
+           maxEntriesLocalHeap="1" />
+
     <cache name="io.trino.benchto.service.model.BenchmarkRun.variables"
            maxEntriesLocalHeap="5000"
            eternal="true"

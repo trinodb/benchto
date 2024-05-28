@@ -28,6 +28,7 @@ environment:
 
 presto:
   url: http://presto-test-master:8090
+  httpEventListenerPort: 8091
   username: sa
 
 graphite:
