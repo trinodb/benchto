@@ -22,6 +22,7 @@ import io.trino.benchto.driver.execution.QueryExecution;
 import io.trino.benchto.driver.execution.QueryExecutionResult;
 import io.trino.benchto.driver.listeners.benchmark.BenchmarkExecutionListener;
 import io.trino.benchto.driver.listeners.measurements.PostExecutionMeasurementProvider;
+import io.trino.benchto.driver.listeners.queryinfo.QueryCompletionEventProvider;
 import io.trino.benchto.driver.listeners.queryinfo.QueryInfoProvider;
 import io.trino.benchto.driver.service.BenchmarkServiceClient;
 import io.trino.benchto.driver.service.BenchmarkServiceClient.BenchmarkStartRequest.BenchmarkStartRequestBuilder;
@@ -79,6 +80,9 @@ public class BenchmarkServiceExecutionListener
 
     @Autowired(required = false)
     private QueryInfoProvider queryInfoProvider;
+
+    @Autowired(required = false)
+    private QueryCompletionEventProvider queryCompletionEventProvider;
 
     @Override
     public int getOrder()
@@ -223,6 +227,8 @@ public class BenchmarkServiceExecutionListener
                 .addMeasurements(measurementsWithQueryInfo.getMeasurements());
         measurementsWithQueryInfo.getQueryInfo()
                 .ifPresent(requestBuilder::addQueryInfo);
+        measurementsWithQueryInfo.getQueryCompletionEvent()
+                .ifPresent(requestBuilder::addQueryCompletionEvent);
 
         if (executionResult.getPrestoQueryId().isPresent()) {
             requestBuilder.addAttribute("prestoQueryId", executionResult.getPrestoQueryId().get());
@@ -243,7 +249,13 @@ public class BenchmarkServiceExecutionListener
     {
         CompletableFuture<List<Measurement>> measurementsFuture = getMeasurements(measurable);
         CompletableFuture<Optional<String>> queryInfoFuture = getQueryInfo(measurable);
-        return measurementsFuture.thenCombine(queryInfoFuture, MeasurementsWithQueryInfo::new);
+        CompletableFuture<Optional<String>> queryCompletionEventFuture = getQueryCompletionEvent(measurable);
+
+        return CompletableFuture.allOf(measurementsFuture, queryInfoFuture, queryCompletionEventFuture)
+                .thenApply(v -> new MeasurementsWithQueryInfo(
+                        measurementsFuture.join(),
+                        queryInfoFuture.join(),
+                        queryCompletionEventFuture.join()));
     }
 
     private CompletableFuture<List<Measurement>> getMeasurements(Measurable measurable)
@@ -269,6 +281,15 @@ public class BenchmarkServiceExecutionListener
         return queryInfoProvider.loadQueryInfo(measurable);
     }
 
+    private CompletableFuture<Optional<String>> getQueryCompletionEvent(Measurable measurable)
+    {
+        if (queryCompletionEventProvider == null) {
+            return completedFuture(Optional.empty());
+        }
+
+        return queryCompletionEventProvider.loadQueryCompletionEvent(measurable);
+    }
+
     private String executionSequenceId(QueryExecution execution)
     {
         return Integer.toString(execution.getSequenceId());
@@ -278,11 +299,13 @@ public class BenchmarkServiceExecutionListener
     {
         private final List<Measurement> measurements;
         private final Optional<String> queryInfo;
+        private final Optional<String> queryCompletionEvent;
 
-        private MeasurementsWithQueryInfo(List<Measurement> measurements, Optional<String> queryInfo)
+        private MeasurementsWithQueryInfo(List<Measurement> measurements, Optional<String> queryInfo, Optional<String> queryCompletionEvent)
         {
             this.measurements = requireNonNull(measurements, "measurements is null");
             this.queryInfo = requireNonNull(queryInfo, "queryInfo is null");
+            this.queryCompletionEvent = requireNonNull(queryCompletionEvent, "queryCompletionEvent is null");
         }
 
         public List<Measurement> getMeasurements()
@@ -293,6 +316,11 @@ public class BenchmarkServiceExecutionListener
         public Optional<String> getQueryInfo()
         {
             return queryInfo;
+        }
+
+        public Optional<String> getQueryCompletionEvent()
+        {
+            return queryCompletionEvent;
         }
     }
 }

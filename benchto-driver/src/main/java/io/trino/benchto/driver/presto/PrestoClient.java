@@ -36,6 +36,7 @@ import javax.measure.unit.Unit;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.google.common.base.Preconditions.checkState;
@@ -124,6 +125,31 @@ public class PrestoClient
     {
         double value = UnitConverter.parseValueAsUnit(statistic.toString(), requiredUnit);
         return measurement("prestoQuery-" + name, UnitConverter.format(requiredUnit), value);
+    }
+
+    @Retryable(value = RestClientException.class, backoff = @Backoff(1000))
+    public Optional<String> getQueryCompletionEvent(String queryId)
+    {
+        Optional<URI> uri = buildQueryCompletionEventURI(queryId);
+        if (uri.isEmpty()) {
+            return Optional.empty();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        HttpEntity<String> response = restTemplate.exchange(uri.get(), HttpMethod.GET, entity, String.class);
+        return Optional.of(response.getBody());
+    }
+
+    private Optional<URI> buildQueryCompletionEventURI(String queryId)
+    {
+        return properties.getPrestoHttpEventListenerURL()
+                .map(baseUrl -> {
+                    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl)
+                            .pathSegment("v1", "events", "completedQueries", "get", queryId);
+                    return URI.create(uriBuilder.toUriString());
+                });
     }
 
     @SuppressWarnings("unused")

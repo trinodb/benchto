@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -71,6 +72,19 @@ public class PrestoClientIntegrationTest
                 .andRespond(withSuccess(response, APPLICATION_JSON));
 
         assertThat(prestoClient.getQueryInfo("test_query_id")).isEqualTo(response);
+
+        restServiceServer.verify();
+    }
+
+    @Test
+    public void testPrestoClientGetQueryCompletionEvent()
+            throws IOException
+    {
+        String response = Resources.toString(Resources.getResource("json/presto_query_completion_event_response.json"), Charsets.UTF_8);
+        restServiceServer.expect(requestTo("http://presto-test-master:8091/v1/events/completedQueries/get/test_query_id"))
+                .andRespond(withSuccess(response, APPLICATION_JSON));
+
+        assertThat(prestoClient.getQueryCompletionEvent("test_query_id")).isEqualTo(Optional.of(response));
 
         restServiceServer.verify();
     }

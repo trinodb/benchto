@@ -111,6 +111,10 @@ public class BenchmarkRunExecution
     @JoinColumn(name = "query_info_id")
     private QueryInfo queryInfo;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "query_completion_event_id")
+    private QueryCompletionEvent queryCompletionEvent;
+
     public long getId()
     {
         return id;
@@ -209,6 +213,16 @@ public class BenchmarkRunExecution
     public void setQueryInfo(QueryInfo queryInfo)
     {
         this.queryInfo = queryInfo;
+    }
+
+    public QueryCompletionEvent getQueryCompletionEvent()
+    {
+        return queryCompletionEvent;
+    }
+
+    public void setQueryCompletionEvent(QueryCompletionEvent queryCompletionEvent)
+    {
+        this.queryCompletionEvent = queryCompletionEvent;
     }
 
     @Override

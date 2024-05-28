@@ -286,6 +286,7 @@ public class BenchmarkServiceClient
         private Instant endTime;
         private final List<Measurement> measurements = newArrayList();
         private String queryInfo;
+        private String queryCompletionEvent;
 
         private FinishRequest()
         {
@@ -326,6 +327,12 @@ public class BenchmarkServiceClient
             public FinishRequestBuilder addQueryInfo(String queryInfo)
             {
                 request.queryInfo = queryInfo;
+                return this;
+            }
+
+            public FinishRequestBuilder addQueryCompletionEvent(String queryCompletionEvent)
+            {
+                request.queryCompletionEvent = queryCompletionEvent;
                 return this;
             }
         }

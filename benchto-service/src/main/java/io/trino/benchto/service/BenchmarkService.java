@@ -18,6 +18,7 @@ import io.trino.benchto.service.model.BenchmarkRun;
 import io.trino.benchto.service.model.BenchmarkRunExecution;
 import io.trino.benchto.service.model.Environment;
 import io.trino.benchto.service.model.Measurement;
+import io.trino.benchto.service.model.QueryCompletionEvent;
 import io.trino.benchto.service.model.QueryInfo;
 import io.trino.benchto.service.model.Status;
 import io.trino.benchto.service.repo.BenchmarkRunRepo;
@@ -130,7 +131,7 @@ public class BenchmarkService
     @Retryable(value = {TransientDataAccessException.class, DataIntegrityViolationException.class})
     @Transactional
     public void finishExecution(String uniqueName, String benchmarkSequenceId, String executionSequenceId, Status status,
-            Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes, String queryInfo)
+            Optional<Instant> endTime, List<Measurement> measurements, Map<String, String> attributes, String queryInfo, String queryCompletionEvent)
     {
         BenchmarkRun benchmarkRun = findBenchmarkRun(uniqueName, benchmarkSequenceId);
 
@@ -149,6 +150,12 @@ public class BenchmarkService
             QueryInfo info = new QueryInfo();
             info.setInfo(queryInfo);
             execution.setQueryInfo(info);
+        }
+
+        if (queryCompletionEvent != null) {
+            QueryCompletionEvent event = new QueryCompletionEvent();
+            event.setEvent(queryCompletionEvent);
+            execution.setQueryCompletionEvent(event);
         }
 
         if (benchmarkRun.getStatus() != STARTED) {
