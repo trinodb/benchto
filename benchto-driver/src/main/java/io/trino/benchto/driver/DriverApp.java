@@ -140,8 +140,7 @@ public class DriverApp
     private static void logException(Throwable e)
     {
         LOG.error("Benchmark execution failed: {}", e.getMessage(), e);
-        if (e instanceof FailedBenchmarkExecutionException) {
-            FailedBenchmarkExecutionException failedBenchmarkExecutionException = (FailedBenchmarkExecutionException) e;
+        if (e instanceof FailedBenchmarkExecutionException failedBenchmarkExecutionException) {
             for (BenchmarkExecutionResult failedBenchmarkResult : failedBenchmarkExecutionException.getFailedBenchmarkResults()) {
                 LOG.error("--------------------------------------------------------------------------");
                 LOG.error("Failed benchmark: {}", failedBenchmarkResult.getBenchmark().getUniqueName());

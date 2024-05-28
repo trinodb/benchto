@@ -38,8 +38,7 @@ public class PrestoMetricsLoader
     @Override
     public CompletableFuture<List<Measurement>> loadMeasurements(Measurable measurable)
     {
-        if (measurable instanceof QueryExecutionResult) {
-            QueryExecutionResult executionResult = (QueryExecutionResult) measurable;
+        if (measurable instanceof QueryExecutionResult executionResult) {
             if (executionResult.getPrestoQueryId().isPresent() && !executionResult.getBenchmark().isThroughputTest()) {
                 return completedFuture(prestoClient.loadMetrics(executionResult.getPrestoQueryId().get()));
             }
