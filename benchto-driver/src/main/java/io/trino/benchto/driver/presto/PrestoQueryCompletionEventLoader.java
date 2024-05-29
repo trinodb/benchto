@@ -13,6 +13,12 @@
  */
 package io.trino.benchto.driver.presto;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import io.trino.benchto.driver.Measurable;
 import io.trino.benchto.driver.execution.QueryExecutionResult;
 import io.trino.benchto.driver.listeners.queryinfo.QueryCompletionEventProvider;
@@ -20,6 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -38,7 +47,25 @@ public class PrestoQueryCompletionEventLoader
     {
         if (measurable instanceof QueryExecutionResult executionResult) {
             if (executionResult.getPrestoQueryId().isPresent()) {
-                return completedFuture(prestoClient.getQueryCompletionEvent(executionResult.getPrestoQueryId().get()));
+                Optional<String> queryCompletionEvent = prestoClient.getQueryCompletionEvent(executionResult.getPrestoQueryId().get());
+                queryCompletionEvent = queryCompletionEvent.map(event -> {
+                    JsonElement root = JsonParser.parseReader(new JsonReader(new StringReader(event)));
+                    JsonObject rootObject = root.getAsJsonObject();
+                    JsonObject statistics = rootObject.getAsJsonObject("statistics");
+                    // remove huge operatorSummaries entry as it is already part of query_info
+                    statistics.remove("operatorSummaries");
+                    StringWriter stringWriter = new StringWriter();
+                    JsonWriter jsonWriter = new JsonWriter(stringWriter);
+                    jsonWriter.setLenient(true);
+                    try {
+                        Streams.write(root, jsonWriter);
+                    }
+                    catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return stringWriter.toString();
+                });
+                return completedFuture(queryCompletionEvent);
             }
         }
         return completedFuture(Optional.empty());
