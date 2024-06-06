@@ -345,6 +345,8 @@ public class BenchmarkServiceClient
                     .add("status", status)
                     .add("endTime", endTime)
                     .add("attributes", attributes)
+                    .add("queryInfo", queryInfo == null ? "NULL" : "NOT NULL")
+                    .add("queryCompletionEvent", queryCompletionEvent == null ? "NULL" : "NOT NULL")
                     .toString();
         }
     }

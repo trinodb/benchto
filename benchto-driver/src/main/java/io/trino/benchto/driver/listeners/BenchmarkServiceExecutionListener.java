@@ -31,6 +31,8 @@ import io.trino.benchto.driver.service.BenchmarkServiceClient.ExecutionStartRequ
 import io.trino.benchto.driver.service.BenchmarkServiceClient.FinishRequest;
 import io.trino.benchto.driver.service.BenchmarkServiceClient.FinishRequest.FinishRequestBuilder;
 import io.trino.benchto.driver.service.Measurement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -64,6 +66,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public class BenchmarkServiceExecutionListener
         implements BenchmarkExecutionListener
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkServiceExecutionListener.class);
     private static final Duration MAX_CLOCK_DRIFT = Duration.of(1, ChronoUnit.SECONDS);
 
     @Autowired
@@ -174,11 +177,14 @@ public class BenchmarkServiceExecutionListener
         return CompletableFuture.supplyAsync(() -> getMeasurementsWithQueryInfo(executionResult), taskExecutor::execute)
                 .thenCompose(future -> future)
                 .thenApply(measurements -> buildExecutionFinishedRequest(executionResult, measurements))
-                .thenAccept(request -> benchmarkServiceClient.finishExecution(
-                        executionResult.getBenchmark().getUniqueName(),
-                        executionResult.getBenchmark().getSequenceId(),
-                        executionSequenceId(executionResult.getQueryExecution()),
-                        request));
+                .thenAccept(request -> {
+                    LOGGER.info("Sending finishExecution request " + request + " for " + executionResult.getPrestoQueryId());
+                    benchmarkServiceClient.finishExecution(
+                            executionResult.getBenchmark().getUniqueName(),
+                            executionResult.getBenchmark().getSequenceId(),
+                            executionSequenceId(executionResult.getQueryExecution()),
+                            request);
+                });
     }
 
     @Override

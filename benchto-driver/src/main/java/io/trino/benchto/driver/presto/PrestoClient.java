@@ -137,6 +137,7 @@ public class PrestoClient
     public Optional<String> getQueryCompletionEvent(String queryId)
     {
         Optional<URI> uri = buildQueryCompletionEventURI(queryId);
+        LOGGER.info("getting query completion event for " + queryId + "; uri=" + uri);
         if (uri.isEmpty()) {
             return Optional.empty();
         }
@@ -146,7 +147,9 @@ public class PrestoClient
 
         try {
             HttpEntity<String> response = restTemplate.exchange(uri.get(), HttpMethod.GET, entity, String.class);
-            return Optional.of(response.getBody());
+            String body = response.getBody();
+            LOGGER.info("Got query completion event '" + body.substring(0, Math.min(100, body.length())) + "...' for " + queryId);
+            return Optional.of(body);
         }
         catch (HttpStatusCodeException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {

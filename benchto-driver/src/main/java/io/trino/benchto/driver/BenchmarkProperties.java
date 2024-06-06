@@ -17,6 +17,8 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import io.trino.benchto.driver.graphite.GraphiteProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -38,6 +40,8 @@ import static java.util.stream.Collectors.toMap;
 @Component
 public class BenchmarkProperties
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkProperties.class);
+
     @Value("${sql}")
     private String sqlDirs;
 
@@ -129,6 +133,7 @@ public class BenchmarkProperties
 
     public Optional<String> getPrestoHttpEventListenerURL()
     {
+        LOGGER.info("getting getPrestoHttpEventListenerURL;  prestoHttpEventListenerPort=" + prestoHttpEventListenerPort);
         if (prestoHttpEventListenerPort == null) {
             return Optional.empty();
         }
