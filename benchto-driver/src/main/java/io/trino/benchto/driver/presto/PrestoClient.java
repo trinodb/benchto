@@ -18,15 +18,19 @@ import com.google.common.collect.ImmutableMap;
 import io.trino.benchto.driver.BenchmarkProperties;
 import io.trino.benchto.driver.service.Measurement;
 import io.trino.benchto.driver.utils.UnitConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -50,6 +54,8 @@ import static javax.measure.unit.SI.SECOND;
 @ConditionalOnProperty(prefix = "presto", value = "url")
 public class PrestoClient
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PrestoClient.class);
+
     private static final Map<String, Unit> DEFAULT_METRICS = ImmutableMap.<String, Unit>builder()
             .put("planningTime", MILLI(SECOND))
             .put("analysisTime", MILLI(SECOND))
@@ -138,8 +144,18 @@ public class PrestoClient
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        HttpEntity<String> response = restTemplate.exchange(uri.get(), HttpMethod.GET, entity, String.class);
-        return Optional.of(response.getBody());
+        try {
+            HttpEntity<String> response = restTemplate.exchange(uri.get(), HttpMethod.GET, entity, String.class);
+            return Optional.of(response.getBody());
+        }
+        catch (HttpStatusCodeException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                LOGGER.warn("Query completion event for " + queryId + " not found");
+                return Optional.empty();
+            }
+            LOGGER.error("Unexpected error " + e.getStatusCode() + " when gettin query completion event for " + queryId, e);
+            return Optional.empty();
+        }
     }
 
     private Optional<URI> buildQueryCompletionEventURI(String queryId)
