@@ -29,6 +29,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +54,7 @@ public class TrinoIntegrationTest
 
     protected static void startBenchtoService(Network network)
     {
-        postgres = new PostgreSQLContainer<>("postgres:11")
+        postgres = new PostgreSQLContainer<>("postgres:16")
                 .withNetwork(network)
                 .withNetworkAliases("postgres");
         postgres.start();
@@ -81,16 +82,13 @@ public class TrinoIntegrationTest
     protected static void startTrino(Network network, List<ResourceMapping> resourceMappings)
             throws IOException, InterruptedException
     {
-        trino = new GenericContainer<>("trinodb/trino:388")
+        trino = new GenericContainer<>("trinodb/trino:458")
                 .withNetwork(network)
                 .withNetworkAliases("trino")
                 .withClasspathResourceMapping("jvm.config", "/etc/trino/jvm.config", BindMode.READ_ONLY)
                 .withExposedPorts(8080, 9090)
-                .waitingFor(new HttpWaitStrategy()
-                        .forPort(8080)
-                        .forPath("/v1/info")
-                        .forStatusCode(200)
-                        .forResponsePredicate(response -> response.contains("\"starting\":false")));
+                .waitingFor(new LogMessageWaitStrategy().withRegEx(".*SERVER STARTED.*"));
+
         resourceMappings.forEach(mapping -> trino.withClasspathResourceMapping(mapping.resourcePath(), mapping.containerPath(), mapping.bindMode()));
         trino.start();
         // We sometimes get "No nodes available to run query"

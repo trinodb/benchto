@@ -19,6 +19,7 @@ import io.trino.benchto.driver.execution.ExecutionSynchronizer;
 import io.trino.benchto.driver.execution.QueryExecutionResult;
 import io.trino.benchto.driver.listeners.measurements.PostExecutionMeasurementProvider;
 import io.trino.benchto.driver.service.Measurement;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummaryValues;
@@ -27,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;

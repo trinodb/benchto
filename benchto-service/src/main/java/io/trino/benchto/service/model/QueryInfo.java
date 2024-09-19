@@ -14,19 +14,16 @@
 package io.trino.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
-import javax.persistence.Cacheable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.io.Serializable;
 
@@ -35,7 +32,6 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 @Entity
 @Cacheable
 @Table(name = "query_info")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class QueryInfo
         implements Serializable
 {
@@ -52,7 +48,7 @@ public class QueryInfo
 
     @NotNull
     @Column(name = "info", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String info;
 
     public long getId()

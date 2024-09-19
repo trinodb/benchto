@@ -16,12 +16,11 @@ package io.trino.benchto.driver.execution;
 import io.trino.benchto.driver.Benchmark;
 import io.trino.benchto.driver.graphite.GraphiteProperties;
 import io.trino.benchto.driver.utils.TimeUtils;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PreDestroy;
 
 import java.time.Duration;
 import java.time.Instant;

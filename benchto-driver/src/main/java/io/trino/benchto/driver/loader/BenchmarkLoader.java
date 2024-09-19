@@ -26,13 +26,12 @@ import io.trino.benchto.driver.service.BenchmarkServiceClient;
 import io.trino.benchto.driver.utils.CartesianProductUtils;
 import io.trino.benchto.driver.utils.NaturalOrderComparator;
 import io.trino.benchto.driver.utils.YamlUtils;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 import java.io.IOException;
 import java.nio.file.Files;
