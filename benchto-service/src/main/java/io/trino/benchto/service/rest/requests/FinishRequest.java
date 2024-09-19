@@ -17,8 +17,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.trino.benchto.service.model.Measurement;
 import io.trino.benchto.service.model.Status;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 import java.util.List;

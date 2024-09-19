@@ -15,18 +15,16 @@ package io.trino.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
-import javax.persistence.Cacheable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 
@@ -35,7 +33,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 @Entity
 @Cacheable
 @Table(name = "query_completion_event")
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+@Convert(attributeName = "jsonb", converter = JsonBinaryType.class)
 public class QueryCompletionEvent
         implements Serializable
 {
@@ -52,7 +50,6 @@ public class QueryCompletionEvent
 
     @NotNull
     @Column(name = "event", columnDefinition = "jsonb")
-    @Type(type = "jsonb")
     private String event;
 
     public long getId()

@@ -15,16 +15,19 @@ package io.trino.benchto.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig
-        extends WebSecurityConfigurerAdapter
 {
     private static final String API_WRITE_ROLE = "API_WRITE_ROLE";
 
@@ -37,28 +40,30 @@ public class WebSecurityConfig
     @Value("${benchto.security.api.password:}")
     private String userPassword;
 
-    @Override
-    protected void configure(HttpSecurity http)
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception
     {
         if (isApiProtected) {
-            http.csrf().disable()
-                    .authorizeRequests().antMatchers("/**")
+            http.csrf(AbstractHttpConfigurer::disable)
+                    .authorizeRequests()
+                    .requestMatchers("/**")
                     .permitAll()
                     .and()
-                    .antMatcher("/v1/**")
                     .authorizeRequests()
                     .requestMatchers((httpServletRequest) -> httpServletRequest.getMethod().equalsIgnoreCase("POST"))
                     .hasAnyRole(API_WRITE_ROLE)
                     .and()
-                    .httpBasic();
+                    .httpBasic(withDefaults());
         }
         else {
-            http.csrf().disable()
+            http.csrf(AbstractHttpConfigurer::disable)
                     .authorizeRequests()
                     .anyRequest()
                     .permitAll();
         }
+
+        return http.build();
     }
 
     @Autowired

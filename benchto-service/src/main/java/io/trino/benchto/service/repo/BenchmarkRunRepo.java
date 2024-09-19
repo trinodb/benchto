@@ -15,13 +15,12 @@ package io.trino.benchto.service.repo;
 
 import io.trino.benchto.service.model.BenchmarkRun;
 import io.trino.benchto.service.model.Environment;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import javax.persistence.LockModeType;
 
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
