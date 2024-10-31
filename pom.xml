@@ -57,7 +57,7 @@
         <dep.commons.math3>3.6.1</dep.commons.math3>
         <dep.commons.io>2.11.0</dep.commons.io>
         <dep.guava.version>31.0.1-jre</dep.guava.version>
-        <dep.trino.jdbc.version>363</dep.trino.jdbc.version>
+        <dep.trino.jdbc.version>464</dep.trino.jdbc.version>
         <dep.jackson.version>2.13.3</dep.jackson.version>
         <dep.jsonpath.version>2.7.0</dep.jsonpath.version>
         <dep.junit.version>5.8.2</dep.junit.version>

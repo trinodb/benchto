@@ -84,7 +84,7 @@ public class BenchtoTrinoIntegrationTest
         setBenchmark("test_results_failure");
         assertThatThrownBy(() -> executionDriver.execute())
                 .isInstanceOf(FailedBenchmarkExecutionException.class)
-                .hasMessageContaining("ResultComparisonException: Incorrect result at row 4");
+                .hasMessageContaining("Incorrect result at row 4");
         verifyBenchmark("test_results_failure", "FAILED", 0);
     }
 
