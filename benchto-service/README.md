@@ -4,7 +4,7 @@ Service for storing/showing benchmark results.
 
 ## Prerequisites
 
-* Java 17
+* Java 21
 
 * PostgreSQL:
 
