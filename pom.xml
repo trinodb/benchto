@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
-        <version>141</version>
+        <version>195</version>
     </parent>
 
     <groupId>io.trino.benchto</groupId>
@@ -13,6 +13,7 @@
     <version>0.31-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>benchto-base</name>
+    <description>Benchto parent POM</description>
 
     <inceptionYear>2015</inceptionYear>
 
