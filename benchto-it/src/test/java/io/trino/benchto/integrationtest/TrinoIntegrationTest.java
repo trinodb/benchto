@@ -162,6 +162,6 @@ public class TrinoIntegrationTest
         DocumentContext json = JsonPath.parse(response.getBody());
         assertThat(json.read("$.status", String.class)).isEqualTo(status);
         assertThat(json.read(format("$.executions[?(@.status == '%s')]", status), List.class)).hasSize(expectedRuns);
-        assertThat(predicate.test(json));
+        assertThat(predicate.test(json)).isTrue();
     }
 }
