@@ -83,8 +83,6 @@
         <dep.hibernate.validator.version>8.0.1.Final</dep.hibernate.validator.version>
         <dep.hibernate-types-60.version>2.21.1</dep.hibernate-types-60.version>
         <dep.aspectjweaver.version>1.9.22.1</dep.aspectjweaver.version>
-        <dep.javax.el>3.0.0</dep.javax.el>
-        <dep.org.apache.httpcomponents.version>4.5.14</dep.org.apache.httpcomponents.version>
         <dep.jakarta.persistence.api.version>3.1.0</dep.jakarta.persistence.api.version>
         <dep.testcontainers.version>1.20.3</dep.testcontainers.version>
         <dep.javassist.version>3.30.2-GA</dep.javassist.version>
@@ -166,12 +164,6 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-                <version>${dep.javax.el}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna</artifactId>
                 <version>${dep.jna.version}</version>
@@ -191,12 +183,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${dep.org.apache.httpcomponents.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjrt</artifactId>
                 <version>${dep.aspectjweaver.version}</version>
@@ -212,12 +198,6 @@
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
                 <version>${dep.freemarker}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>javax.el</artifactId>
-                <version>2.2.6</version>
             </dependency>
 
             <dependency>
@@ -279,12 +259,6 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${dep.mockito.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>6.0.0</version>
             </dependency>
 
             <dependency>
