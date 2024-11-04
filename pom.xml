@@ -227,24 +227,6 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
                 <version>${dep.hibernate.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.activation</groupId>
-                        <artifactId>javax.activation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.persistence</groupId>
-                        <artifactId>javax.persistence-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.xml.bind</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
@@ -272,12 +254,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>${dep.junit.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.hamcrest</groupId>
-                        <artifactId>hamcrest-core</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
