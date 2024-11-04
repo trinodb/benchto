@@ -52,12 +52,6 @@
         <java.version>21</java.version>
         <project.build.targetJdk>21</project.build.targetJdk>
 
-        <encoding>UTF-8</encoding>
-
-        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
-        <project.resources.sourceEncoding>${encoding}</project.resources.sourceEncoding>
-
         <air.main.basedir>${project.basedir}</air.main.basedir>
 
         <air.check.skip-extended>true</air.check.skip-extended>
