@@ -79,5 +79,3 @@ benchmark:
           events:
           - cpu
 ```
-
-q
