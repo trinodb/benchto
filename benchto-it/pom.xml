@@ -128,45 +128,6 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.ning.maven.plugins</groupId>
-                <artifactId>maven-duplicate-finder-plugin</artifactId>
-                <version>1.0.8</version>
-                <configuration>
-                    <exceptions>
-                        <exception>
-                            <conflictingDependencies>
-                                <dependency>
-                                    <groupId>asm</groupId>
-                                    <artifactId>asm</artifactId>
-                                    <version>3.3.1</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>net-minidev</groupId>
-                                    <artifactId>asm</artifactId>
-                                    <version>1.0.2</version>
-                                </dependency>
-                            </conflictingDependencies>
-                            <packages>
-                                <package>org.objectweb.asm</package>
-                            </packages>
-                        </exception>
-                    </exceptions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>verify</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <profiles>
         <profile>
             <id>default</id>
