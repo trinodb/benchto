@@ -98,7 +98,7 @@ public class TrinoIntegrationTest
         resourceMappings.forEach(mapping -> trino.withClasspathResourceMapping(mapping.resourcePath(), mapping.containerPath(), mapping.bindMode()));
         trino.start();
         // We sometimes get "No nodes available to run query"
-        sleepUninterruptibly(1, TimeUnit.SECONDS);
+        sleepUninterruptibly(10, TimeUnit.SECONDS);
 
         trino.execInContainer("mkdir", "/tmp/test_benchmark/");
         System.setProperty("test.trino.host", trino.getHost());
