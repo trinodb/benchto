@@ -1,17 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>io.trino.benchto</groupId>
-    <artifactId>benchto-base</artifactId>
-    <version>0.31-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>benchto-base</name>
 
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
         <version>141</version>
     </parent>
+
+    <groupId>io.trino.benchto</groupId>
+    <artifactId>benchto-base</artifactId>
+    <version>0.31-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>benchto-base</name>
 
     <inceptionYear>2015</inceptionYear>
 
@@ -24,10 +25,27 @@
     </licenses>
 
     <modules>
-        <module>benchto-service</module>
         <module>benchto-driver</module>
         <module>benchto-it</module>
+        <module>benchto-service</module>
     </modules>
+
+    <scm>
+        <connection>scm:git:https://github.com/trinodb/benchto.git</connection>
+        <tag>HEAD</tag>
+        <url>https://github.com/trinodb/benchto</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <java.version>17</java.version>
@@ -87,24 +105,6 @@
         <dep.plugin.surefire.version>3.0.0-M5</dep.plugin.surefire.version>
     </properties>
 
-    <scm>
-        <connection>scm:git:https://github.com/trinodb/benchto.git</connection>
-        <url>https://github.com/trinodb/benchto</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
-            </url>
-        </repository>
-    </distributionManagement>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -115,48 +115,9 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- override Airbase -->
-            <dependency>
-                <groupId>jakarta.annotation</groupId>
-                <artifactId>jakarta.annotation-api</artifactId>
-                <version>1.3.5</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>2.3.3</version>
-            </dependency>
-
-            <!-- Utils -->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-math3</artifactId>
-                <version>${dep.commons.math3}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${dep.commons.io}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-cli</groupId>
-                <artifactId>commons-cli</artifactId>
-                <version>${dep.commons.cli}</version>
-            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${dep.jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-java8</artifactId>
-                <version>${dep.jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${dep.jackson.version}</version>
             </dependency>
             <dependency>
@@ -166,11 +127,11 @@
                 <exclusions>
                     <exclusion>
                         <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-core</artifactId>
+                        <artifactId>jackson-annotations</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.fasterxml.jackson.core</groupId>
-                        <artifactId>jackson-annotations</artifactId>
+                        <artifactId>jackson-core</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.fasterxml.jackson.core</groupId>
@@ -183,9 +144,128 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.freemarker</groupId>
-                <artifactId>freemarker</artifactId>
-                <version>${dep.freemarker}</version>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-java8</artifactId>
+                <version>${dep.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${dep.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${dep.jsonpath.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path-assert</artifactId>
+                <version>${dep.jsonpath.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vladmihalcea</groupId>
+                <artifactId>hibernate-types-52</artifactId>
+                <version>${dep.hibernate-types-52.version}</version>
+            </dependency>
+            <dependency>
+                <!-- used by org.springframework.boot:spring-boot-starter-data-jpa -> org.springframework.boot:spring-boot-starter-jdbc -->
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>4.0.3</version>
+                <exclusions>
+                    <exclusion>
+                        <!-- it uses slf4j-api:2.0.0 which has some breaking changes compared to 1.7.36 used here -->
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>commons-cli</groupId>
+                <artifactId>commons-cli</artifactId>
+                <version>${dep.commons.cli}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${dep.commons.io}</version>
+            </dependency>
+
+            <!-- Drivers -->
+            <dependency>
+                <groupId>io.trino</groupId>
+                <artifactId>trino-jdbc</artifactId>
+                <version>${dep.trino.jdbc.version}</version>
+            </dependency>
+
+            <!-- override Airbase -->
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>1.3.5</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${dep.jakarta.persistence.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${dep.jakarta.servlet.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${dep.jakarta.validation.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>2.3.3</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${dep.javax.annotation.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.el</groupId>
+                <artifactId>javax.el-api</artifactId>
+                <version>${dep.javax.el}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>${dep.byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy-agent</artifactId>
+                <version>${dep.byte-buddy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>${dep.jna.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>2.4.7</version>
+            </dependency>
+
+            <!-- Utils -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${dep.commons.math3}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${dep.org.apache.httpcomponents.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.aspectj</groupId>
@@ -198,24 +278,34 @@
                 <version>${dep.aspectjweaver.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.retry</groupId>
-                <artifactId>spring-retry</artifactId>
-                <version>${dep.spring.retry.version}</version>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${dep.assertj.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-                <version>${dep.javax.annotation.api.version}</version>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>${dep.freemarker}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.validation</groupId>
-                <artifactId>jakarta.validation-api</artifactId>
-                <version>${dep.jakarta.validation.api.version}</version>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>javax.el</artifactId>
+                <version>2.2.5</version>
             </dependency>
             <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>${dep.javassist.version}</version>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>${dep.hamcrest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-core</artifactId>
+                <version>${dep.hamcrest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest-library</artifactId>
+                <version>${dep.hamcrest.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -251,65 +341,14 @@
                 <version>${dep.hibernate.validator.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.vladmihalcea</groupId>
-                <artifactId>hibernate-types-52</artifactId>
-                <version>${dep.hibernate-types-52.version}</version>
+                <groupId>org.hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>${dep.hsqldb.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-                <version>${dep.javax.el}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>javax.el</artifactId>
-                <version>2.2.5</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.persistence</groupId>
-                <artifactId>jakarta.persistence-api</artifactId>
-                <version>${dep.jakarta.persistence.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${dep.org.apache.httpcomponents.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${dep.jakarta.servlet.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>6.0.0</version>
-            </dependency>
-            <dependency>
-                <!-- used by org.springframework.boot:spring-boot-starter-data-jpa -> org.springframework.boot:spring-boot-starter-jdbc -->
-                <groupId>com.zaxxer</groupId>
-                <artifactId>HikariCP</artifactId>
-                <version>4.0.3</version>
-                <exclusions>
-                    <exclusion>
-                        <!-- it uses slf4j-api:2.0.0 which has some breaking changes compared to 1.7.36 used here -->
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!-- Drivers -->
-            <dependency>
-                <groupId>io.trino</groupId>
-                <artifactId>trino-jdbc</artifactId>
-                <version>${dep.trino.jdbc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <scope>runtime</scope>
-                <version>${dep.postgresql.jdbc.version}</version>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${dep.javassist.version}</version>
             </dependency>
 
             <!-- Test -->
@@ -319,45 +358,10 @@
                 <version>${dep.junit.version}</version>
                 <exclusions>
                     <exclusion>
-                        <artifactId>hamcrest-core</artifactId>
                         <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest</artifactId>
-                <version>${dep.hamcrest.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-core</artifactId>
-                <version>${dep.hamcrest.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-library</artifactId>
-                <version>${dep.hamcrest.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${dep.assertj.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jayway.jsonpath</groupId>
-                <artifactId>json-path</artifactId>
-                <version>${dep.jsonpath.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.jayway.jsonpath</groupId>
-                <artifactId>json-path-assert</artifactId>
-                <version>${dep.jsonpath.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hsqldb</groupId>
-                <artifactId>hsqldb</artifactId>
-                <version>${dep.hsqldb.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -365,9 +369,14 @@
                 <version>${dep.mockito.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>${dep.testcontainers.version}</version>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.core</artifactId>
+                <version>6.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.retry</groupId>
+                <artifactId>spring-retry</artifactId>
+                <version>${dep.spring.retry.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
@@ -375,24 +384,15 @@
                 <version>${dep.testcontainers.version}</version>
             </dependency>
             <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy</artifactId>
-                <version>${dep.byte-buddy.version}</version>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${dep.testcontainers.version}</version>
             </dependency>
             <dependency>
-                <groupId>net.bytebuddy</groupId>
-                <artifactId>byte-buddy-agent</artifactId>
-                <version>${dep.byte-buddy.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.java.dev.jna</groupId>
-                <artifactId>jna</artifactId>
-                <version>${dep.jna.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.minidev</groupId>
-                <artifactId>json-smart</artifactId>
-                <version>2.4.7</version>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${dep.postgresql.jdbc.version}</version>
+                <scope>runtime</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
