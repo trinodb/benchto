@@ -13,8 +13,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: 21
-    - name: Maven Install Dependencies
-      run: ./mvnw install -B -V -DskipTests -Dair.check.skip-all -P docker-images
     - name: Maven Test
       run: ./mvnw install -B
     - name: Integration test
