@@ -1,4 +1,4 @@
-# Benchto [![Build Status](https://travis-ci.com/trinodb/benchto.svg?branch=master)](https://travis-ci.com/trinodb/benchto)
+# Benchto
 
 The purpose of _Benchto_ project is to provide easy and manageable way to define, run and analyze _macro benchmarks_
 in clustered environment. Understanding behaviour of distributed systems is hard and requires good visibility into
