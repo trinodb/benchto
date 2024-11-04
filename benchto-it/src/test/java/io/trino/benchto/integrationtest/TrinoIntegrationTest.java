@@ -81,7 +81,7 @@ public class TrinoIntegrationTest
     protected static void startTrino(Network network, List<ResourceMapping> resourceMappings)
             throws IOException, InterruptedException
     {
-        trino = new GenericContainer<>("trinodb/trino:388")
+        trino = new GenericContainer<>("trinodb/trino:464")
                 .withNetwork(network)
                 .withNetworkAliases("trino")
                 .withClasspathResourceMapping("jvm.config", "/etc/trino/jvm.config", BindMode.READ_ONLY)
