@@ -28,8 +28,8 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.TrinoContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.io.IOException;
 import java.util.List;
@@ -82,12 +82,11 @@ public class TrinoIntegrationTest
     protected static void startTrino(Network network, List<ResourceMapping> resourceMappings)
             throws IOException, InterruptedException
     {
-        trino = new GenericContainer<>("trinodb/trino:458")
+        trino = new TrinoContainer("trinodb/trino:458")
                 .withNetwork(network)
                 .withNetworkAliases("trino")
                 .withClasspathResourceMapping("jvm.config", "/etc/trino/jvm.config", BindMode.READ_ONLY)
-                .withExposedPorts(8080, 9090)
-                .waitingFor(new LogMessageWaitStrategy().withRegEx(".*SERVER STARTED.*"));
+                .withExposedPorts(8080, 9090);
 
         resourceMappings.forEach(mapping -> trino.withClasspathResourceMapping(mapping.resourcePath(), mapping.containerPath(), mapping.bindMode()));
         trino.start();
