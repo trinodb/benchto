@@ -11,8 +11,8 @@ jobs:
         fetch-depth: 0 # checkout tags so version in Manifest is set properly
     - uses: actions/setup-java@v3
       with:
-        distribution: 'zulu'
-        java-version: 17
+        distribution: 'temurin'
+        java-version: 21
     - name: Maven Install Dependencies
       run: ./mvnw install -B -V -DskipTests -Dair.check.skip-all -P docker-images
     - name: Maven Test
