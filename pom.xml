@@ -89,7 +89,6 @@
         <dep.javax.el>3.0.0</dep.javax.el>
         <dep.org.apache.httpcomponents.version>4.5.13</dep.org.apache.httpcomponents.version>
         <dep.jakarta.persistence.api.version>3.1.0</dep.jakarta.persistence.api.version>
-        <dep.jakarta.servlet.api.version>5.0.0</dep.jakarta.servlet.api.version>
         <dep.testcontainers.version>1.20.1</dep.testcontainers.version>
         <dep.javassist.version>3.29.2-GA</dep.javassist.version>
         <dep.jna.version>5.12.1</dep.jna.version>
