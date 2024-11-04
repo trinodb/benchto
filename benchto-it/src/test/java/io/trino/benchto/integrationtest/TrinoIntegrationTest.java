@@ -17,6 +17,8 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.trino.benchto.driver.BenchmarkProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TrinoIntegrationTest
 {
+    private static final Logger log = LoggerFactory.getLogger(TrinoIntegrationTest.class);
+
     protected static PostgreSQLContainer<?> postgres;
     protected static GenericContainer<?> service;
     protected static GenericContainer<?> trino;
@@ -86,7 +90,10 @@ public class TrinoIntegrationTest
                 .withNetwork(network)
                 .withNetworkAliases("trino")
                 .withClasspathResourceMapping("jvm.config", "/etc/trino/jvm.config", BindMode.READ_ONLY)
-                .withExposedPorts(8080, 9090);
+                .withExposedPorts(8080, 9090)
+                .withLogConsumer(frame -> {
+                    log.info("[Trino] {}", frame.getUtf8String());
+                });
 
         resourceMappings.forEach(mapping -> trino.withClasspathResourceMapping(mapping.resourcePath(), mapping.containerPath(), mapping.bindMode()));
         trino.start();
