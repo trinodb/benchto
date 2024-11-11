@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
-        <version>196</version>
+        <version>198</version>
     </parent>
 
     <groupId>io.trino.benchto</groupId>
@@ -77,7 +77,7 @@
         <dep.hibernate.validator.version>8.0.1.Final</dep.hibernate.validator.version>
         <dep.hibernate-types-60.version>2.21.1</dep.hibernate-types-60.version>
         <dep.aspectjweaver.version>1.9.22.1</dep.aspectjweaver.version>
-        <dep.jakarta.persistence.api.version>3.1.0</dep.jakarta.persistence.api.version>
+        <dep.jakarta.persistence.api.version>3.2.0</dep.jakarta.persistence.api.version>
         <dep.testcontainers.version>1.20.3</dep.testcontainers.version>
         <dep.javassist.version>3.30.2-GA</dep.javassist.version>
         <dep.jna.version>5.15.0</dep.jna.version>
@@ -116,7 +116,7 @@
                 <!-- used by org.springframework.boot:spring-boot-starter-data-jpa -> org.springframework.boot:spring-boot-starter-jdbc -->
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
-                <version>6.0.0</version>
+                <version>6.1.0</version>
                 <exclusions>
                     <exclusion>
                         <!-- it uses slf4j-api:2.0.0 which has some breaking changes compared to 1.7.36 used here -->
