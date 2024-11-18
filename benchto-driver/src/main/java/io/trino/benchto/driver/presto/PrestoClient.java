@@ -63,6 +63,7 @@ public class PrestoClient
             .put("totalCpuTime", MILLI(SECOND))
             .put("totalBlockedTime", MILLI(SECOND))
             .put("finishingTime", MILLI(SECOND))
+            .put("physicalInputReadTime", MILLI(SECOND))
             .put("rawInputDataSize", BYTE)
             .put("physicalInputDataSize", BYTE)
             .put("processedInputDataSize", BYTE)
