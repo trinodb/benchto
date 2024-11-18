@@ -75,7 +75,6 @@
         <dep.mockito.version>5.14.2</dep.mockito.version>
         <dep.hibernate.version>6.6.1.Final</dep.hibernate.version>
         <dep.hibernate.validator.version>8.0.1.Final</dep.hibernate.validator.version>
-        <dep.hibernate-types-60.version>2.21.1</dep.hibernate-types-60.version>
         <dep.aspectjweaver.version>1.9.22.1</dep.aspectjweaver.version>
         <dep.jakarta.persistence.api.version>3.1.0</dep.jakarta.persistence.api.version>
         <dep.testcontainers.version>1.20.3</dep.testcontainers.version>
@@ -104,12 +103,6 @@
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path-assert</artifactId>
                 <version>${dep.jsonpath.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.vladmihalcea</groupId>
-                <artifactId>hibernate-types-60</artifactId>
-                <version>${dep.hibernate-types-60.version}</version>
             </dependency>
 
             <dependency>
