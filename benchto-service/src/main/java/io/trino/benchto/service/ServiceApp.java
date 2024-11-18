@@ -13,6 +13,9 @@
  */
 package io.trino.benchto.service;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.StreamWriteConstraints;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
 import io.trino.benchto.service.rest.converters.ZonedDateTimeConverter;
 import org.springframework.boot.SpringApplication;
@@ -40,7 +43,23 @@ public class ServiceApp
         Hibernate6Module hibernate5Module = new Hibernate6Module();
         hibernate5Module.disable(USE_TRANSIENT_ANNOTATION);
         return new Jackson2ObjectMapperBuilder()
-                .modulesToInstall(hibernate5Module);
+                .modulesToInstall(hibernate5Module)
+                .postConfigurer(ServiceApp::disableReadWriteConstraints);
+    }
+
+    private static void disableReadWriteConstraints(ObjectMapper objectMapper)
+    {
+        objectMapper.getFactory()
+                .setStreamReadConstraints(StreamReadConstraints.builder()
+                        .maxNestingDepth(Integer.MAX_VALUE)
+                        .maxStringLength(Integer.MAX_VALUE)
+                        .maxDocumentLength(Integer.MAX_VALUE)
+                        .maxNameLength(Integer.MAX_VALUE)
+                        .maxNumberLength(Integer.MAX_VALUE)
+                        .build())
+                .setStreamWriteConstraints(StreamWriteConstraints.builder()
+                        .maxNestingDepth(Integer.MAX_VALUE)
+                        .build());
     }
 
     @Bean
