@@ -14,10 +14,8 @@
 package io.trino.benchto.service.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.io.Serializable;
 
@@ -33,7 +32,6 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 @Entity
 @Cacheable
 @Table(name = "query_completion_event")
-@Convert(attributeName = "jsonb", converter = JsonBinaryType.class)
 public class QueryCompletionEvent
         implements Serializable
 {
@@ -50,6 +48,7 @@ public class QueryCompletionEvent
 
     @NotNull
     @Column(name = "event", columnDefinition = "jsonb")
+    @ColumnTransformer(write = "?::jsonb")
     private String event;
 
     public long getId()
