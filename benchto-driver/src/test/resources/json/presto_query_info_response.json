@@ -41,6 +41,7 @@
     "totalUserTime" : "1.04h",
     "totalBlockedTime" : "4.79m",
     "finishingTime": "1.15m",
+    "physicalInputReadTime": "2.36m",
     "rawInputDataSize" : "1.34GB",
     "rawInputPositions" : 16822480,
     "processedInputDataSize" : "739.61MB",

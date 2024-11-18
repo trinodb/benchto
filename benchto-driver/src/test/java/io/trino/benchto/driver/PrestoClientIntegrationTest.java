@@ -52,6 +52,7 @@ public class PrestoClientIntegrationTest
                 Measurement.measurement("prestoQuery-totalCpuTime", "MILLISECONDS", 63600.0),
                 Measurement.measurement("prestoQuery-totalBlockedTime", "MILLISECONDS", 287400.0),
                 Measurement.measurement("prestoQuery-finishingTime", "MILLISECONDS", 69000.0),
+                Measurement.measurement("prestoQuery-physicalInputReadTime", "MILLISECONDS", 141600.0),
                 Measurement.measurement("prestoQuery-rawInputDataSize", "BYTES", 1.34E9),
                 Measurement.measurement("prestoQuery-processedInputDataSize", "BYTES", 7.3961E8),
                 Measurement.measurement("prestoQuery-internalNetworkInputDataSize", "BYTES", 7.2961E8),
