@@ -10,7 +10,7 @@
 
     <groupId>io.trino.benchto</groupId>
     <artifactId>benchto-base</artifactId>
-    <version>0.33-SNAPSHOT</version>
+    <version>0.33</version>
     <packaging>pom</packaging>
     <name>benchto-base</name>
     <description>Benchto parent POM</description>
@@ -33,7 +33,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/trinodb/benchto.git</connection>
-        <tag>HEAD</tag>
+        <tag>0.33</tag>
         <url>https://github.com/trinodb/benchto</url>
     </scm>
 
