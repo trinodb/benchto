@@ -18,6 +18,7 @@ import io.trino.benchto.service.model.Environment;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -64,10 +65,10 @@ public interface BenchmarkRunRepo
             nativeQuery = true)
     List<BenchmarkRun> findLatest(@Param("environment_id") long environmentId);
 
-    @Query("SELECT br FROM BenchmarkRun br WHERE " +
+    @Query("SELECT id FROM BenchmarkRun br WHERE " +
             "br.status = 'STARTED' AND " +
             "br.started <= :startDate")
-    List<BenchmarkRun> findStartedBefore(@Param("startDate") ZonedDateTime startDate);
+    List<Long> findStartedBefore(@Param("startDate") ZonedDateTime startDate);
 
     @Query(value = "" +
             "SELECT MAX(ended) " +
@@ -75,4 +76,8 @@ public interface BenchmarkRunRepo
             "WHERE unique_name = :uniqueName and status = 'ENDED'",
             nativeQuery = true)
     Timestamp findTimeOfLatestSuccessfulExecution(@Param("uniqueName") String uniqueName);
+
+    @Modifying
+    @Query("UPDATE BenchmarkRun br SET br.ended = :ended, br.status = 'FAILED' WHERE br.id = :id")
+    void markAsFailed(@Param(value = "id") long id, @Param(value = "ended") ZonedDateTime ended);
 }

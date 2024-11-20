@@ -13,7 +13,6 @@
  */
 package io.trino.benchto.service;
 
-import io.trino.benchto.service.model.BenchmarkRun;
 import io.trino.benchto.service.repo.BenchmarkRunRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 
-import static io.trino.benchto.service.model.Status.FAILED;
 import static io.trino.benchto.service.utils.TimeUtils.currentDateTime;
 
 @Service
@@ -45,11 +43,9 @@ public class CleanerService
 
         ZonedDateTime currentDate = currentDateTime();
         ZonedDateTime startDate = currentDate.minusHours(BENCHMARK_TIMEOUT_HOURS);
-        for (BenchmarkRun benchmarkRun : benchmarkRunRepo.findStartedBefore(startDate)) {
-            LOG.info("Failing stale benchmark - {}", benchmarkRun);
-            benchmarkRun.setEnded(currentDate);
-            benchmarkRun.setStatus(FAILED);
-            benchmarkRunRepo.save(benchmarkRun);
+        for (Long benchmarkRunId : benchmarkRunRepo.findStartedBefore(startDate)) {
+            LOG.info("Failing stale benchmark id {}", benchmarkRunId);
+            benchmarkRunRepo.markAsFailed(benchmarkRunId, currentDate);
         }
     }
 }
