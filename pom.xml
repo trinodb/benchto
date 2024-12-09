@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.airlift</groupId>
         <artifactId>airbase</artifactId>
-        <version>199</version>
+        <version>203</version>
     </parent>
 
     <groupId>io.trino.benchto</groupId>
@@ -63,21 +63,21 @@
 
         <dep.commons.cli>1.9.0</dep.commons.cli>
         <dep.commons.math3>3.6.1</dep.commons.math3>
-        <dep.commons.io>2.17.0</dep.commons.io>
-        <dep.trino.jdbc.version>464</dep.trino.jdbc.version>
+        <dep.commons.io>2.18.0</dep.commons.io>
+        <dep.trino.jdbc.version>467</dep.trino.jdbc.version>
         <dep.jsonpath.version>2.9.0</dep.jsonpath.version>
         <dep.hamcrest.version>3.0</dep.hamcrest.version>
         <dep.hsqldb.version>2.7.4</dep.hsqldb.version>
         <dep.postgresql.jdbc.version>42.7.4</dep.postgresql.jdbc.version>
-        <dep.spring.boot.version>3.3.5</dep.spring.boot.version>
+        <dep.spring.boot.version>3.4.0</dep.spring.boot.version>
         <dep.spring.retry.version>2.0.10</dep.spring.retry.version>
         <dep.freemarker>2.3.33</dep.freemarker>
         <dep.mockito.version>5.14.2</dep.mockito.version>
         <dep.hibernate.version>6.6.1.Final</dep.hibernate.version>
         <dep.hibernate.validator.version>8.0.1.Final</dep.hibernate.validator.version>
         <dep.aspectjweaver.version>1.9.22.1</dep.aspectjweaver.version>
-        <dep.jakarta.persistence.api.version>3.1.0</dep.jakarta.persistence.api.version>
-        <dep.testcontainers.version>1.20.3</dep.testcontainers.version>
+        <dep.jakarta.persistence.api.version>3.2.0</dep.jakarta.persistence.api.version>
+        <dep.testcontainers.version>1.20.4</dep.testcontainers.version>
         <dep.javassist.version>3.30.2-GA</dep.javassist.version>
         <dep.jna.version>5.15.0</dep.jna.version>
     </properties>
@@ -109,7 +109,7 @@
                 <!-- used by org.springframework.boot:spring-boot-starter-data-jpa -> org.springframework.boot:spring-boot-starter-jdbc -->
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
-                <version>6.2.0</version>
+                <version>6.2.1</version>
                 <exclusions>
                     <exclusion>
                         <!-- it uses slf4j-api:2.0.0 which has some breaking changes compared to 1.7.36 used here -->
@@ -171,7 +171,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.16.0</version>
+                <version>3.17.0</version>
             </dependency>
 
             <!-- Utils -->
