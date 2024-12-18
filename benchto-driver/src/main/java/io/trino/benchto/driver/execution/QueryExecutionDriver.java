@@ -74,6 +74,7 @@ public class QueryExecutionDriver
                 if (resultSet.isWrapperFor(TrinoResultSet.class)) {
                     TrinoResultSet trinoResultSet = resultSet.unwrap(TrinoResultSet.class);
                     queryExecutionResultBuilder.setPrestoQueryId(trinoResultSet.getQueryId());
+                    queryExecutionResultBuilder.setPrestoQueryStats(trinoResultSet.getStats());
                 }
             }
             catch (AbstractMethodError | Exception e) {

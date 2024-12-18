@@ -15,6 +15,7 @@ package io.trino.benchto.driver.execution;
 
 import io.trino.benchto.driver.Benchmark;
 import io.trino.benchto.driver.Measurable;
+import io.trino.jdbc.QueryStats;
 
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ public class QueryExecutionResult
 
     // presto specific
     private Optional<String> prestoQueryId = Optional.empty();
+    private Optional<QueryStats> prestoQueryStats = Optional.empty();
 
     public QueryExecutionResult(QueryExecution queryExecution)
     {
@@ -73,6 +75,11 @@ public class QueryExecutionResult
         return prestoQueryId;
     }
 
+    public Optional<QueryStats> getPrestoQueryStats()
+    {
+        return prestoQueryStats;
+    }
+
     public String getQueryName()
     {
         return queryExecution.getQueryName();
@@ -88,6 +95,7 @@ public class QueryExecutionResult
                 .add("failureCause", failureCause)
                 .add("queryDuration", getQueryDuration().toMillis() + " ms")
                 .add("prestoQueryId", prestoQueryId)
+                .add("prestoQueryStats", prestoQueryStats)
                 .toString();
     }
 
@@ -114,6 +122,12 @@ public class QueryExecutionResult
         public QueryExecutionResultBuilder setPrestoQueryId(String prestoQueryId)
         {
             object.prestoQueryId = Optional.of(prestoQueryId);
+            return this;
+        }
+
+        public QueryExecutionResultBuilder setPrestoQueryStats(QueryStats prestoQueryStats)
+        {
+            object.prestoQueryStats = Optional.of(prestoQueryStats);
             return this;
         }
     }
