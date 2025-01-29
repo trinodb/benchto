@@ -74,6 +74,7 @@ public class QueryExecutionDriver
                 if (resultSet.isWrapperFor(TrinoResultSet.class)) {
                     TrinoResultSet trinoResultSet = resultSet.unwrap(TrinoResultSet.class);
                     queryExecutionResultBuilder.setPrestoQueryId(trinoResultSet.getQueryId());
+                    queryExecutionResultBuilder.setPrestoQueryStats(trinoResultSet.getStats());
                 }
             }
             catch (AbstractMethodError | Exception e) {
@@ -98,7 +99,8 @@ public class QueryExecutionDriver
         try (Statement statement = connection.createStatement()) {
             if (statement.isWrapperFor(TrinoStatement.class)) {
                 TrinoStatement trinoStatement = statement.unwrap(TrinoStatement.class);
-                trinoStatement.setProgressMonitor(stats -> queryExecutionResultBuilder.setPrestoQueryId(stats.getQueryId()));
+                trinoStatement.setProgressMonitor(stats -> queryExecutionResultBuilder.setPrestoQueryId(stats.getQueryId())
+                        .setPrestoQueryStats(stats));
             }
 
             int rowCount = statement.executeUpdate(sqlStatement);

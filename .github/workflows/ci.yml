@@ -12,7 +12,7 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: 21
+        java-version: 22
     - name: Maven Test
       run: ./mvnw install -B
     - name: Integration test
