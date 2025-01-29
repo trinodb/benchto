@@ -27,6 +27,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.Network;
 
 import java.io.IOException;
+import java.time.Year;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +60,42 @@ public class BenchtoTrinoIntegrationTest
     {
         setBenchmark("test_benchmark");
         executionDriver.execute();
-        verifyBenchmark("test_benchmark", "ENDED");
+        verifyBenchmark("test_benchmark", "test_benchmark", "ENDED", 2,
+                document -> {
+                    List<Map<String, Object>> elapsedTimes = document.read("$['executions'][*]['measurements'][*][?(@.name==\"duration\")]");
+                    return elapsedTimes.size() == 2 && elapsedTimes.stream().allMatch(it -> Double.parseDouble(it.get("value").toString()) > 0);
+                });
+    }
+
+    @Test
+    public void testBenchmarkAnalysisTime()
+    {
+        setBenchmark("test_benchmark_analysis_time");
+        executionDriver.execute();
+        verifyBenchmark("test_benchmark_analysis_time", "test_benchmark_analysis_time", "ENDED", 5,
+                document -> {
+                    List<Map<String, Object>> analysisTime = document.read("$['executions'][*]['measurements'][*][?(@.name==\"analysisTime\")]");
+                    return analysisTime.size() == 5 && analysisTime.stream().allMatch(it -> Double.parseDouble(it.get("value").toString()) > 0);
+                });
+    }
+
+    @Test
+    public void testBenchmarkMetrics()
+    {
+        setBenchmark("test_benchmark_metrics");
+        executionDriver.execute();
+        verifyBenchmark("test_benchmark_metrics", "test_benchmark_metrics", "ENDED", 4,
+                document -> {
+                    List<String> expectedMetrics = Arrays.asList("planningTime", "analysisTime", "totalScheduledTime", "totalCpuTime",
+                            "duration", "finishingTime", "physicalInputReadTime", "physicalInputDataSize", "physicalWrittenDataSize",
+                            "peakTotalMemoryReservation", "queuedTime", "rawInputDataSize", "elapsedTime", "internalNetworkInputDataSize");
+                    List<Map<String, Object>> metrics = document.read("$['executions'][*]['measurements'][*]");
+                    HashMap<String, String> attributes = document.read("$['executions'][0]['attributes']");
+                    List<String> measuredMetricsNames = metrics.stream().map(m -> m.get("name").toString()).toList();
+                    return measuredMetricsNames.containsAll(expectedMetrics)
+                            && attributes.containsKey("prestoQueryId")
+                            && attributes.get("prestoQueryId").startsWith(String.valueOf(Year.now().getValue()));
+                });
     }
 
     @Test
@@ -103,7 +141,15 @@ public class BenchtoTrinoIntegrationTest
     {
         setBenchmark("insert_test_results");
         executionDriver.execute();
-        verifyBenchmark("insert_test_results_query=insert_test_query", "insert_test_results", "ENDED", 1);
+        verifyBenchmark("insert_test_results_query=insert_test_query", "insert_test_results", "ENDED", 1,
+                document -> {
+                    List<Map<String, Object>> internalNetworkInputDataSize = document.read("$['executions'][*]['measurements'][*][?(@.name==\"internalNetworkInputDataSize\")]");
+                    HashMap<String, String> attributes = document.read("$['executions'][0]['attributes']");
+                    return internalNetworkInputDataSize.size() == 1
+                            && internalNetworkInputDataSize.stream().allMatch(it -> Double.parseDouble(it.get("value").toString()) > 0)
+                            && attributes.containsKey("prestoQueryId")
+                            && attributes.get("prestoQueryId").startsWith(String.valueOf(Year.now().getValue()));
+                });
     }
 
     @Test
@@ -139,7 +185,7 @@ public class BenchtoTrinoIntegrationTest
                 document -> {
                     // It checks whether results for throughput test was saved and queries succeeded
                     List<Map<String, Object>> successfulQueries = document.read("$['executions'][*]['measurements'][*][?(@.name==\"queries_successful\")]");
-                    return successfulQueries.stream().allMatch(it -> it.get("value").equals(1.0));
+                    return successfulQueries.stream().allMatch(it -> it.get("value").equals(4.0));
                 });
     }
 }

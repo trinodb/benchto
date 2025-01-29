@@ -86,7 +86,7 @@ public class TrinoIntegrationTest
     protected static void startTrino(Network network, List<ResourceMapping> resourceMappings)
             throws IOException, InterruptedException
     {
-        trino = new TrinoContainer("trinodb/trino:464")
+        trino = new TrinoContainer("trinodb/trino:469")
                 .withNetwork(network)
                 .withNetworkAliases("trino")
                 .withClasspathResourceMapping("jvm.config", "/etc/trino/jvm.config", BindMode.READ_ONLY)
@@ -166,6 +166,6 @@ public class TrinoIntegrationTest
         DocumentContext json = JsonPath.parse(response.getBody());
         assertThat(json.read("$.status", String.class)).isEqualTo(status);
         assertThat(json.read(format("$.executions[?(@.status == '%s')]", status), List.class)).hasSize(expectedRuns);
-        assertThat(predicate.test(json));
+        assertThat(predicate.test(json)).isTrue();
     }
 }
